@@ -5560,201 +5560,410 @@ button, a, input, textarea, select {
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
-   CONVERSATION VIZ — progressive understanding visualization
+   AI BROWSER — Workspace layout (Rail + Browser Surface + Context Bar)
    ══════════════════════════════════════════════════════════════════════════ */
-.cviz {
-  display: flex; flex-direction: column; gap: 12px;
-  animation: cvizIn .35s cubic-bezier(.16,1,.3,1) both;
+/* ── Workspace layout ──────────────────────────────────────────────── */
+.ai-workspace {
+  flex: 1; display: flex; gap: 0; overflow: hidden;
+  min-height: 0;
 }
-@keyframes cvizIn {
-  from { opacity: 0; transform: translateY(8px); }
+
+/* ── Conversation Rail ─────────────────────────────────────────────── */
+.aib-rail {
+  width: 260px; flex-shrink: 0; display: flex; flex-direction: column;
+  border-right: 1px solid rgba(255,255,255,0.04);
+  background: rgba(0,0,0,0.15);
+}
+.aib-rail-header {
+  display: flex; align-items: center; gap: 7px;
+  padding: 12px 14px; border-bottom: 1px solid rgba(255,255,255,0.04);
+  font-size: 10px; font-weight: 600; color: rgba(255,255,255,0.25);
+  letter-spacing: .04em; text-transform: uppercase;
+}
+.aib-rail-dot {
+  width: 5px; height: 5px; border-radius: 50%;
+  background: rgba(242,101,34,0.6);
+  animation: aiDotPulse 2s ease-in-out infinite;
+}
+.aib-rail-messages {
+  flex: 1; overflow-y: auto; padding: 12px;
+  display: flex; flex-direction: column; gap: 10px;
+  scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.06) transparent;
+}
+.aib-rail-msg {
+  animation: aibMsgIn .25s cubic-bezier(.16,1,.3,1) both;
+}
+@keyframes aibMsgIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.aib-rail-role {
+  display: block; font-size: 9px; font-weight: 700;
+  letter-spacing: .04em; text-transform: uppercase; margin-bottom: 3px;
+}
+.aib-rail-msg--assistant .aib-rail-role { color: rgba(242,101,34,0.5); }
+.aib-rail-msg--user .aib-rail-role { color: rgba(255,255,255,0.25); }
+.aib-rail-msg p {
+  font-size: 12px; line-height: 1.5; margin: 0;
+  color: rgba(255,255,255,0.55);
+}
+.aib-rail-msg--user p { color: rgba(255,255,255,0.7); }
+
+/* ── Context Bar ───────────────────────────────────────────────────── */
+.aib-context-bar {
+  display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+  padding: 8px 20px;
+  border-bottom: 1px solid rgba(255,255,255,0.03);
+  background: rgba(0,0,0,0.1);
+  animation: aibMsgIn .2s ease both;
+}
+.aib-ctx-item {
+  display: flex; align-items: center; gap: 5px;
+  font-size: 10.5px; color: rgba(255,255,255,0.35);
+}
+.aib-ctx-item svg { color: rgba(242,101,34,0.5); }
+.aib-ctx-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+}
+.aib-ctx-dot--low { background: rgba(255,255,255,0.15); }
+.aib-ctx-dot--medium { background: rgba(242,101,34,0.5); }
+.aib-ctx-dot--high { background: rgba(34,197,94,0.6); }
+.aib-ctx-clarity {
+  font-size: 9.5px; color: rgba(255,255,255,0.2);
+  padding: 2px 8px; border-radius: 4px;
+  background: rgba(255,255,255,0.03);
+}
+.aib-ctx-next {
+  margin-left: auto; display: flex; align-items: center; gap: 5px;
+  font-size: 10px; color: rgba(242,101,34,0.5); font-weight: 500;
+}
+.aib-ctx-next svg { flex-shrink: 0; }
+
+/* ── AI Browser Surface ────────────────────────────────────────────── */
+.aib-surface {
+  flex: 1; overflow-y: auto; min-width: 0;
+  padding: 24px;
+  scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.06) transparent;
+}
+.aib-surface-inner {
+  max-width: 520px; margin: 0 auto;
+  animation: aibSurfaceIn .3s cubic-bezier(.16,1,.3,1) both;
+}
+@keyframes aibSurfaceIn {
+  from { opacity: 0; transform: translateY(10px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* ── Cards ─────────────────────────────────────────────────────────── */
-.cviz-card {
-  padding: 14px 16px; border-radius: 12px;
-  background: rgba(255,255,255,0.02);
-  border: 1px solid rgba(255,255,255,0.05);
-  animation: cvizCardIn .3s cubic-bezier(.16,1,.3,1) both;
+/* ── View shared ───────────────────────────────────────────────────── */
+.aib-view {
+  animation: aibViewIn .3s cubic-bezier(.16,1,.3,1) both;
 }
-.cviz-card--main { border-color: rgba(242,101,34,0.08); }
-.cviz-card--draft { border-color: rgba(34,197,94,0.08); }
-.cviz-card--profiles { border-color: rgba(100,160,250,0.08); }
-@keyframes cvizCardIn {
-  from { opacity: 0; transform: translateY(6px) scale(0.98); }
-  to   { opacity: 1; transform: translateY(0) scale(1); }
+@keyframes aibViewIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
-.cviz-card:nth-child(2) { animation-delay: .1s; }
-.cviz-card:nth-child(3) { animation-delay: .2s; }
-
-.cviz-card-header {
-  display: flex; align-items: center; gap: 7px; margin-bottom: 10px;
-  font-size: 10px; font-weight: 600; color: rgba(255,255,255,0.3);
+.aib-section-label {
+  font-size: 10px; font-weight: 600; color: rgba(255,255,255,0.25);
   letter-spacing: .04em; text-transform: uppercase;
+  margin-bottom: 14px;
+  display: flex; align-items: center; gap: 7px;
 }
-.cviz-card-icon {
-  width: 6px; height: 6px; border-radius: 50%;
-  background: rgba(242,101,34,0.7);
+.aib-section-label::before {
+  content: ''; width: 5px; height: 5px; border-radius: 50%;
+  background: rgba(242,101,34,0.6);
   animation: aiDotPulse 2s ease-in-out infinite;
 }
-.cviz-card-icon--draft { background: rgba(34,197,94,0.7); }
-.cviz-card-icon--profiles { background: rgba(100,160,250,0.7); }
 
-/* ── Progress bar ──────────────────────────────────────────────────── */
-.cviz-progress {
-  height: 3px; border-radius: 2px;
-  background: rgba(255,255,255,0.04);
-  overflow: hidden; margin-bottom: 6px;
+/* ── Welcome View ──────────────────────────────────────────────────── */
+.aib-welcome {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  min-height: 280px; text-align: center; position: relative;
 }
-.cviz-progress-bar {
+.aib-welcome-glow {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  width: 200px; height: 200px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(242,101,34,0.04) 0%, transparent 70%);
+  pointer-events: none;
+}
+.aib-welcome-content { position: relative; z-index: 1; }
+.aib-welcome-icon {
+  width: 44px; height: 44px; border-radius: 50%; margin: 0 auto 16px;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(242,101,34,0.08); border: 1px solid rgba(242,101,34,0.12);
+  color: rgba(242,101,34,0.7);
+}
+.aib-welcome h3 {
+  font-size: 16px; font-weight: 700; color: rgba(255,255,255,0.6);
+  margin: 0 0 8px;
+}
+.aib-welcome p {
+  font-size: 12.5px; color: rgba(255,255,255,0.3); margin: 0 0 20px;
+  line-height: 1.5; max-width: 320px;
+}
+.aib-welcome-hints {
+  display: flex; flex-wrap: wrap; justify-content: center; gap: 8px;
+}
+.aib-welcome-hints span {
+  font-size: 11px; padding: 5px 12px; border-radius: 6px;
+  background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06);
+  color: rgba(255,255,255,0.35);
+}
+
+/* ── Understanding View ────────────────────────────────────────────── */
+.aib-understanding { display: flex; flex-direction: column; gap: 14px; }
+
+.aib-progress-wrap { display: flex; align-items: center; gap: 10px; }
+.aib-progress-track {
+  flex: 1; height: 3px; border-radius: 2px;
+  background: rgba(255,255,255,0.04); overflow: hidden;
+}
+.aib-progress-fill {
   height: 100%; border-radius: 2px;
   background: linear-gradient(90deg, rgba(242,101,34,0.5), rgba(242,101,34,0.8));
   transition: width .6s cubic-bezier(.16,1,.3,1);
 }
-.cviz-progress-label {
-  font-size: 9.5px; color: rgba(255,255,255,0.18); margin-bottom: 10px; display: block;
+.aib-progress-fill--building {
+  animation: aibPulse 1.2s ease-in-out infinite;
+}
+@keyframes aibPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+.aib-progress-text {
+  font-size: 9.5px; color: rgba(255,255,255,0.2); flex-shrink: 0;
 }
 
-/* ── Intent badge ──────────────────────────────────────────────────── */
-.cviz-intent { margin-bottom: 10px; }
-.cviz-intent-badge {
-  display: inline-flex; align-items: center; gap: 5px;
-  padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 600;
-  animation: cvizBadgeIn .25s cubic-bezier(.16,1,.3,1) both;
+.aib-intent-pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 5px 12px; border-radius: 7px; font-size: 11.5px; font-weight: 600;
+  width: fit-content;
+  animation: aibPillIn .25s cubic-bezier(.16,1,.3,1) both;
 }
-@keyframes cvizBadgeIn {
-  from { opacity: 0; transform: scale(0.85); }
+@keyframes aibPillIn {
+  from { opacity: 0; transform: scale(0.9); }
   to   { opacity: 1; transform: scale(1); }
 }
-.cviz-intent--need {
-  background: rgba(242,101,34,0.08); border: 1px solid rgba(242,101,34,0.15);
-  color: rgba(242,101,34,0.85);
+.aib-intent--need {
+  background: rgba(242,101,34,0.06); border: 1px solid rgba(242,101,34,0.12);
+  color: rgba(242,101,34,0.8);
 }
-.cviz-intent--offer {
-  background: rgba(34,197,94,0.08); border: 1px solid rgba(34,197,94,0.15);
-  color: rgba(34,197,94,0.85);
+.aib-intent--offer {
+  background: rgba(34,197,94,0.06); border: 1px solid rgba(34,197,94,0.12);
+  color: rgba(34,197,94,0.8);
 }
-.cviz-intent--urgency {
-  background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.15);
-  color: rgba(239,68,68,0.85);
+.aib-intent--urgency {
+  background: rgba(239,68,68,0.06); border: 1px solid rgba(239,68,68,0.12);
+  color: rgba(239,68,68,0.8);
 }
-.cviz-intent--discovery, .cviz-intent--hesitation {
-  background: rgba(100,160,250,0.06); border: 1px solid rgba(100,160,250,0.12);
-  color: rgba(100,160,250,0.8);
+.aib-intent--discovery, .aib-intent--hesitation {
+  background: rgba(100,160,250,0.05); border: 1px solid rgba(100,160,250,0.1);
+  color: rgba(100,160,250,0.75);
 }
 
-/* ── Keywords ──────────────────────────────────────────────────────── */
-.cviz-keywords {
-  display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 10px;
-}
-.cviz-keyword {
-  font-size: 10.5px; font-weight: 500; padding: 3px 9px; border-radius: 5px;
+.aib-keywords { display: flex; flex-wrap: wrap; gap: 6px; }
+.aib-kw {
+  font-size: 11px; font-weight: 500; padding: 3px 10px; border-radius: 5px;
   background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06);
-  color: rgba(255,255,255,0.45);
-  animation: cvizBadgeIn .2s cubic-bezier(.16,1,.3,1) both;
+  color: rgba(255,255,255,0.4);
+  animation: aibPillIn .2s cubic-bezier(.16,1,.3,1) both;
 }
-.cviz-keyword:nth-child(2) { animation-delay: .05s; }
-.cviz-keyword:nth-child(3) { animation-delay: .1s; }
-.cviz-keyword:nth-child(4) { animation-delay: .15s; }
-.cviz-keyword:nth-child(5) { animation-delay: .2s; }
+.aib-kw:nth-child(2) { animation-delay: .04s; }
+.aib-kw:nth-child(3) { animation-delay: .08s; }
+.aib-kw:nth-child(4) { animation-delay: .12s; }
 
-/* ── Territory ─────────────────────────────────────────────────────── */
-.cviz-territory {
-  display: flex; align-items: center; gap: 6px; margin-bottom: 8px;
-  font-size: 11px; color: rgba(255,255,255,0.4);
+.aib-territory {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 11.5px; color: rgba(255,255,255,0.4);
 }
-.cviz-territory svg { color: rgba(242,101,34,0.6); flex-shrink: 0; }
+.aib-territory svg { color: rgba(242,101,34,0.5); flex-shrink: 0; }
 
-/* ── Urgency ───────────────────────────────────────────────────────── */
-.cviz-urgency {
+.aib-urgency-indicator {
   display: flex; align-items: center; gap: 7px;
   font-size: 10.5px; color: rgba(239,68,68,0.7);
 }
-.cviz-urgency svg { flex-shrink: 0; }
-.cviz-urgency-bar {
+.aib-urgency-indicator svg { flex-shrink: 0; }
+.aib-urgency-bar {
   flex: 1; max-width: 80px; height: 3px; border-radius: 2px;
   background: rgba(239,68,68,0.1); overflow: hidden;
 }
-.cviz-urgency-bar > div {
+.aib-urgency-bar > div {
   height: 100%; border-radius: 2px;
-  background: rgba(239,68,68,0.6);
-  transition: width .4s;
+  background: rgba(239,68,68,0.6); transition: width .4s;
 }
 
-/* ── Draft preview ─────────────────────────────────────────────────── */
-.cviz-draft-title {
-  font-size: 14px; font-weight: 700; color: rgba(255,255,255,0.6);
-  margin: 0 0 6px; line-height: 1.4;
-}
-.cviz-draft-summary {
-  font-size: 12px; color: rgba(255,255,255,0.35); margin: 0 0 10px; line-height: 1.5;
-}
-.cviz-draft-footer {
-  display: flex; align-items: center; gap: 5px;
-  font-size: 9.5px; color: rgba(255,255,255,0.15);
-}
-
-/* ── Profile previews ──────────────────────────────────────────────── */
-.cviz-profiles {
-  display: flex; flex-direction: column; gap: 6px;
-}
-.cviz-profile {
-  display: flex; align-items: center; gap: 10px;
-  padding: 8px 10px; border-radius: 9px;
+/* ── Matching View ─────────────────────────────────────────────────── */
+.aib-matching { display: flex; flex-direction: column; gap: 12px; }
+.aib-profiles-list { display: flex; flex-direction: column; gap: 8px; }
+.aib-profile-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 12px; border-radius: 10px;
   background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.04);
-  animation: cvizCardIn .2s cubic-bezier(.16,1,.3,1) both;
+  animation: aibViewIn .25s cubic-bezier(.16,1,.3,1) both;
   transition: background .12s;
 }
-.cviz-profile:nth-child(2) { animation-delay: .07s; }
-.cviz-profile:nth-child(3) { animation-delay: .14s; }
-.cviz-profile:hover { background: rgba(255,255,255,0.04); }
-.cviz-profile-avatar {
-  width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0;
+.aib-profile-row:nth-child(2) { animation-delay: .06s; }
+.aib-profile-row:nth-child(3) { animation-delay: .12s; }
+.aib-profile-row:nth-child(4) { animation-delay: .18s; }
+.aib-profile-row:hover { background: rgba(255,255,255,0.04); }
+.aib-profile-avatar {
+  width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
-  font-size: 12px; font-weight: 700; color: #fff;
+  font-size: 13px; font-weight: 700; color: #fff;
 }
-.cviz-profile-info { flex: 1; min-width: 0; }
-.cviz-profile-name {
-  display: block; font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.6);
+.aib-profile-body { flex: 1; min-width: 0; }
+.aib-profile-name {
+  display: block; font-size: 12.5px; font-weight: 600; color: rgba(255,255,255,0.6);
 }
-.cviz-profile-cap {
-  display: block; font-size: 10.5px; color: rgba(255,255,255,0.28);
+.aib-profile-cap {
+  display: block; font-size: 11px; color: rgba(255,255,255,0.28);
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-.cviz-profile-city {
-  display: flex; align-items: center; gap: 3px;
-  font-size: 10px; color: rgba(255,255,255,0.2); flex-shrink: 0;
+.aib-profile-meta {
+  display: flex; gap: 10px; margin-top: 3px;
+  font-size: 10px; color: rgba(255,255,255,0.2);
 }
-.cviz-profile-city svg { color: rgba(242,101,34,0.4); }
-.cviz-profiles-more {
-  font-size: 10px; color: rgba(255,255,255,0.2); margin-top: 4px;
-  text-align: center; display: block;
+.aib-profile-meta span { display: flex; align-items: center; gap: 3px; }
+.aib-profile-meta svg { color: rgba(242,101,34,0.4); }
+.aib-profile-status {
+  font-size: 9.5px; font-weight: 600; padding: 3px 8px; border-radius: 4px;
+  flex-shrink: 0;
+}
+.aib-profile-status--disponible {
+  background: rgba(34,197,94,0.08); color: rgba(34,197,94,0.7);
+}
+.aib-profile-status--bientot {
+  background: rgba(200,168,90,0.08); color: rgba(200,168,90,0.7);
 }
 
-/* ── Orientation line ──────────────────────────────────────────────── */
-.cviz-orientation {
-  display: flex; align-items: center; gap: 7px;
-  padding: 10px 14px; border-radius: 9px;
-  background: rgba(242,101,34,0.04); border: 1px solid rgba(242,101,34,0.08);
-  font-size: 11.5px; font-weight: 500; color: rgba(242,101,34,0.7);
-  animation: cvizCardIn .25s cubic-bezier(.16,1,.3,1) both;
-  animation-delay: .25s;
+/* ── Draft Card (Situation + Presence) ─────────────────────────────── */
+.aib-draft-card {
+  padding: 16px 18px; border-radius: 12px;
+  background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05);
+  animation: aibViewIn .3s cubic-bezier(.16,1,.3,1) both;
 }
-.cviz-orientation svg { flex-shrink: 0; }
-
-/* ── Turn counter ──────────────────────────────────────────────────── */
-.cviz-turns {
+.aib-draft-card--presence { border-color: rgba(34,197,94,0.08); }
+.aib-draft-title {
+  font-size: 14px; font-weight: 700; color: rgba(255,255,255,0.6);
+  margin: 0 0 8px; line-height: 1.4;
+}
+.aib-draft-summary {
+  font-size: 12px; color: rgba(255,255,255,0.35); margin: 0 0 12px; line-height: 1.5;
+}
+.aib-draft-meta {
+  display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px;
+}
+.aib-draft-tag {
+  display: flex; align-items: center; gap: 4px;
+  font-size: 10.5px; color: rgba(255,255,255,0.35);
+  padding: 3px 8px; border-radius: 5px;
+  background: rgba(255,255,255,0.03);
+}
+.aib-draft-tag svg { color: rgba(242,101,34,0.5); }
+.aib-draft-tag--urgency { color: rgba(239,68,68,0.7); }
+.aib-draft-tag--urgency svg { color: rgba(239,68,68,0.6); }
+.aib-draft-keywords {
+  display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px;
+}
+.aib-draft-keywords span {
+  font-size: 10.5px; padding: 3px 9px; border-radius: 5px;
+  background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05);
+  color: rgba(255,255,255,0.35);
+}
+.aib-draft-footer {
   display: flex; align-items: center; gap: 5px;
   font-size: 9.5px; color: rgba(255,255,255,0.15);
-  padding-top: 4px;
+  padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.03);
 }
 
+/* ── Presence header ───────────────────────────────────────────────── */
+.aib-presence-header {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 10px; color: rgba(34,197,94,0.5); font-weight: 600;
+  margin-bottom: 12px;
+}
+.aib-presence-caps {
+  list-style: none; padding: 0; margin: 0 0 12px;
+  display: flex; flex-direction: column; gap: 6px;
+}
+.aib-presence-caps li {
+  display: flex; align-items: center; gap: 7px;
+  font-size: 12px; color: rgba(255,255,255,0.45);
+}
+.aib-presence-caps li svg { color: rgba(34,197,94,0.5); flex-shrink: 0; }
+
+/* ── Feed View ─────────────────────────────────────────────────────── */
+.aib-feed { display: flex; flex-direction: column; gap: 12px; }
+.aib-feed-list { display: flex; flex-direction: column; gap: 6px; }
+.aib-feed-row {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 9px 11px; border-radius: 8px;
+  background: rgba(255,255,255,0.015);
+  animation: aibViewIn .2s cubic-bezier(.16,1,.3,1) both;
+  transition: background .12s;
+}
+.aib-feed-row:hover { background: rgba(255,255,255,0.035); }
+.aib-feed-dot {
+  width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 4px;
+}
+.aib-feed-content { flex: 1; min-width: 0; }
+.aib-feed-title {
+  display: block; font-size: 12px; font-weight: 500; color: rgba(255,255,255,0.5);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.aib-feed-meta {
+  display: block; font-size: 10px; color: rgba(255,255,255,0.2); margin-top: 2px;
+}
+
+/* ── Memory Resume View ────────────────────────────────────────────── */
+.aib-memory { display: flex; flex-direction: column; gap: 14px; }
+.aib-memory-card {
+  padding: 16px 18px; border-radius: 12px;
+  background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05);
+}
+.aib-memory-card h4 {
+  font-size: 15px; font-weight: 700; color: rgba(255,255,255,0.6);
+  margin: 0 0 10px;
+}
+.aib-memory-text {
+  font-size: 12.5px; color: rgba(255,255,255,0.35); margin: 0 0 12px;
+  line-height: 1.5;
+}
+.aib-memory-text strong { color: rgba(255,255,255,0.5); }
+.aib-memory-action {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 11.5px; color: rgba(242,101,34,0.6); font-weight: 500;
+  margin-bottom: 12px;
+}
+.aib-memory-footer {
+  display: flex; align-items: center; gap: 5px;
+  font-size: 9.5px; color: rgba(255,255,255,0.15);
+  padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.03);
+}
+
+/* ── Action Banner ─────────────────────────────────────────────────── */
+.aib-action-banner {
+  margin-top: 14px; padding: 12px 14px; border-radius: 10px;
+  background: rgba(242,101,34,0.04); border: 1px solid rgba(242,101,34,0.08);
+  display: flex; align-items: center; gap: 12px;
+}
+.aib-action-banner p {
+  flex: 1; font-size: 11.5px; color: rgba(255,255,255,0.4); margin: 0;
+}
+.aib-action-banner button {
+  font-size: 11px; font-weight: 600; padding: 7px 14px; border-radius: 7px;
+  background: rgba(242,101,34,0.9); color: #fff; border: none; cursor: pointer;
+  transition: background .15s, transform .1s; flex-shrink: 0;
+}
+.aib-action-banner button:hover { background: #e05a1c; transform: translateY(-1px); }
+
 /* ── Mobile ────────────────────────────────────────────────────────── */
-@media (max-width: 640px) {
-  .ai-canvas { padding: 16px 14px; }
-  .ai-canvas-prompt { font-size: 15px; }
+@media (max-width: 768px) {
+  .ai-workspace { flex-direction: column; }
+  .aib-rail {
+    width: 100%; max-height: 140px; border-right: none;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+  .aib-surface { padding: 16px; }
+  .aib-context-bar { padding: 7px 14px; gap: 10px; }
   .ai-voice-bubble { padding: 8px 12px 12px; }
-  .cviz-card { padding: 12px 13px; }
-  .cviz-draft-title { font-size: 13px; }
 }

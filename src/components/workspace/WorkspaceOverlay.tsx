@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { X, Mic, MicOff, Send, Loader, Volume2, VolumeX, MapPin, Star, Check, Sparkles } from 'lucide-react';
+import { X, Mic, MicOff, Send, Loader, Volume2, VolumeX } from 'lucide-react';
 import { useUserMode } from '../../hooks/useUserMode';
 import { useVisitorProfile } from '../../hooks/useVisitorProfile';
 import { useKnownUserContext } from '../../hooks/useKnownUserContext';
@@ -10,11 +10,14 @@ import {
   generateKnownUserGreeting,
   buildContextHintsFromConversation,
 } from '../../services/welcome/orchestrator';
-import type { ContextHint } from '../../services/welcome/types';
-import { MOCK_PROFILES, MOCK_FEED } from '../../data/mockOccitanie';
+// buildContextHintsFromConversation types from welcome/types
+import { MOCK_PROFILES } from '../../data/mockOccitanie';
 import type { MockProfile } from '../../data/mockOccitanie';
-import ConversationViz from './ConversationViz';
-import type { UnderstandingState } from './ConversationViz';
+import ConversationRail from './ConversationRail';
+import AIBrowserSurface from './AIBrowserSurface';
+import ContextBar from './ContextBar';
+import type { AIBrowserState, AIView, ContextSummary, PresenceDraft, SituationDraft, SuggestedAction } from './types';
+import { intentToLabel, clarityFromConfidence } from './types';
 
 // ── Supabase edge function endpoints ──────────────────────────────────
 const SUPABASE_URL  = import.meta.env.VITE_SUPABASE_URL as string;
@@ -38,7 +41,6 @@ interface Props {
   onJoinNetwork: () => void;
 }
 
-type AIPhase = 'greeting' | 'listening' | 'analyzing' | 'resolved';
 type VoiceState = 'idle' | 'listening' | 'user_speaking' | 'processing' | 'speaking' | 'paused';
 
 interface Turn {
@@ -46,6 +48,8 @@ interface Turn {
   content: string;
   id: string;
 }
+
+// ── Helpers ───────────────────────────────────────────────────────────
 
 const STOP_WORDS = new Set(['je', 'tu', 'il', 'nous', 'vous', 'ils', 'un', 'une', 'le', 'la', 'les', 'de', 'du', 'des', 'à', 'au', 'aux', 'en', 'et', 'ou', 'mais', 'donc', 'car', 'que', 'qui', 'quoi', 'mon', 'ma', 'mes', 'son', 'sa', 'ses', 'ce', 'cette', 'ces', 'pour', 'par', 'sur', 'dans', 'avec', 'est', 'suis', 'ai', 'pas', 'plus', 'très', 'bien', 'fait', 'être', 'avoir', 'faire']);
 
@@ -67,13 +71,72 @@ function matchProfiles(text: string): MockProfile[] {
   return MOCK_PROFILES.slice(0, 4);
 }
 
-function generatePresenceCard(text: string) {
+function generatePresenceDraft(text: string): PresenceDraft {
   const lower = text.toLowerCase();
-  if (/cuisine|cook|pâtiss/.test(lower)) return { titre: 'Passionné de cuisine', caps: ['Cours de cuisine', 'Pâtisserie créative', 'Conseil nutrition'], tags: ['cuisine', 'pâtisserie', 'fait-maison'] };
-  if (/jardin|plant|potager/.test(lower)) return { titre: 'Main verte', caps: ['Conseil jardinage urbain', 'Entretien de jardin', 'Échange de plants'], tags: ['jardinage', 'permaculture', 'potager'] };
-  if (/inform|code|web|développ/.test(lower)) return { titre: 'Expert numérique', caps: ['Dépannage informatique', 'Formation outils numériques', 'Création de sites'], tags: ['informatique', 'web', 'formation'] };
-  return { titre: 'Contributeur polyvalent', caps: ['Partage de savoir-faire', 'Entraide ponctuelle', 'Échange de services'], tags: ['polyvalence', 'entraide', 'partage'] };
+  if (/cuisine|cook|pâtiss/.test(lower)) return { title: 'Passionne de cuisine', capabilities: ['Cours de cuisine', 'Patisserie creative', 'Conseil nutrition'], tags: ['cuisine', 'patisserie', 'fait-maison'] };
+  if (/jardin|plant|potager/.test(lower)) return { title: 'Main verte', capabilities: ['Conseil jardinage urbain', 'Entretien de jardin', 'Echange de plants'], tags: ['jardinage', 'permaculture', 'potager'] };
+  if (/inform|code|web|développ/.test(lower)) return { title: 'Expert numerique', capabilities: ['Depannage informatique', 'Formation outils numeriques', 'Creation de sites'], tags: ['informatique', 'web', 'formation'] };
+  if (/plomb|électr|bricol|travaux/.test(lower)) return { title: 'Artisan de confiance', capabilities: ['Depannage plomberie', 'Petits travaux', 'Conseil renovation'], tags: ['plomberie', 'bricolage', 'depannage'] };
+  return { title: 'Contributeur polyvalent', capabilities: ['Partage de savoir-faire', 'Entraide ponctuelle', 'Echange de services'], tags: ['polyvalence', 'entraide', 'partage'] };
 }
+
+function computeNextStep(intent: string | null, turnCount: number, isConnected: boolean): string {
+  if (turnCount === 0) return 'En attente';
+  if (!intent) return 'Ecoute active';
+  switch (intent) {
+    case 'need':
+    case 'urgency':
+      return turnCount > 1 ? 'Recherche de profils' : 'Clarification de la zone';
+    case 'offer':
+      return 'Construction de votre fiche';
+    case 'discovery':
+      return 'Exploration du reseau';
+    case 'hesitation':
+      return 'Accompagnement en douceur';
+    default:
+      return isConnected ? 'A votre service' : 'Comprehension en cours';
+  }
+}
+
+function computeSuggestedAction(intent: string | null, turnCount: number, hasProfiles: boolean): SuggestedAction | null {
+  if (turnCount === 0) return null;
+  if (intent === 'offer') return { type: 'build_presence' };
+  if (intent === 'need' || intent === 'urgency') {
+    if (hasProfiles) return { type: 'show_profiles', count: 4 };
+    return { type: 'ask', question: 'Zone geographique ?' };
+  }
+  if (intent === 'discovery') return { type: 'explore_feed' };
+  return null;
+}
+
+// ── View selection logic ──────────────────────────────────────────────
+
+function selectView(
+  intent: string | null,
+  turnCount: number,
+  hasProfiles: boolean,
+  hasPresence: boolean,
+  hasSituation: boolean,
+  isConnected: boolean,
+  knownUser: boolean,
+  isBuilding: boolean,
+): AIView {
+  if (turnCount === 0) {
+    if (isConnected && knownUser) return 'memory-resume';
+    return 'welcome';
+  }
+  if (isBuilding) return 'understanding';
+  if (hasPresence) return 'presence-preview';
+  if (hasSituation && hasProfiles) return 'matching';
+  if (hasSituation) return 'situation-preview';
+  if (hasProfiles) return 'matching';
+  if (intent === 'discovery' || intent === 'hesitation') return 'feed-explore';
+  return 'understanding';
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// MAIN COMPONENT
+// ══════════════════════════════════════════════════════════════════════════
 
 export default function WorkspaceOverlay({ onClose, onJoinNetwork }: Props) {
   const { isConnected } = useUserMode();
@@ -81,29 +144,28 @@ export default function WorkspaceOverlay({ onClose, onJoinNetwork }: Props) {
   const knownUser = useKnownUserContext();
   const { computeFromText } = useInitialHypotheses();
 
-  // ── AI Canvas state ─────────────────────────────────────────────────
-  const [phase, setPhase] = useState<AIPhase>('greeting');
-  const [, setGreeting] = useState<any>(null);
-  const [, setContextHints] = useState<ContextHint[]>([]);
-  const [results, setResults] = useState<MockProfile[]>([]);
-  const [presenceCard, setPresenceCard] = useState<{ titre: string; caps: string[]; tags: string[] } | null>(null);
-  const [feedVisible, setFeedVisible] = useState(false);
-  const [latestAiMessage, setLatestAiMessage] = useState('');
-  const [understanding, setUnderstanding] = useState<UnderstandingState>({
-    phase: 'idle',
-    intent: null,
-    intentConfidence: 0,
-    keywords: [],
-    territory: null,
-    urgency: 0,
-    isOffer: false,
-    turnCount: 0,
+  // ── AI Browser state ────────────────────────────────────────────────
+  const [browserState, setBrowserState] = useState<AIBrowserState>({
+    activeView: (isConnected && knownUser) ? 'memory-resume' : 'welcome',
+    contextSummary: {
+      intent: null,
+      intentLabel: '',
+      territory: null,
+      keywords: [],
+      urgency: 0,
+      clarityLevel: 'low',
+      nextStep: 'En attente',
+    },
     matchedProfiles: [],
-    draftSummary: null,
-    draftTitle: null,
+    presenceDraft: null,
+    situationDraft: null,
+    suggestedAction: null,
+    confidence: 0,
+    turnCount: 0,
   });
+  const [isBuilding, setIsBuilding] = useState(false);
 
-  // ── Voice panel state (from V192 VoicePresence) ─────────────────────
+  // ── Voice panel state ───────────────────────────────────────────────
   const [voiceState, setVoiceState] = useState<VoiceState>('idle');
   const [history, setHistory] = useState<Turn[]>([]);
   const [textInput, setTextInput] = useState('');
@@ -125,11 +187,10 @@ export default function WorkspaceOverlay({ onClose, onJoinNetwork }: Props) {
   const processingRef = useRef(false);
   const historyRef = useRef<Turn[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
-  const canvasRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => { historyRef.current = history; }, [history]);
 
-  // Animate waveform tick
+  // Animate waveform
   useEffect(() => {
     let id: number;
     function frame() { setTick(t => t + 1); id = requestAnimationFrame(frame); }
@@ -150,7 +211,6 @@ export default function WorkspaceOverlay({ onClose, onJoinNetwork }: Props) {
   // ── Voice helpers ───────────────────────────────────────────────────
   const addTurn = useCallback((role: 'user' | 'assistant', content: string) => {
     setHistory(h => [...h, { role, content, id: `${role}_${Date.now()}_${Math.random()}` }]);
-    if (role === 'assistant') setLatestAiMessage(content);
   }, []);
 
   const playTTS = useCallback(async (text: string): Promise<void> => {
@@ -179,37 +239,129 @@ export default function WorkspaceOverlay({ onClose, onJoinNetwork }: Props) {
     } catch {}
   }, [muted]);
 
-  const sendTranscript = useCallback(async (text: string) => {
-    if (!text.trim() || processingRef.current) return;
-    processingRef.current = true;
-    setVoiceState('processing');
+  // ── AI Browser processing ──────────────────────────────────────────
+  const processUserInput = useCallback((text: string) => {
+    recordTextInput(text);
+    recordInteraction();
+    setIsBuilding(true);
 
-    // Also process for AI canvas
-    processUserInput(text.trim());
+    const hypotheses = computeFromText(text, visitorProfile);
+    const kws = extractKeywords(text);
+    const territoryMatch = text.match(/(?:à|de|près de|sur|zone|secteur|quartier)\s+([A-ZÀ-Ú][a-zà-ü]+(?:[\s-][A-ZÀ-Ú]?[a-zà-ü]+)*)/);
+    const territory = territoryMatch?.[1] || hypotheses.territorialNeed || null;
 
-    addTurn('user', text.trim());
+    buildContextHintsFromConversation(
+      [...(visitorProfile?.signals.textInputs || []), text],
+      hypotheses,
+      visitorProfile
+    );
+
+    const newTurnCount = browserState.turnCount + 1;
+    const intent = hypotheses.probableIntent;
+    const confidence = hypotheses.intentConfidence;
+
+    // Immediately update understanding view
+    const contextSummary: ContextSummary = {
+      intent,
+      intentLabel: intentToLabel(intent),
+      territory,
+      keywords: [...new Set([...browserState.contextSummary.keywords, ...kws])].slice(-8),
+      urgency: hypotheses.urgencyLevel,
+      clarityLevel: clarityFromConfidence(confidence),
+      nextStep: computeNextStep(intent, newTurnCount, isConnected),
+    };
+
+    setBrowserState(prev => ({
+      ...prev,
+      activeView: 'understanding',
+      contextSummary,
+      confidence,
+      turnCount: newTurnCount,
+      matchedProfiles: [],
+      presenceDraft: null,
+      situationDraft: null,
+      suggestedAction: null,
+    }));
+
+    // After delay, resolve to final view
+    setTimeout(() => {
+      let profiles: MockProfile[] = [];
+      let presenceDraft: PresenceDraft | null = null;
+      let situationDraft: SituationDraft | null = null;
+
+      if (intent === 'offer') {
+        presenceDraft = generatePresenceDraft(text);
+        if (territory) presenceDraft.territory = territory;
+      } else if (intent === 'discovery' || intent === 'hesitation') {
+        // No specific draft
+      } else {
+        profiles = matchProfiles(text);
+        situationDraft = {
+          title: `Recherche : ${kws.slice(0, 3).join(', ') || text.slice(0, 40)}`,
+          summary: territory ? `Zone ${territory}` : 'Zone a preciser',
+          territory: territory || undefined,
+          urgency: hypotheses.urgencyLevel,
+          keywords: kws,
+        };
+      }
+
+      const hasProfiles = profiles.length > 0;
+      const hasPresence = presenceDraft !== null;
+      const hasSituation = situationDraft !== null;
+
+      const activeView = selectView(
+        intent, newTurnCount, hasProfiles, hasPresence, hasSituation,
+        isConnected, !!knownUser, false
+      );
+
+      const suggestedAction = computeSuggestedAction(intent, newTurnCount, hasProfiles);
+
+      setBrowserState(prev => ({
+        ...prev,
+        activeView,
+        matchedProfiles: profiles,
+        presenceDraft,
+        situationDraft,
+        suggestedAction,
+      }));
+
+      setIsBuilding(false);
+    }, 1200);
+  }, [computeFromText, visitorProfile, recordTextInput, recordInteraction, browserState.turnCount, browserState.contextSummary.keywords, isConnected, knownUser]);
+
+  // ── Send transcript (voice or text) ────────────────────────────────
+  const sendToAPI = useCallback(async (text: string) => {
+    addTurn('user', text);
+    processUserInput(text);
+
     try {
       const res = await fetch(CHAT_URL, {
         method: 'POST',
         headers: { ...API_HEADERS, 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          message: text.trim(),
+          message: text,
           history: historyRef.current.slice(-8).map(t => ({ role: t.role, content: t.content })),
         }),
         signal: AbortSignal.timeout(15000),
       });
       if (!res.ok) throw new Error(`http_${res.status}`);
       const data = await res.json() as { reply?: string };
-      const reply = data.reply || 'Je suis là.';
+      const reply = data.reply || 'Je suis la.';
       addTurn('assistant', reply);
       setVoiceState('speaking');
       await playTTS(reply);
     } catch {
-      addTurn('assistant', 'Je suis là. Dis-moi.');
-    } finally {
-      processingRef.current = false;
+      addTurn('assistant', 'Je suis la. Dis-moi.');
     }
-  }, [addTurn, playTTS]);
+  }, [addTurn, playTTS, processUserInput]);
+
+  const sendTranscript = useCallback(async (text: string) => {
+    if (!text.trim() || processingRef.current) return;
+    processingRef.current = true;
+    setVoiceState('processing');
+    await sendToAPI(text.trim());
+    processingRef.current = false;
+  }, [sendToAPI]);
 
   const beginListening = useCallback(() => {
     if (processingRef.current) return;
@@ -312,34 +464,27 @@ export default function WorkspaceOverlay({ onClose, onJoinNetwork }: Props) {
         setMicBlocked(true);
         setVoiceState('paused');
         setTimeout(() => inputRef.current?.focus(), 200);
-        return;
+      } else {
+        streamRef.current = stream;
+        startMonitoring();
       }
-
-      streamRef.current = stream;
-      startMonitoring();
 
       // Generate greeting
       let greetText: string;
       if (isConnected && knownUser) {
         const g = generateKnownUserGreeting(knownUser);
-        setGreeting(g);
-        setContextHints(g.contextHints);
         greetText = g.message;
       } else if (visitorProfile) {
         const g = generateVisitorGreeting(visitorProfile);
-        setGreeting(g);
-        setContextHints(g.contextHints);
         greetText = g.message;
       } else {
-        greetText = 'Bonjour. Je suis RENOVEC. Parlez-moi de votre situation, je peux déjà comprendre et vous orienter.';
+        greetText = 'Bonjour. Je suis RENOVEC. Parlez-moi de votre situation, je peux deja comprendre et vous orienter.';
       }
 
-      setLatestAiMessage(greetText);
       addTurn('assistant', greetText);
       setVoiceState('speaking');
-      setPhase('listening');
       await playTTS(greetText);
-      beginListening();
+      if (streamRef.current) beginListening();
     })();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -368,82 +513,7 @@ export default function WorkspaceOverlay({ onClose, onJoinNetwork }: Props) {
     });
   }, []);
 
-  // ── AI Canvas processing ────────────────────────────────────────────
-  const processUserInput = useCallback((text: string) => {
-    recordTextInput(text);
-    recordInteraction();
-    setPhase('analyzing');
-    setResults([]);
-    setPresenceCard(null);
-    setFeedVisible(false);
-
-    const hypotheses = computeFromText(text, visitorProfile);
-
-    const newHints = buildContextHintsFromConversation(
-      [...(visitorProfile?.signals.textInputs || []), text],
-      hypotheses,
-      visitorProfile
-    );
-    setContextHints(prev => {
-      const existing = prev.map(h => h.label);
-      const unique = newHints.filter(h => !existing.includes(h.label));
-      return [...prev, ...unique];
-    });
-
-    // Extract keywords from text
-    const kws = extractKeywords(text);
-    // Extract territory mention
-    const territoryMatch = text.match(/(?:à|de|près de|sur|zone|secteur|quartier)\s+([A-ZÀ-Ú][a-zà-ü]+(?:[\s-][A-ZÀ-Ú]?[a-zà-ü]+)*)/);
-    const territory = territoryMatch?.[1] || hypotheses.territorialNeed || null;
-
-    // Phase 1: immediately show "building" understanding
-    setUnderstanding(prev => ({
-      ...prev,
-      phase: 'building',
-      intent: hypotheses.probableIntent,
-      intentConfidence: hypotheses.intentConfidence,
-      keywords: [...new Set([...prev.keywords, ...kws])].slice(-8),
-      territory,
-      urgency: hypotheses.urgencyLevel,
-      isOffer: hypotheses.probableIntent === 'offer',
-      turnCount: prev.turnCount + 1,
-      matchedProfiles: [],
-      draftSummary: null,
-      draftTitle: null,
-    }));
-
-    // Phase 2: after delay, resolve with profiles/drafts
-    setTimeout(() => {
-      let profiles: MockProfile[] = [];
-      let draftTitle: string | null = null;
-      let draftSummary: string | null = null;
-
-      if (hypotheses.probableIntent === 'offer') {
-        const card = generatePresenceCard(text);
-        setPresenceCard(card);
-        draftTitle = card.titre;
-        draftSummary = card.caps.join(' · ');
-      } else if (hypotheses.probableIntent === 'discovery' || hypotheses.probableIntent === 'hesitation') {
-        setFeedVisible(true);
-      } else {
-        profiles = matchProfiles(text);
-        setResults(profiles);
-        draftTitle = `Recherche : ${kws.slice(0, 3).join(', ') || text.slice(0, 40)}`;
-        draftSummary = territory ? `Zone ${territory}` : null;
-      }
-
-      setUnderstanding(prev => ({
-        ...prev,
-        phase: 'complete',
-        matchedProfiles: profiles,
-        draftTitle,
-        draftSummary,
-      }));
-      setPhase('resolved');
-    }, 1200);
-  }, [computeFromText, visitorProfile, recordTextInput, recordInteraction]);
-
-  // Text submit fallback
+  // Text submit
   const handleTextSubmit = useCallback(async () => {
     const msg = textInput.trim();
     if (!msg || thinking) return;
@@ -454,33 +524,12 @@ export default function WorkspaceOverlay({ onClose, onJoinNetwork }: Props) {
     try { recognitionRef.current?.abort(); } catch {};
     recognitionRef.current = null;
 
-    processUserInput(msg);
-    addTurn('user', msg);
+    await sendToAPI(msg);
+    setThinking(false);
+    if (streamRef.current) beginListening();
+  }, [textInput, thinking, sendToAPI, beginListening]);
 
-    try {
-      const res = await fetch(CHAT_URL, {
-        method: 'POST',
-        headers: { ...API_HEADERS, 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          message: msg,
-          history: historyRef.current.slice(-8).map(t => ({ role: t.role, content: t.content })),
-        }),
-        signal: AbortSignal.timeout(15000),
-      });
-      const data = await res.json();
-      const reply = (data.reply as string) || 'Je suis là.';
-      addTurn('assistant', reply);
-      setVoiceState('speaking');
-      await playTTS(reply);
-    } catch {
-      addTurn('assistant', 'Dis-moi.');
-    } finally {
-      setThinking(false);
-      if (streamRef.current) beginListening();
-    }
-  }, [textInput, thinking, addTurn, playTTS, beginListening, processUserInput]);
-
-  // Amplitude → visual voice state
+  // Amplitude visual
   useEffect(() => {
     if (voiceState === 'listening' && amplitude > SILENCE_THRESHOLD * 2.5) {
       setVoiceState('user_speaking');
@@ -507,6 +556,10 @@ export default function WorkspaceOverlay({ onClose, onJoinNetwork }: Props) {
     return 3;
   });
 
+  // ══════════════════════════════════════════════════════════════════════
+  // RENDER
+  // ══════════════════════════════════════════════════════════════════════
+
   return (
     <div className="ai-page">
       {/* Fixed header */}
@@ -523,129 +576,27 @@ export default function WorkspaceOverlay({ onClose, onJoinNetwork }: Props) {
         </button>
       </header>
 
-      {/* AI status / latest message */}
-      {latestAiMessage && (
-        <div className="ai-status-bar">
-          <div className="ai-status-dot" />
-          <span className="ai-status-text">{latestAiMessage}</span>
-        </div>
+      {/* Context bar */}
+      {browserState.turnCount > 0 && (
+        <ContextBar context={browserState.contextSummary} />
       )}
 
-      {/* Main canvas */}
-      <div className="ai-canvas" ref={canvasRef}>
-        {/* Progressive understanding visualization */}
-        {understanding.phase !== 'idle' && (
-          <ConversationViz state={understanding} />
-        )}
+      {/* Main workspace: Rail + Browser */}
+      <div className="ai-workspace">
+        {/* Conversation rail */}
+        <ConversationRail history={history} />
 
-        {/* Greeting / waiting */}
-        {phase === 'greeting' && understanding.phase === 'idle' && (
-          <div className="ai-canvas-empty">
-            <div className="ai-loader"><span /><span /><span /></div>
-          </div>
-        )}
-
-        {phase === 'listening' && understanding.phase === 'idle' && (
-          <div className="ai-canvas-empty">
-            <p className="ai-canvas-prompt">
-              {isConnected && knownUser
-                ? `${knownUser.prenom}, qu'est-ce qui vous amène ?`
-                : 'Décrivez votre situation librement.'}
-            </p>
-            <p className="ai-canvas-sub">Pas de formulaire. Juste du langage libre.</p>
-          </div>
-        )}
-
-        {phase === 'analyzing' && understanding.phase === 'idle' && (
-          <div className="ai-canvas-loading">
-            <div className="ai-loader"><span /><span /><span /></div>
-          </div>
-        )}
-
-        {/* Situation / Urgency results */}
-        {phase === 'resolved' && results.length > 0 && (
-          <div className="ai-results">
-            <p className="ai-results-title">Profils identifiés dans votre zone</p>
-            <div className="ai-results-grid">
-              {results.map(p => (
-                <div key={p.id} className="ai-profile-card">
-                  <div className="ai-profile-avatar" style={{ background: p.color }}>
-                    {p.prenom[0]}
-                  </div>
-                  <div className="ai-profile-info">
-                    <span className="ai-profile-name">{p.prenom}</span>
-                    <span className="ai-profile-cap">{p.capacite}</span>
-                    <div className="ai-profile-meta">
-                      <MapPin size={9} /> {p.ville}
-                      <Star size={9} /> {p.pts} pts
-                    </div>
-                    <div className="ai-profile-tags">
-                      {p.tags.slice(0, 3).map(t => <span key={t}>{t}</span>)}
-                    </div>
-                  </div>
-                  <div className="ai-profile-badge" data-status={p.disponibilite}>
-                    {p.disponibilite === 'disponible' ? 'Disponible' : 'Bientôt'}
-                  </div>
-                </div>
-              ))}
-            </div>
-            {!isConnected && (
-              <div className="ai-join-banner">
-                <p>Rejoignez le réseau pour activer la mise en relation.</p>
-                <button onClick={onJoinNetwork}>Rejoindre le réseau</button>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Presence card preview */}
-        {phase === 'resolved' && presenceCard && (
-          <div className="ai-results">
-            <p className="ai-results-title">Votre fiche de présence</p>
-            <div className="ai-presence-card">
-              <div className="ai-presence-header">
-                <Sparkles size={14} />
-                <span>Aperçu généré par l'IA</span>
-              </div>
-              <h4 className="ai-presence-titre">{presenceCard.titre}</h4>
-              <ul className="ai-presence-caps">
-                {presenceCard.caps.map((c, i) => (
-                  <li key={i}><Check size={10} /> {c}</li>
-                ))}
-              </ul>
-              <div className="ai-presence-tags">
-                {presenceCard.tags.map(t => <span key={t}>{t}</span>)}
-              </div>
-              {!isConnected && (
-                <div className="ai-join-banner" style={{ marginTop: 14 }}>
-                  <p>Créez votre compte pour publier cette fiche.</p>
-                  <button onClick={onJoinNetwork}>Créer mon compte</button>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* Feed / discovery */}
-        {phase === 'resolved' && feedVisible && (
-          <div className="ai-results">
-            <p className="ai-results-title">Ce qui circule dans le réseau</p>
-            <div className="ai-feed-list">
-              {MOCK_FEED.slice(0, 8).map(item => (
-                <div key={item.id} className="ai-feed-item">
-                  <div className="ai-feed-dot" style={{ background: item.color }} />
-                  <div className="ai-feed-body">
-                    <span className="ai-feed-title">{item.title}</span>
-                    <span className="ai-feed-meta">{item.author} · {item.city} · {item.time}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+        {/* AI Browser surface */}
+        <AIBrowserSurface
+          state={browserState}
+          isConnected={isConnected}
+          isBuilding={isBuilding}
+          userName={knownUser?.prenom}
+          onJoinNetwork={onJoinNetwork}
+        />
       </div>
 
-      {/* ═══ VOICE BUBBLE — real vocal panel from V192 ═══ */}
+      {/* Voice controls */}
       <div className="ai-voice-bubble">
         <div className="ai-bubble-header">
           <div className="ai-bubble-status">
@@ -657,15 +608,15 @@ export default function WorkspaceOverlay({ onClose, onJoinNetwork }: Props) {
             }`} />
             <span>RENOVEC</span>
             <span className="ai-bubble-state">
-              {voiceState === 'user_speaking' ? 'écoute…'
-                : isSpeaking ? 'parle…'
-                : isProcessing ? 'réfléchit…'
+              {voiceState === 'user_speaking' ? 'ecoute...'
+                : isSpeaking ? 'parle...'
+                : isProcessing ? 'reflechit...'
                 : isPaused ? 'en pause'
-                : isActive ? 'à l\'écoute' : ''}
+                : isActive ? 'a l\'ecoute' : ''}
             </span>
           </div>
           <div className="ai-bubble-actions">
-            <button className="ai-bubble-icon-btn" onClick={handleMute} title={muted ? 'Réactiver' : 'Couper le son'}>
+            <button className="ai-bubble-icon-btn" onClick={handleMute} title={muted ? 'Reactiver' : 'Couper le son'}>
               {muted ? <VolumeX size={13} /> : <Volume2 size={13} />}
             </button>
           </div>
@@ -714,7 +665,7 @@ export default function WorkspaceOverlay({ onClose, onJoinNetwork }: Props) {
             >
               {isProcessing ? <Loader size={14} className="ai-spin" /> : isPaused ? <MicOff size={14} /> : <Mic size={14} />}
               <span>
-                {isProcessing ? 'Traitement…' : isPaused ? 'Reprendre' : 'À l\'écoute'}
+                {isProcessing ? 'Traitement...' : isPaused ? 'Reprendre' : 'A l\'ecoute'}
               </span>
             </button>
           )}
@@ -726,7 +677,7 @@ export default function WorkspaceOverlay({ onClose, onJoinNetwork }: Props) {
             ref={inputRef}
             type="text"
             className="ai-text-input"
-            placeholder="Ou écrivez…"
+            placeholder="Ou ecrivez..."
             value={textInput}
             onChange={e => setTextInput(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && handleTextSubmit()}
@@ -745,3 +696,6 @@ export default function WorkspaceOverlay({ onClose, onJoinNetwork }: Props) {
     </div>
   );
 }
+
+
+export default WorkspaceOverlay
