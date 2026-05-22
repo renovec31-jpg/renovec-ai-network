@@ -36,7 +36,7 @@ function getSpeechRecognitionCtor(): (new () => SpeechRecognition) | null {
   return w.SpeechRecognition || w.webkitSpeechRecognition || null;
 }
 
-export default function VoicePresence() {
+export default function VoicePresence({ onOpenChat }: { onOpenChat?: () => void }) {
   const [panelOpen, setPanelOpen]       = useState(false);
   const [uiState, setUiState]           = useState<UIState>('closed');
   const [history, setHistory]           = useState<Turn[]>([]);
@@ -565,7 +565,7 @@ export default function VoicePresence() {
           <svg className="vp-connector" viewBox="0 0 200 200" preserveAspectRatio="none">
             <line className="vp-connector-line" x1="50%" y1="50%" x2="10%" y2="15%" />
           </svg>
-          <button className="vp-trigger" onClick={handleOpen} aria-label="Parler avec RENOVEC">
+          <button className="vp-trigger" onClick={onOpenChat || handleOpen} aria-label="Parler avec RENOVEC">
             <div className="vp-ring vp-ring--1" />
             <div className="vp-ring vp-ring--2" />
             <div className="vp-ring vp-ring--3" />

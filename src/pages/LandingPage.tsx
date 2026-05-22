@@ -1,9 +1,11 @@
-import { lazy, Suspense, useEffect, useRef, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import { ArrowRight, ShoppingBag, Box, Package, Search, Tag, MapPin } from 'lucide-react';
 import VoicePresence from '../components/VoicePresence';
 import TeaserMap from '../components/TeaserMap';
 import GuestMatchFlow from '../components/GuestMatchFlow';
 import LiveFeedSidebar from '../components/LiveFeedSidebar';
+import WorkspaceOverlay from '../components/workspace/WorkspaceOverlay';
+import type { WorkspaceMode } from '../components/workspace/WorkspaceOverlay';
 import { avatarBg as teaserAvatarBg } from '../lib/ui';
 import { supabase } from '../lib/supabase';
 
@@ -872,7 +874,7 @@ function TeaserCard({ listing, onEnter }: { listing: TeaserListing; onEnter: () 
   );
 }
 
-function LandingFeedTeaser({ onEnter }: { onEnter: () => void }) {
+function LandingFeedTeaser({ onEnter, onOpenFeed }: { onEnter: () => void; onOpenFeed: () => void }) {
   const [listings, setListings] = useState<TeaserListing[]>([]);
   const [loading, setLoading]   = useState(true);
 
@@ -919,7 +921,7 @@ function LandingFeedTeaser({ onEnter }: { onEnter: () => void }) {
           ))}
           {/* CTA row at end */}
           <button
-            onClick={onEnter}
+            onClick={onOpenFeed}
             className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl border border-dashed border-white/12 text-[12px] text-white/30 hover:text-white/60 hover:border-white/25 transition-all group mt-1"
           >
             <ArrowRight size={13} className="group-hover:translate-x-0.5 transition-transform" />
@@ -942,7 +944,7 @@ function LandingFeedTeaser({ onEnter }: { onEnter: () => void }) {
         </div>
 
         <div className="flex justify-center mt-8">
-          <button onClick={onEnter} className="lp-btn-secondary group">
+          <button onClick={onOpenFeed} className="lp-btn-secondary group">
             Explorer le fil d'actualité
             <ArrowRight size={14} className="group-hover:translate-x-0.5 transition-transform" />
           </button>
@@ -959,6 +961,10 @@ function LandingFeedTeaser({ onEnter }: { onEnter: () => void }) {
 export default function LandingPage({ onEnter, onHowItWorks, onGoToPresence, onMentions }: Props) {
   const [scrolled, setScrolled] = useState(false);
   const [activeScenario, setActiveScenario] = useState(0);
+  const [workspaceMode, setWorkspaceMode] = useState<WorkspaceMode | null>(null);
+
+  const openWorkspace = useCallback((mode: WorkspaceMode) => setWorkspaceMode(mode), []);
+  const closeWorkspace = useCallback(() => setWorkspaceMode(null), []);
 
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 50);
@@ -1053,11 +1059,11 @@ export default function LandingPage({ onEnter, onHowItWorks, onGoToPresence, onM
               Pas de formulaire. Pas de case à cocher.
             </p>
             <div className="lp-hero-ctas">
-              <button onClick={onEnter} className="lp-btn-primary group">
+              <button onClick={() => openWorkspace('situation')} className="lp-btn-primary group">
                 Exprimer une situation
                 <ArrowRight size={13} className="group-hover:translate-x-0.5 transition-transform" />
               </button>
-              <button onClick={onGoToPresence || onEnter} className="lp-btn-ghost group">
+              <button onClick={() => openWorkspace('presence')} className="lp-btn-ghost group">
                 Partager ma présence
                 <ArrowRight size={11} className="lp-btn-ghost-arrow" />
               </button>
@@ -1307,7 +1313,7 @@ export default function LandingPage({ onEnter, onHowItWorks, onGoToPresence, onM
               <li>Interprétation IA du contexte réel</li>
               <li>Coordination adaptée à votre situation spécifique</li>
             </ul>
-            <button onClick={onEnter} className="lp-dual-cta group">
+            <button onClick={() => openWorkspace('situation')} className="lp-dual-cta group">
               Exprimer une situation <ArrowRight size={11} className="group-hover:translate-x-0.5 transition-transform" />
             </button>
           </div>
@@ -1336,7 +1342,7 @@ export default function LandingPage({ onEnter, onHowItWorks, onGoToPresence, onM
               <li>Activation IA selon la situation réelle</li>
               <li>Chaque aide reconnue renforce votre profil</li>
             </ul>
-            <button onClick={onGoToPresence || onEnter} className="lp-dual-cta group">
+            <button onClick={() => openWorkspace('presence')} className="lp-dual-cta group">
               Partager ma présence <ArrowRight size={11} className="group-hover:translate-x-0.5 transition-transform" />
             </button>
           </div>
@@ -1361,7 +1367,7 @@ export default function LandingPage({ onEnter, onHowItWorks, onGoToPresence, onM
       </section>
 
       {/* ════════════════ FIL D'ACTUALITÉ TEASER ════════════════════════ */}
-      <LandingFeedTeaser onEnter={onEnter} />
+      <LandingFeedTeaser onEnter={onEnter} onOpenFeed={() => openWorkspace('feed')} />
 
       {/* ════════════════ FINALE ══════════════════════════════════════════ */}
       <section className="lp-finale">
@@ -1375,11 +1381,11 @@ export default function LandingPage({ onEnter, onHowItWorks, onGoToPresence, onM
             "L'IA n'est pas l'interface.<br />Elle est l'intelligence qui coordonne."
           </blockquote>
           <div className="lp-finale-ctas">
-            <button onClick={onEnter} className="lp-btn-primary group">
+            <button onClick={() => openWorkspace('situation')} className="lp-btn-primary group">
               Entrer dans le réseau
               <ArrowRight size={13} className="group-hover:translate-x-0.5 transition-transform" />
             </button>
-            <button onClick={onGoToPresence || onEnter} className="lp-btn-ghost group">
+            <button onClick={() => openWorkspace('presence')} className="lp-btn-ghost group">
               Partager ma présence
               <ArrowRight size={11} className="lp-btn-ghost-arrow" />
             </button>
@@ -1395,8 +1401,15 @@ export default function LandingPage({ onEnter, onHowItWorks, onGoToPresence, onM
         </div>
       </footer>
 
-      <VoicePresence />
+      <VoicePresence onOpenChat={() => openWorkspace('chat')} />
 
+      {workspaceMode && (
+        <WorkspaceOverlay
+          initialMode={workspaceMode}
+          onClose={closeWorkspace}
+          onJoinNetwork={onEnter}
+        />
+      )}
     </div>
   );
 }
