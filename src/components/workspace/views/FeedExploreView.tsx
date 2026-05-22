@@ -1,81 +1,127 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
-import { MOCK_FEED } from '../../../data/mockOccitanie';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { MOCK_FEED, FEED_PANEL_ITEMS } from '../../../data/mockOccitanie';
 
-const TYPE_LABELS: Record<string, string> = {
-  service: 'Offre',
-  demand: 'Demande',
-  object: 'Objet',
-};
+interface RainDrop {
+  id: number;
+  title: string;
+  author: string;
+  city: string;
+  type: string;
+  color: string;
+  pricing?: string;
+  lane: number;
+  depth: number; // 0=far, 1=mid, 2=close
+  delay: number;
+  startedAt: number;
+}
+
+const ALL_ITEMS = [
+  ...MOCK_FEED.map(f => ({
+    title: f.title,
+    author: f.author,
+    city: f.city,
+    type: f.type === 'service' ? 'Offre' : f.type === 'demand' ? 'Demande' : 'Objet',
+    color: f.color,
+    pricing: '',
+  })),
+  ...FEED_PANEL_ITEMS.filter(fp => fp.items.length > 0).flatMap(fp =>
+    fp.items.map(item => ({
+      title: item.label,
+      author: fp.author,
+      city: fp.city,
+      type: item.pricing ? 'Offre' : 'Demande',
+      color: ['#F26522', '#2ECC71', '#3498DB', '#E91E8C', '#F39C12', '#1ABC9C'][Math.floor(Math.random() * 6)],
+      pricing: item.pricing,
+    }))
+  ),
+];
+
+const LANES = 4;
+const MAX_DROPS = 6;
 
 export default function FeedExploreView() {
-  const [currentIdx, setCurrentIdx] = useState(0);
-  const [phase, setPhase] = useState<'enter' | 'visible' | 'exit'>('enter');
-  const [nextPreview, setNextPreview] = useState(true);
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [drops, setDrops] = useState<RainDrop[]>([]);
+  const counterRef = useRef(0);
+  const poolIdx = useRef(0);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const items = MOCK_FEED;
-  const current = items[currentIdx % items.length];
-  const next = items[(currentIdx + 1) % items.length];
+  const spawnDrop = useCallback(() => {
+    const item = ALL_ITEMS[poolIdx.current % ALL_ITEMS.length];
+    poolIdx.current++;
+    const id = counterRef.current++;
+    const depth = Math.random() < 0.25 ? 0 : Math.random() < 0.55 ? 1 : 2;
+    const lane = Math.floor(Math.random() * LANES);
+    const delay = Math.random() * 0.3;
 
-  const advance = useCallback(() => {
-    setPhase('exit');
-    timerRef.current = setTimeout(() => {
-      setCurrentIdx(i => (i + 1) % items.length);
-      setPhase('enter');
-      setNextPreview(false);
-      timerRef.current = setTimeout(() => {
-        setPhase('visible');
-        setNextPreview(true);
-      }, 60);
-    }, 600);
-  }, [items.length]);
+    setDrops(prev => {
+      const next = [...prev, { ...item, id, lane, depth, delay, startedAt: Date.now() }];
+      if (next.length > MAX_DROPS) return next.slice(next.length - MAX_DROPS);
+      return next;
+    });
+  }, []);
 
-  useEffect(() => {
-    setPhase('enter');
-    const t = setTimeout(() => setPhase('visible'), 60);
-    return () => clearTimeout(t);
+  const removeDrop = useCallback((id: number) => {
+    setDrops(prev => prev.filter(d => d.id !== id));
   }, []);
 
   useEffect(() => {
-    if (phase === 'visible') {
-      timerRef.current = setTimeout(advance, 3200 + Math.random() * 800);
-    }
-    return () => { if (timerRef.current) clearTimeout(timerRef.current); };
-  }, [phase, advance]);
-
-  const variationStyle = {
-    '--bounce-offset': `${1.5 + (currentIdx % 3) * 0.8}px`,
-    '--exit-dir': currentIdx % 2 === 0 ? '1' : '-1',
-  } as React.CSSProperties;
+    spawnDrop();
+    const t = setTimeout(() => spawnDrop(), 400);
+    intervalRef.current = setInterval(() => {
+      spawnDrop();
+    }, 1400 + Math.random() * 600);
+    return () => {
+      clearTimeout(t);
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
+  }, [spawnDrop]);
 
   return (
-    <div className="aib-view feed-gravity" style={variationStyle}>
-      <span className="aib-match-label">Fil du reseau</span>
+    <div className="aib-view feed-rain">
+      <span className="feed-rain-label">Flux du reseau</span>
+      <div className="feed-rain-stage">
+        {drops.map(drop => (
+          <RainBubble key={drop.id} drop={drop} onDone={() => removeDrop(drop.id)} />
+        ))}
+      </div>
+    </div>
+  );
+}
 
-      <div className="feed-gravity-stage">
-        {/* Next item preview — ghosted above */}
-        {nextPreview && phase === 'visible' && (
-          <div className="feed-gravity-ghost">
-            <div className="feed-gravity-avatar" style={{ background: next.color }}>
-              {next.author[0]}
-            </div>
-            <span>{next.title}</span>
-          </div>
+function RainBubble({ drop, onDone }: { drop: RainDrop; onDone: () => void }) {
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const dur = drop.depth === 0 ? 4800 : drop.depth === 1 ? 3800 : 3200;
+    const t = setTimeout(onDone, dur + drop.delay * 1000);
+    return () => clearTimeout(t);
+  }, [drop, onDone]);
+
+  const depthClass = `feed-rain-drop--d${drop.depth}`;
+  const laneOffset = 8 + (drop.lane / LANES) * 72;
+
+  const style: React.CSSProperties = {
+    '--rain-left': `${laneOffset}%`,
+    '--rain-delay': `${drop.delay}s`,
+    '--rain-dur': drop.depth === 0 ? '4.8s' : drop.depth === 1 ? '3.8s' : '3.2s',
+  } as React.CSSProperties;
+
+  const isClose = drop.depth === 2;
+  const isMid = drop.depth === 1;
+
+  return (
+    <div ref={ref} className={`feed-rain-drop ${depthClass}`} style={style}>
+      <div className="feed-rain-avatar" style={{ background: drop.color }}>
+        {drop.author[0]}
+      </div>
+      <div className="feed-rain-body">
+        <strong>{drop.author}</strong>
+        {(isClose || isMid) && <span className="feed-rain-title">{drop.title}</span>}
+        {isClose && (
+          <span className="feed-rain-meta">
+            {drop.city} · {drop.type}{drop.pricing ? ` · ${drop.pricing}` : ''}
+          </span>
         )}
-
-        {/* Current item */}
-        <div className={`feed-gravity-item feed-gravity-item--${phase}`} key={currentIdx}>
-          <div className="feed-gravity-avatar" style={{ background: current.color }}>
-            {current.author[0]}
-          </div>
-          <div className="feed-gravity-body">
-            <strong>{current.author}</strong>
-            <span className="feed-gravity-title">{current.title}</span>
-            <span className="feed-gravity-meta">
-              {current.city} · {TYPE_LABELS[current.type]} · {current.time}
-            </span>
-          </div>
-        </div>
       </div>
     </div>
   );
