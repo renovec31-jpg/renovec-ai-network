@@ -187,6 +187,8 @@ export default function WorkspaceOverlay({ onClose, onJoinNetwork }: Props) {
   const processingRef = useRef(false);
   const historyRef = useRef<Turn[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
+  const mountedRef = useRef(false);
+  const sendTranscriptRef = useRef<(text: string) => Promise<void>>(async () => {});
 
   useEffect(() => { historyRef.current = history; }, [history]);
 
@@ -363,6 +365,9 @@ export default function WorkspaceOverlay({ onClose, onJoinNetwork }: Props) {
     processingRef.current = false;
   }, [sendToAPI]);
 
+  // Keep ref in sync so recognition handler always uses latest
+  sendTranscriptRef.current = sendTranscript;
+
   const beginListening = useCallback(() => {
     if (processingRef.current) return;
     if (recognitionRef.current) {
@@ -378,14 +383,17 @@ export default function WorkspaceOverlay({ onClose, onJoinNetwork }: Props) {
     recognition.interimResults = true;
     recognition.maxAlternatives = 1;
 
+    let handledFinal = false;
+
     recognition.onresult = (e: any) => {
       for (let i = e.resultIndex; i < e.results.length; i++) {
-        if (e.results[i].isFinal) {
+        if (e.results[i].isFinal && !handledFinal) {
           const transcript = e.results[i][0].transcript.trim();
           if (transcript.length > 1) {
+            handledFinal = true;
             isListening.current = false;
             try { recognition.stop(); } catch {}
-            sendTranscript(transcript).then(() => {
+            sendTranscriptRef.current(transcript).then(() => {
               if (streamRef.current && !processingRef.current) beginListening();
             });
           }
@@ -394,6 +402,7 @@ export default function WorkspaceOverlay({ onClose, onJoinNetwork }: Props) {
     };
 
     recognition.onend = () => {
+      if (handledFinal) return;
       if (isListening.current && !processingRef.current && streamRef.current) {
         try { recognition.start(); } catch {}
       }
@@ -416,7 +425,7 @@ export default function WorkspaceOverlay({ onClose, onJoinNetwork }: Props) {
     speechStart.current = 0;
     setVoiceState('listening');
     try { recognition.start(); } catch {}
-  }, [sendTranscript]);
+  }, []);
 
   const startMonitoring = useCallback(() => {
     if (!streamRef.current) return;
@@ -441,8 +450,11 @@ export default function WorkspaceOverlay({ onClose, onJoinNetwork }: Props) {
     tick();
   }, []);
 
-  // Start voice on mount
+  // Start voice on mount (guard against React StrictMode double-fire)
   useEffect(() => {
+    if (mountedRef.current) return;
+    mountedRef.current = true;
+
     (async () => {
       let stream: MediaStream | null = null;
       if (navigator.mediaDevices?.getUserMedia) {
