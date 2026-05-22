@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { X, Mic, MicOff, Send, Loader, MapPin, Star, Check, Sparkles, Eye, Volume2, VolumeX } from 'lucide-react';
+import { X, Mic, MicOff, Send, Loader, Volume2, VolumeX, MapPin, Star, Check, Sparkles } from 'lucide-react';
 import { useUserMode } from '../../hooks/useUserMode';
 import { useVisitorProfile } from '../../hooks/useVisitorProfile';
 import { useKnownUserContext } from '../../hooks/useKnownUserContext';
@@ -10,9 +10,11 @@ import {
   generateKnownUserGreeting,
   buildContextHintsFromConversation,
 } from '../../services/welcome/orchestrator';
-import type { ContextHint, InitialHypotheses } from '../../services/welcome/types';
+import type { ContextHint } from '../../services/welcome/types';
 import { MOCK_PROFILES, MOCK_FEED } from '../../data/mockOccitanie';
 import type { MockProfile } from '../../data/mockOccitanie';
+import ConversationViz from './ConversationViz';
+import type { UnderstandingState } from './ConversationViz';
 
 // ── Supabase edge function endpoints ──────────────────────────────────
 const SUPABASE_URL  = import.meta.env.VITE_SUPABASE_URL as string;
@@ -45,6 +47,17 @@ interface Turn {
   id: string;
 }
 
+const STOP_WORDS = new Set(['je', 'tu', 'il', 'nous', 'vous', 'ils', 'un', 'une', 'le', 'la', 'les', 'de', 'du', 'des', 'à', 'au', 'aux', 'en', 'et', 'ou', 'mais', 'donc', 'car', 'que', 'qui', 'quoi', 'mon', 'ma', 'mes', 'son', 'sa', 'ses', 'ce', 'cette', 'ces', 'pour', 'par', 'sur', 'dans', 'avec', 'est', 'suis', 'ai', 'pas', 'plus', 'très', 'bien', 'fait', 'être', 'avoir', 'faire']);
+
+function extractKeywords(text: string): string[] {
+  return text
+    .toLowerCase()
+    .replace(/[.,;:!?'"()\-]/g, ' ')
+    .split(/\s+/)
+    .filter(w => w.length > 2 && !STOP_WORDS.has(w))
+    .slice(0, 5);
+}
+
 function matchProfiles(text: string): MockProfile[] {
   const lower = text.toLowerCase();
   if (/compt|fiscal|bilan|tva|entreprise/.test(lower)) return MOCK_PROFILES.filter(p => /compt|gestion|cv/i.test(p.capacite)).slice(0, 4);
@@ -71,14 +84,24 @@ export default function WorkspaceOverlay({ onClose, onJoinNetwork }: Props) {
   // ── AI Canvas state ─────────────────────────────────────────────────
   const [phase, setPhase] = useState<AIPhase>('greeting');
   const [, setGreeting] = useState<any>(null);
-  const [, setCurrentHypotheses] = useState<InitialHypotheses | null>(null);
-  const [contextHints, setContextHints] = useState<ContextHint[]>([]);
+  const [, setContextHints] = useState<ContextHint[]>([]);
   const [results, setResults] = useState<MockProfile[]>([]);
   const [presenceCard, setPresenceCard] = useState<{ titre: string; caps: string[]; tags: string[] } | null>(null);
   const [feedVisible, setFeedVisible] = useState(false);
-  const [showContextBlock, setShowContextBlock] = useState(false);
-  const [, setTurnCount] = useState(0);
   const [latestAiMessage, setLatestAiMessage] = useState('');
+  const [understanding, setUnderstanding] = useState<UnderstandingState>({
+    phase: 'idle',
+    intent: null,
+    intentConfidence: 0,
+    keywords: [],
+    territory: null,
+    urgency: 0,
+    isOffer: false,
+    turnCount: 0,
+    matchedProfiles: [],
+    draftSummary: null,
+    draftTitle: null,
+  });
 
   // ── Voice panel state (from V192 VoicePresence) ─────────────────────
   const [voiceState, setVoiceState] = useState<VoiceState>('idle');
@@ -316,7 +339,6 @@ export default function WorkspaceOverlay({ onClose, onJoinNetwork }: Props) {
       setVoiceState('speaking');
       setPhase('listening');
       await playTTS(greetText);
-      if (contextHints.length > 0) setShowContextBlock(true);
       beginListening();
     })();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -350,14 +372,12 @@ export default function WorkspaceOverlay({ onClose, onJoinNetwork }: Props) {
   const processUserInput = useCallback((text: string) => {
     recordTextInput(text);
     recordInteraction();
-    setTurnCount(prev => prev + 1);
     setPhase('analyzing');
     setResults([]);
     setPresenceCard(null);
     setFeedVisible(false);
 
     const hypotheses = computeFromText(text, visitorProfile);
-    setCurrentHypotheses(hypotheses);
 
     const newHints = buildContextHintsFromConversation(
       [...(visitorProfile?.signals.textInputs || []), text],
@@ -369,16 +389,56 @@ export default function WorkspaceOverlay({ onClose, onJoinNetwork }: Props) {
       const unique = newHints.filter(h => !existing.includes(h.label));
       return [...prev, ...unique];
     });
-    setShowContextBlock(true);
 
+    // Extract keywords from text
+    const kws = extractKeywords(text);
+    // Extract territory mention
+    const territoryMatch = text.match(/(?:à|de|près de|sur|zone|secteur|quartier)\s+([A-ZÀ-Ú][a-zà-ü]+(?:[\s-][A-ZÀ-Ú]?[a-zà-ü]+)*)/);
+    const territory = territoryMatch?.[1] || hypotheses.territorialNeed || null;
+
+    // Phase 1: immediately show "building" understanding
+    setUnderstanding(prev => ({
+      ...prev,
+      phase: 'building',
+      intent: hypotheses.probableIntent,
+      intentConfidence: hypotheses.intentConfidence,
+      keywords: [...new Set([...prev.keywords, ...kws])].slice(-8),
+      territory,
+      urgency: hypotheses.urgencyLevel,
+      isOffer: hypotheses.probableIntent === 'offer',
+      turnCount: prev.turnCount + 1,
+      matchedProfiles: [],
+      draftSummary: null,
+      draftTitle: null,
+    }));
+
+    // Phase 2: after delay, resolve with profiles/drafts
     setTimeout(() => {
+      let profiles: MockProfile[] = [];
+      let draftTitle: string | null = null;
+      let draftSummary: string | null = null;
+
       if (hypotheses.probableIntent === 'offer') {
-        setPresenceCard(generatePresenceCard(text));
+        const card = generatePresenceCard(text);
+        setPresenceCard(card);
+        draftTitle = card.titre;
+        draftSummary = card.caps.join(' · ');
       } else if (hypotheses.probableIntent === 'discovery' || hypotheses.probableIntent === 'hesitation') {
         setFeedVisible(true);
       } else {
-        setResults(matchProfiles(text));
+        profiles = matchProfiles(text);
+        setResults(profiles);
+        draftTitle = `Recherche : ${kws.slice(0, 3).join(', ') || text.slice(0, 40)}`;
+        draftSummary = territory ? `Zone ${territory}` : null;
       }
+
+      setUnderstanding(prev => ({
+        ...prev,
+        phase: 'complete',
+        matchedProfiles: profiles,
+        draftTitle,
+        draftSummary,
+      }));
       setPhase('resolved');
     }, 1200);
   }, [computeFromText, visitorProfile, recordTextInput, recordInteraction]);
@@ -473,34 +533,19 @@ export default function WorkspaceOverlay({ onClose, onJoinNetwork }: Props) {
 
       {/* Main canvas */}
       <div className="ai-canvas" ref={canvasRef}>
-        {/* Context perception block */}
-        {showContextBlock && contextHints.length > 0 && (
-          <div className="ai-context-block">
-            <div className="ai-context-header">
-              <Eye size={11} />
-              <span>Ce que RENOVEC perçoit pour mieux orienter</span>
-            </div>
-            <div className="ai-context-hints">
-              {contextHints.map((hint, i) => (
-                <div key={i} className="ai-context-hint" data-source={hint.source}>
-                  <span className="ai-hint-label">{hint.label}</span>
-                  <span className="ai-hint-source">
-                    {hint.source === 'session' ? 'session' : hint.source === 'history' ? 'historique' : 'échange'}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
+        {/* Progressive understanding visualization */}
+        {understanding.phase !== 'idle' && (
+          <ConversationViz state={understanding} />
         )}
 
         {/* Greeting / waiting */}
-        {phase === 'greeting' && (
+        {phase === 'greeting' && understanding.phase === 'idle' && (
           <div className="ai-canvas-empty">
             <div className="ai-loader"><span /><span /><span /></div>
           </div>
         )}
 
-        {phase === 'listening' && results.length === 0 && !presenceCard && !feedVisible && (
+        {phase === 'listening' && understanding.phase === 'idle' && (
           <div className="ai-canvas-empty">
             <p className="ai-canvas-prompt">
               {isConnected && knownUser
@@ -511,7 +556,7 @@ export default function WorkspaceOverlay({ onClose, onJoinNetwork }: Props) {
           </div>
         )}
 
-        {phase === 'analyzing' && (
+        {phase === 'analyzing' && understanding.phase === 'idle' && (
           <div className="ai-canvas-loading">
             <div className="ai-loader"><span /><span /><span /></div>
           </div>
