@@ -103,8 +103,6 @@ const TYPE_COLORS: Record<string, string> = {
 
 // ─── MAIN ────────────────────────────────────────────────────────────────────
 export default function LandingPage({ onEnter, onHowItWorks }: Props) {
-  const [feedOpen, setFeedOpen] = useState(true);
-
   return (
     <div className="min-h-screen bg-[#0A0A0A] text-white overflow-hidden relative">
       {/* Header */}
@@ -118,10 +116,10 @@ export default function LandingPage({ onEnter, onHowItWorks }: Props) {
         <Hero onEnter={onEnter} />
       </div>
 
-      {/* Feed panel overlay (right side) */}
-      {feedOpen && <FeedPanel onClose={() => setFeedOpen(false)} />}
+      {/* Feed panel — always visible on desktop */}
+      <FeedPanel />
 
-      {/* Chat widget */}
+      {/* Chat widget — compact overlay, entry point to IA */}
       <ChatWidget />
     </div>
   );
@@ -358,10 +356,10 @@ function NetworkVis() {
   );
 }
 
-// ─── FEED PANEL (overlay right) ──────────────────────────────────────────────
-function FeedPanel({ onClose }: { onClose: () => void }) {
+// ─── FEED PANEL (always visible on desktop) ─────────────────────────────────
+function FeedPanel() {
   return (
-    <div className="fixed top-14 right-0 bottom-0 w-[360px] z-30 bg-[#0D0D0D]/95 backdrop-blur-xl border-l border-white/[0.05] flex flex-col animate-fade-up hidden lg:flex">
+    <div className="fixed top-14 right-0 bottom-0 w-[360px] z-20 bg-[#0D0D0D]/95 backdrop-blur-xl border-l border-white/[0.05] hidden lg:flex flex-col">
       {/* Header */}
       <div className="flex items-center justify-between px-5 py-4 border-b border-white/[0.05]">
         <div className="flex items-center gap-3">
@@ -371,9 +369,6 @@ function FeedPanel({ onClose }: { onClose: () => void }) {
             <span className="text-[9px] text-white/25">En direct</span>
           </div>
         </div>
-        <button onClick={onClose} className="p-1.5 text-white/20 hover:text-white/50 transition-colors">
-          <X size={13} />
-        </button>
       </div>
       {/* Counter */}
       <div className="px-5 py-2.5 border-b border-white/[0.03]">
