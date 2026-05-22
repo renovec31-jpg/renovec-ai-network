@@ -751,5 +751,3 @@ export default function WorkspaceOverlay({ onClose, onJoinNetwork }: Props) {
     </div>
   );
 }
-
-export default WorkspaceOverlay
