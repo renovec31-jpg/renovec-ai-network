@@ -33,14 +33,21 @@ export default function ConversationRail({ history, context, turnCount }: Props)
         <span>Conversation</span>
       </div>
       <div className="aib-rail-messages">
-        {history.map((turn, idx) => (
-          <div key={turn.id} className={`aib-rail-msg aib-rail-msg--${turn.role}`} style={{ animationDelay: `${idx * 30}ms` }}>
-            <span className="aib-rail-role">
-              {turn.role === 'assistant' ? 'RENOVEC' : 'Vous'}
-            </span>
-            <p>{turn.content}</p>
-          </div>
-        ))}
+        {history.map((turn, idx) => {
+          const isRecent = idx >= history.length - 3;
+          return (
+            <div
+              key={turn.id}
+              className={`aib-rail-msg aib-rail-msg--${turn.role} ${isRecent ? 'aib-rail-msg--recent' : 'aib-rail-msg--faded'}`}
+              style={{ animationDelay: `${idx * 40}ms` }}
+            >
+              <span className="aib-rail-role">
+                {turn.role === 'assistant' ? 'RENOVEC' : 'Vous'}
+              </span>
+              <p>{turn.content}</p>
+            </div>
+          );
+        })}
 
         {/* Contextual insight blocks — emerge after 2+ turns */}
         {showInsights && (
