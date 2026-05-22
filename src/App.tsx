@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { SituationProvider } from './contexts/SituationContext';
+import { WorkspaceProvider } from './contexts/WorkspaceContext';
 import { supabase, isAdmin } from './lib/supabase';
 import LandingPage from './pages/LandingPage';
 import AuthPage from './pages/AuthPage';
@@ -8,7 +9,6 @@ import OnboardingSeeker from './pages/OnboardingSeeker';
 import OnboardingProvider from './pages/OnboardingProvider';
 import NotFoundPage from './pages/NotFoundPage';
 import Layout from './components/Layout';
-import DemanderPage from './pages/DemanderPage';
 import CapacitesPage from './pages/CapacitesPage';
 import DiscussionsPage from './pages/DiscussionsPage';
 import MonEspacePage from './pages/MonEspacePage';
@@ -43,7 +43,6 @@ type ParsedRoute = {
   overlay: Overlay;
 };
 
-const KNOWN_PATHS = new Set(['/', '', '/carte', '/entrer', '/comment-ca-marche', '/mon-espace/profil/edit']);
 
 function parseRoute(pathname: string): ParsedRoute {
   const p = pathname.replace(/\/$/, '') || '/';
@@ -329,19 +328,15 @@ function AppInner() {
   }
 
   // ── Main app with Layout ─────────────────────────────────────────────────────
-  const isFullHeight = activeTab === 'carte';
-
   const renderTab = () => {
     switch (activeTab) {
-      case 'demander':      return <DemanderPage />;
+      case 'demander':      return null; // Chat is handled by Layout directly
       case 'feed':          return (
         <FeedPage
-          onViewProfile={profileId => {
-            // Find profile's user_id then open profile — pass capability profile id as custom event
-            window.dispatchEvent(new CustomEvent('open-capability-profile', { detail: { profileId } }));
+          onViewProfile={(id) => {
+            window.dispatchEvent(new CustomEvent('open-capability-profile', { detail: { profileId: id } }));
           }}
-          onContact={(profileId, profileTitle) => {
-            // Open discussions tab — the profile will be discovered there
+          onContact={() => {
             handleTabChange('discussions');
           }}
         />
@@ -352,42 +347,43 @@ function AppInner() {
       case 'contributions': return <ContributionsPage />;
       case 'espace':        return <MonEspacePage onStartProviderOnboarding={() => setShowProviderOnboarding(true)} />;
       case 'notifications': return <NotificationsPage />;
-      case 'admin':         return isAdmin(profile) ? <AdminPage /> : <DemanderPage />;
-      default:              return <DemanderPage />;
+      case 'admin':         return isAdmin(profile) ? <AdminPage /> : null;
+      default:              return null;
     }
   };
 
   return (
     <SituationProvider>
-      <Layout
-        activeTab={activeTab}
-        onTabChange={handleTabChange}
-        notifCount={notifCount}
-        isAdmin={isAdmin(profile)}
-        onShowHowItWorks={() => setShowHowItWorks(true)}
-        onGoLanding={() => { setView('landing'); setActiveTab('demander'); setOverlay({ kind: 'none' }); }}
-        onOpenMyProfile={() => openProfile(user.id)}
-        fullHeight={isFullHeight}
-      >
-        {renderTab()}
-      </Layout>
-      <OnboardingModal />
-      {showHowItWorks && (
-        <CommentCaMarchePage
-          onClose={() => setShowHowItWorks(false)}
-          onEnter={() => { setShowHowItWorks(false); setActiveTab('demander'); }}
-          onGoToPresence={() => { setShowHowItWorks(false); handleTabChange('capacites'); }}
-        />
-      )}
-      {showMentions && <MentionsPage onClose={() => setShowMentions(false)} />}
-      {publicProfileId && (
-        <PublicProfileModal
-          profileId={publicProfileId}
-          isGuest={false}
-          onClose={() => setPublicProfileId(null)}
-          onEnter={() => setPublicProfileId(null)}
-        />
-      )}
+      <WorkspaceProvider>
+        <Layout
+          activeTab={activeTab}
+          onTabChange={handleTabChange}
+          notifCount={notifCount}
+          isAdmin={isAdmin(profile)}
+          onShowHowItWorks={() => setShowHowItWorks(true)}
+          onGoLanding={() => { setView('landing'); setActiveTab('demander'); setOverlay({ kind: 'none' }); }}
+          onOpenMyProfile={() => openProfile(user.id)}
+        >
+          {renderTab()}
+        </Layout>
+        <OnboardingModal />
+        {showHowItWorks && (
+          <CommentCaMarchePage
+            onClose={() => setShowHowItWorks(false)}
+            onEnter={() => { setShowHowItWorks(false); setActiveTab('demander'); }}
+            onGoToPresence={() => { setShowHowItWorks(false); handleTabChange('capacites'); }}
+          />
+        )}
+        {showMentions && <MentionsPage onClose={() => setShowMentions(false)} />}
+        {publicProfileId && (
+          <PublicProfileModal
+            profileId={publicProfileId}
+            isGuest={false}
+            onClose={() => setPublicProfileId(null)}
+            onEnter={() => setPublicProfileId(null)}
+          />
+        )}
+      </WorkspaceProvider>
     </SituationProvider>
   );
 }
