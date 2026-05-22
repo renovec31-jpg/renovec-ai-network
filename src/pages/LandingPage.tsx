@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { Mic, ArrowRight, Send, Loader, X, Radio } from 'lucide-react';
 
 type Props = {
@@ -8,27 +8,33 @@ type Props = {
 
 // ─── MEMBERS ────────────────────────────────────────────────────────────────
 const MEMBERS = [
-  { id: 'laurent', name: 'Laurent Esquié', role: 'Coordinateur chantier', city: 'Merville', x: 0.18, y: 0.32, photo: 'https://images.pexels.com/photos/2379005/pexels-photo-2379005.jpeg?auto=compress&cs=tinysrgb&w=150' },
-  { id: 'claire', name: 'Claire Fontan', role: 'Architecte intérieur', city: 'Toulouse', x: 0.42, y: 0.22, photo: 'https://images.pexels.com/photos/3756679/pexels-photo-3756679.jpeg?auto=compress&cs=tinysrgb&w=150' },
-  { id: 'bascou', name: 'Atelier Bascou', role: 'Menuiserie bois', city: 'Blagnac', x: 0.72, y: 0.18, photo: 'https://images.pexels.com/photos/5691622/pexels-photo-5691622.jpeg?auto=compress&cs=tinysrgb&w=150' },
-  { id: 'sophie', name: 'Sophie Cazenave', role: 'Plomberie / chauffage', city: 'Colomiers', x: 0.28, y: 0.62, photo: 'https://images.pexels.com/photos/3785079/pexels-photo-3785079.jpeg?auto=compress&cs=tinysrgb&w=150' },
-  { id: 'remi', name: 'Rémi Delcros', role: 'Électricité générale', city: 'L\'Isle-Jourdain', x: 0.65, y: 0.58, photo: 'https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg?auto=compress&cs=tinysrgb&w=150' },
+  { id: 'laurent', name: 'Laurent Esquié', role: 'Coordinateur chantier', city: 'Merville', x: 0.12, y: 0.18, photo: 'https://images.pexels.com/photos/2379005/pexels-photo-2379005.jpeg?auto=compress&cs=tinysrgb&w=150' },
+  { id: 'claire', name: 'Claire Fontan', role: 'Architecte intérieur', city: 'Toulouse', x: 0.38, y: 0.08, photo: 'https://images.pexels.com/photos/3756679/pexels-photo-3756679.jpeg?auto=compress&cs=tinysrgb&w=150' },
+  { id: 'bascou', name: 'Atelier Bascou', role: 'Menuiserie bois', city: 'Blagnac', x: 0.7, y: 0.12, photo: 'https://images.pexels.com/photos/5691622/pexels-photo-5691622.jpeg?auto=compress&cs=tinysrgb&w=150' },
+  { id: 'sophie', name: 'Sophie Cazenave', role: 'Plomberie / chauffage', city: 'Colomiers', x: 0.22, y: 0.55, photo: 'https://images.pexels.com/photos/3785079/pexels-photo-3785079.jpeg?auto=compress&cs=tinysrgb&w=150' },
+  { id: 'remi', name: 'Rémi Delcros', role: 'Électricité générale', city: 'L\'Isle-Jourdain', x: 0.58, y: 0.48, photo: 'https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg?auto=compress&cs=tinysrgb&w=150' },
+  { id: 'florian', name: 'Florian Boyer', role: 'Développement web', city: 'Perpignan', x: 0.85, y: 0.42, photo: 'https://images.pexels.com/photos/614810/pexels-photo-614810.jpeg?auto=compress&cs=tinysrgb&w=150' },
+  { id: 'sarah', name: 'Sarah Bonnet', role: 'Rédaction / CV', city: 'Rennes', x: 0.45, y: 0.72, photo: 'https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=150' },
+  { id: 'laura', name: 'Laura Fontaine', role: 'Couture & création', city: 'Amiens', x: 0.78, y: 0.7, photo: 'https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=150' },
+  { id: 'tom', name: 'Tom Du.', role: 'Transport de personnes', city: 'Avignon', x: 0.08, y: 0.78, photo: 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=150' },
 ];
 
 const LINKS: [number, number][] = [
   [0, 1], [1, 2], [0, 3], [3, 4], [1, 4], [2, 4], [1, 3],
+  [2, 5], [4, 5], [3, 6], [4, 6], [6, 8], [5, 7], [4, 7],
+  [7, 8], [6, 7], [0, 8], [3, 8], [1, 6], [2, 7], [5, 6],
 ];
 
 // ─── FEED ITEMS ─────────────────────────────────────────────────────────────
 const FEED_ITEMS = [
-  { type: 'Service', text: 'Laurent propose un diagnostic toiture gratuit pour les maisons avant 1970.', time: '3 min' },
-  { type: 'Recherche', text: 'Famille cherche plombier disponible rapidement — fuite salle de bain étage.', time: '8 min' },
-  { type: 'Occasion', text: 'Lot de carrelage Porcelanosa 12m² — jamais posé, dispo Colomiers.', time: '12 min' },
-  { type: 'Service', text: 'Claire accompagne la conception d\'un plan d\'aménagement cuisine ouverte.', time: '18 min' },
-  { type: 'Recherche', text: 'Copropriété cherche électricien pour mise aux normes tableau général.', time: '25 min' },
-  { type: 'Occasion', text: 'Radiateur fonte 6 éléments — bon état, à récupérer sur Blagnac.', time: '32 min' },
-  { type: 'Service', text: 'Atelier Bascou réalise des meubles sur-mesure en chêne massif.', time: '41 min' },
-  { type: 'Recherche', text: 'Besoin d\'un menuisier pour poser 3 fenêtres double vitrage.', time: '55 min' },
+  { type: 'Service', title: 'Conseil comptabilité', author: 'Florian Boyer', city: 'Perpignan', exchange: 'Troc possible' },
+  { type: 'Service', title: 'Développement web session découverte', author: 'Florian Boyer', city: 'Perpignan', exchange: 'Gratuit 1h' },
+  { type: 'Occasion', title: 'Objet en lien avec activité', author: 'Florian Boyer', city: 'Perpignan', exchange: 'Offert' },
+  { type: 'Service', title: 'Lettres de motivation', author: 'Sarah Bonnet', city: 'Rennes', exchange: 'À négocier' },
+  { type: 'Service', title: 'Formation WordPress', author: 'Sarah Bonnet', city: 'Rennes', exchange: 'Gratuit 1h' },
+  { type: 'Service', title: 'Ateliers couture', author: 'Laura Fontaine', city: 'Amiens', exchange: 'Troc' },
+  { type: 'Service', title: 'Transport de personnes', author: 'Tom Du.', city: 'Avignon', exchange: 'À négocier' },
+  { type: 'Recherche', title: 'Plombier dispo rapidement', author: 'Sophie Cazenave', city: 'Colomiers', exchange: 'À négocier' },
 ];
 
 const TYPE_COLORS: Record<string, string> = {
@@ -39,24 +45,23 @@ const TYPE_COLORS: Record<string, string> = {
 
 // ─── MAIN ────────────────────────────────────────────────────────────────────
 export default function LandingPage({ onEnter, onHowItWorks }: Props) {
+  const [feedOpen, setFeedOpen] = useState(true);
+
   return (
     <div className="min-h-screen bg-[#0A0A0A] text-white overflow-hidden relative">
       {/* Header */}
       <Header onEnter={onEnter} onHowItWorks={onHowItWorks} />
 
-      {/* Main content */}
-      <div className="relative flex flex-col lg:flex-row min-h-[calc(100vh-56px)]">
-        {/* Left: Hero + Network */}
-        <div className="flex-1 relative flex flex-col">
-          <Hero onEnter={onEnter} />
-          <NetworkVis />
-        </div>
+      {/* Full-screen network canvas behind everything */}
+      <NetworkVis />
 
-        {/* Right: Feed panel (desktop) */}
-        <div className="hidden lg:block w-[340px] flex-shrink-0 border-l border-white/[0.04]">
-          <FeedPanel />
-        </div>
+      {/* Hero content overlaid */}
+      <div className="relative z-10">
+        <Hero onEnter={onEnter} />
       </div>
+
+      {/* Feed panel overlay (right side) */}
+      {feedOpen && <FeedPanel onClose={() => setFeedOpen(false)} />}
 
       {/* Chat widget */}
       <ChatWidget />
@@ -93,6 +98,12 @@ function Header({ onEnter, onHowItWorks }: { onEnter: () => void; onHowItWorks: 
 function Hero({ onEnter }: { onEnter: () => void }) {
   return (
     <div className="relative z-10 px-6 md:px-12 pt-16 md:pt-24 pb-8 max-w-2xl">
+      <div className="mb-4 flex items-center gap-2">
+        <div className="w-1.5 h-1.5 rounded-full bg-[#E55A1E]/60" />
+        <span className="text-[10px] tracking-[0.2em] uppercase text-white/25 font-medium">
+          Infrastructure orchestrée par IA
+        </span>
+      </div>
       <h1 className="text-[28px] md:text-[38px] font-bold leading-[1.15] tracking-tight text-white/95 mb-5">
         Le réseau qui comprend<br />avant d'orienter.
       </h1>
@@ -130,7 +141,7 @@ function Hero({ onEnter }: { onEnter: () => void }) {
   );
 }
 
-// ─── NETWORK VIS (Canvas + Member Avatars) ───────────────────────────────────
+// ─── NETWORK VIS (Full-screen Canvas + Member Avatars) ───────────────────────
 function NetworkVis() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animRef = useRef(0);
@@ -167,38 +178,38 @@ function NetworkVis() {
         const ax = a.x * w, ay = a.y * h;
         const bx = b.x * w, by = b.y * h;
 
-        // Link line
+        // Link line — more visible
         ctx!.beginPath();
         ctx!.moveTo(ax, ay);
         ctx!.lineTo(bx, by);
-        ctx!.strokeStyle = 'rgba(229, 90, 30, 0.08)';
-        ctx!.lineWidth = 1;
+        ctx!.strokeStyle = 'rgba(229, 90, 30, 0.12)';
+        ctx!.lineWidth = 1.2;
         ctx!.stroke();
 
-        // Travelling impulse
-        const speed = 0.0008 + li * 0.0002;
-        const pos = ((t * speed + li * 0.15) % 1);
+        // Travelling impulse — brighter, larger
+        const speed = 0.001 + (li % 5) * 0.0003;
+        const pos = ((t * speed + li * 0.12) % 1);
         const px = ax + (bx - ax) * pos;
         const py = ay + (by - ay) * pos;
 
-        const grad = ctx!.createRadialGradient(px, py, 0, px, py, 12);
-        grad.addColorStop(0, 'rgba(229, 90, 30, 0.6)');
-        grad.addColorStop(0.5, 'rgba(229, 90, 30, 0.15)');
+        const grad = ctx!.createRadialGradient(px, py, 0, px, py, 16);
+        grad.addColorStop(0, 'rgba(229, 90, 30, 0.85)');
+        grad.addColorStop(0.4, 'rgba(229, 90, 30, 0.3)');
         grad.addColorStop(1, 'rgba(229, 90, 30, 0)');
         ctx!.beginPath();
-        ctx!.arc(px, py, 12, 0, Math.PI * 2);
+        ctx!.arc(px, py, 16, 0, Math.PI * 2);
         ctx!.fillStyle = grad;
         ctx!.fill();
 
-        // Secondary impulse (opposite direction, slower)
-        const pos2 = ((t * speed * 0.6 + li * 0.4 + 0.5) % 1);
+        // Secondary impulse
+        const pos2 = ((t * speed * 0.55 + li * 0.35 + 0.5) % 1);
         const px2 = ax + (bx - ax) * pos2;
         const py2 = ay + (by - ay) * pos2;
-        const grad2 = ctx!.createRadialGradient(px2, py2, 0, px2, py2, 8);
-        grad2.addColorStop(0, 'rgba(229, 90, 30, 0.3)');
+        const grad2 = ctx!.createRadialGradient(px2, py2, 0, px2, py2, 10);
+        grad2.addColorStop(0, 'rgba(229, 90, 30, 0.5)');
         grad2.addColorStop(1, 'rgba(229, 90, 30, 0)');
         ctx!.beginPath();
-        ctx!.arc(px2, py2, 8, 0, Math.PI * 2);
+        ctx!.arc(px2, py2, 10, 0, Math.PI * 2);
         ctx!.fillStyle = grad2;
         ctx!.fill();
       }
@@ -207,11 +218,12 @@ function NetworkVis() {
       for (const m of MEMBERS) {
         const x = m.x * w;
         const y = m.y * h;
-        const haloGrad = ctx!.createRadialGradient(x, y, 0, x, y, 40);
-        haloGrad.addColorStop(0, 'rgba(229, 90, 30, 0.06)');
+        const haloGrad = ctx!.createRadialGradient(x, y, 0, x, y, 50);
+        haloGrad.addColorStop(0, 'rgba(229, 90, 30, 0.1)');
+        haloGrad.addColorStop(0.5, 'rgba(229, 90, 30, 0.03)');
         haloGrad.addColorStop(1, 'rgba(229, 90, 30, 0)');
         ctx!.beginPath();
-        ctx!.arc(x, y, 40, 0, Math.PI * 2);
+        ctx!.arc(x, y, 50, 0, Math.PI * 2);
         ctx!.fillStyle = haloGrad;
         ctx!.fill();
       }
@@ -227,7 +239,7 @@ function NetworkVis() {
   }, []);
 
   return (
-    <div className="flex-1 relative min-h-[300px] md:min-h-[380px]">
+    <div className="absolute inset-0 top-14">
       <canvas ref={canvasRef} className="absolute inset-0 w-full h-full" />
       {/* Member nodes as HTML overlays */}
       {MEMBERS.map(m => (
@@ -236,11 +248,11 @@ function NetworkVis() {
           className="absolute flex flex-col items-center gap-1.5 pointer-events-none"
           style={{ left: `${m.x * 100}%`, top: `${m.y * 100}%`, transform: 'translate(-50%, -50%)' }}
         >
-          <div className="w-11 h-11 md:w-13 md:h-13 rounded-full overflow-hidden border-2 border-[#E55A1E]/30 shadow-lg shadow-black/40" style={{ width: 52, height: 52 }}>
+          <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-[#E55A1E]/40 shadow-lg shadow-black/50">
             <img src={m.photo} alt={m.name} className="w-full h-full object-cover" />
           </div>
           <div className="text-center">
-            <div className="text-[10px] md:text-[11px] font-semibold text-white/70 whitespace-nowrap">{m.name}</div>
+            <div className="text-[10px] md:text-[11px] font-semibold text-white/75 whitespace-nowrap">{m.name}</div>
             <div className="text-[9px] text-white/30 whitespace-nowrap">{m.role} · {m.city}</div>
           </div>
         </div>
@@ -249,30 +261,47 @@ function NetworkVis() {
   );
 }
 
-// ─── FEED PANEL ──────────────────────────────────────────────────────────────
-function FeedPanel() {
+// ─── FEED PANEL (overlay right) ──────────────────────────────────────────────
+function FeedPanel({ onClose }: { onClose: () => void }) {
   return (
-    <div className="h-full flex flex-col">
-      <div className="flex items-center justify-between px-5 py-4 border-b border-white/[0.04]">
-        <span className="text-[12px] font-semibold text-white/50 tracking-wide uppercase">Fil d'actualité</span>
-        <div className="flex items-center gap-1.5">
-          <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-          <span className="text-[10px] text-white/25">En direct</span>
+    <div className="fixed top-14 right-0 bottom-0 w-[360px] z-30 bg-[#0D0D0D]/95 backdrop-blur-xl border-l border-white/[0.05] flex flex-col animate-fade-up hidden lg:flex">
+      {/* Header */}
+      <div className="flex items-center justify-between px-5 py-4 border-b border-white/[0.05]">
+        <div className="flex items-center gap-3">
+          <span className="text-[11px] font-bold text-white/50 tracking-[0.08em] uppercase">Fil d'actualité</span>
+          <div className="flex items-center gap-1.5">
+            <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            <span className="text-[9px] text-white/25">En direct</span>
+          </div>
         </div>
+        <button onClick={onClose} className="p-1.5 text-white/20 hover:text-white/50 transition-colors">
+          <X size={13} />
+        </button>
       </div>
+      {/* Counter */}
+      <div className="px-5 py-2.5 border-b border-white/[0.03]">
+        <span className="text-[10px] text-white/20">2 645 services dans le réseau</span>
+      </div>
+      {/* Items */}
       <div className="flex-1 overflow-y-auto scrollbar-hide">
         {FEED_ITEMS.map((item, i) => (
-          <div key={i} className="px-5 py-4 border-b border-white/[0.03] hover:bg-white/[0.015] transition-colors">
-            <div className="flex items-center gap-2 mb-1.5">
+          <div key={i} className="px-5 py-3.5 border-b border-white/[0.03] hover:bg-white/[0.02] transition-colors">
+            <div className="flex items-center gap-2 mb-1">
               <span
                 className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded"
-                style={{ color: TYPE_COLORS[item.type], backgroundColor: `${TYPE_COLORS[item.type]}15` }}
+                style={{ color: TYPE_COLORS[item.type], backgroundColor: `${TYPE_COLORS[item.type]}12` }}
               >
                 {item.type}
               </span>
-              <span className="text-[9px] text-white/15 ml-auto">{item.time}</span>
+              <span
+                className="text-[9px] px-1.5 py-0.5 rounded border ml-auto"
+                style={{ color: 'rgba(255,255,255,0.3)', borderColor: 'rgba(255,255,255,0.06)' }}
+              >
+                {item.exchange}
+              </span>
             </div>
-            <p className="text-[12px] text-white/45 leading-[1.6]">{item.text}</p>
+            <p className="text-[12px] text-white/55 leading-[1.5] font-medium mb-0.5">{item.title}</p>
+            <p className="text-[10px] text-white/20">{item.author} · {item.city}</p>
           </div>
         ))}
       </div>
