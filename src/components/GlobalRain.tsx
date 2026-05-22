@@ -1,22 +1,13 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import type { ProfileListing } from '../lib/supabase';
-
-type ListingWithProfile = ProfileListing & {
-  _profile?: { title: string; avatar_url?: string | null; city?: string; profile_type?: string };
-};
 
 interface RainDrop {
   id: number;
-  title: string;
-  author: string;
-  city: string;
-  type: string;
-  pricing?: string;
+  name: string;
+  caption: string;
   lane: number;
   depth: number;
   delay: number;
   avatarIdx: number;
-  avatarUrl?: string | null;
 }
 
 const AVATAR_PHOTOS = [
@@ -40,54 +31,62 @@ const AVATAR_PHOTOS = [
   'https://images.pexels.com/photos/1212984/pexels-photo-1212984.jpeg?auto=compress&cs=tinysrgb&w=80&h=80&fit=crop&crop=face',
   'https://images.pexels.com/photos/3778603/pexels-photo-3778603.jpeg?auto=compress&cs=tinysrgb&w=80&h=80&fit=crop&crop=face',
   'https://images.pexels.com/photos/1516680/pexels-photo-1516680.jpeg?auto=compress&cs=tinysrgb&w=80&h=80&fit=crop&crop=face',
+  'https://images.pexels.com/photos/3785079/pexels-photo-3785079.jpeg?auto=compress&cs=tinysrgb&w=80&h=80&fit=crop&crop=face',
+  'https://images.pexels.com/photos/2726111/pexels-photo-2726111.jpeg?auto=compress&cs=tinysrgb&w=80&h=80&fit=crop&crop=face',
+  'https://images.pexels.com/photos/1462637/pexels-photo-1462637.jpeg?auto=compress&cs=tinysrgb&w=80&h=80&fit=crop&crop=face',
+  'https://images.pexels.com/photos/3756679/pexels-photo-3756679.jpeg?auto=compress&cs=tinysrgb&w=80&h=80&fit=crop&crop=face',
 ];
 
-const TYPE_LABELS: Record<string, string> = {
-  service: 'Offre',
-  object_new: 'Neuf',
-  object_used: 'Occasion',
-  demand: 'Recherche',
-  resource: 'Ressource',
-};
+const PEOPLE = [
+  { name: 'Thomas L.', caption: 'Comptabilite · Toulouse' },
+  { name: 'Camille R.', caption: 'Informatique · Albi' },
+  { name: 'Leo D.', caption: 'Bricolage · Montauban' },
+  { name: 'Marine P.', caption: 'Musique · Castres' },
+  { name: 'Arnaud C.', caption: 'Redaction CV · Toulouse' },
+  { name: 'Sophie M.', caption: 'Ecoute · Muret' },
+  { name: 'Karim B.', caption: 'Formation · Blagnac' },
+  { name: 'Nathalie F.', caption: 'Parentalite · Colomiers' },
+  { name: 'Florian V.', caption: 'Velo · Tournefeuille' },
+  { name: 'Emilie G.', caption: 'Yoga · Ramonville' },
+  { name: 'Baptiste T.', caption: 'Dev web · Toulouse' },
+  { name: 'Lola J.', caption: 'Couture · Balma' },
+  { name: 'Claire M.', caption: 'Piano · Toulouse' },
+  { name: 'Youssef B.', caption: 'Aide demenagement · Blagnac' },
+  { name: 'Hugo R.', caption: 'Plomberie · Aucamville' },
+  { name: 'Ines K.', caption: 'Traduction arabe · Toulouse' },
+  { name: 'Pierre A.', caption: 'Jardinage · Colomiers' },
+  { name: 'Manon D.', caption: 'Design · Toulouse' },
+  { name: 'Omar S.', caption: 'Electricite · Blagnac' },
+  { name: 'Julie H.', caption: 'Soutien scolaire · Ramonville' },
+  { name: 'Maxime L.', caption: 'Photo · Toulouse' },
+  { name: 'Aisha T.', caption: 'Cuisine · Muret' },
+  { name: 'Lucas F.', caption: 'Droit · Toulouse' },
+  { name: 'Sarah N.', caption: 'Sophrologie · Balma' },
+];
 
-const LANES = 5;
-const MAX_DROPS = 8;
+const LANES = 6;
+const MAX_DROPS = 10;
 
-export default function FeedRain({ listings, loading }: { listings: ListingWithProfile[]; loading: boolean }) {
+export default function GlobalRain({ frozen }: { frozen: boolean }) {
   const [drops, setDrops] = useState<RainDrop[]>([]);
   const counterRef = useRef(0);
   const poolIdx = useRef(0);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const listingsRef = useRef(listings);
-  listingsRef.current = listings;
+  const frozenRef = useRef(frozen);
+  frozenRef.current = frozen;
 
   const spawnDrop = useCallback(() => {
-    const pool = listingsRef.current;
-    if (!pool.length) return;
-    const item = pool[poolIdx.current % pool.length];
+    if (frozenRef.current) return;
+    const person = PEOPLE[poolIdx.current % PEOPLE.length];
     poolIdx.current++;
     const id = counterRef.current++;
-    const depth = Math.random() < 0.2 ? 0 : Math.random() < 0.48 ? 1 : 2;
+    const depth = Math.random() < 0.2 ? 0 : Math.random() < 0.5 ? 1 : 2;
     const lane = Math.floor(Math.random() * LANES);
-    const delay = Math.random() * 0.5;
+    const delay = Math.random() * 0.6;
     const avatarIdx = id % AVATAR_PHOTOS.length;
 
-    const drop: RainDrop = {
-      id,
-      title: item.title,
-      author: item._profile?.title ?? 'Membre',
-      city: item._profile?.city ?? '',
-      type: TYPE_LABELS[item.listing_type] ?? 'Offre',
-      pricing: item.price_hint ?? undefined,
-      lane,
-      depth,
-      delay,
-      avatarIdx,
-      avatarUrl: item._profile?.avatar_url,
-    };
-
     setDrops(prev => {
-      const next = [...prev, drop];
+      const next = [...prev, { ...person, id, lane, depth, delay, avatarIdx }];
       if (next.length > MAX_DROPS) return next.slice(next.length - MAX_DROPS);
       return next;
     });
@@ -98,64 +97,56 @@ export default function FeedRain({ listings, loading }: { listings: ListingWithP
   }, []);
 
   useEffect(() => {
-    if (loading || !listings.length) return;
     spawnDrop();
-    const t = setTimeout(() => spawnDrop(), 600);
-    intervalRef.current = setInterval(() => spawnDrop(), 1200 + Math.random() * 500);
+    const t = setTimeout(() => spawnDrop(), 800);
+    intervalRef.current = setInterval(() => {
+      if (!frozenRef.current) spawnDrop();
+    }, 1600);
     return () => {
       clearTimeout(t);
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
-  }, [loading, listings.length > 0, spawnDrop]);
-
-  if (loading) {
-    return (
-      <div className="py-16 flex justify-center">
-        <div className="w-6 h-6 border border-white/15 border-t-white/50 rounded-full animate-spin" />
-      </div>
-    );
-  }
+  }, [spawnDrop]);
 
   return (
-    <div className="feed-rain-stage feed-rain-stage--page">
+    <div
+      className={`global-rain ${frozen ? 'global-rain--frozen' : ''}`}
+      aria-hidden
+    >
       {drops.map(drop => (
-        <BubbleDrop key={drop.id} drop={drop} onDone={() => removeDrop(drop.id)} />
+        <GlobalRainBubble key={drop.id} drop={drop} onDone={() => removeDrop(drop.id)} frozen={frozen} />
       ))}
     </div>
   );
 }
 
-function BubbleDrop({ drop, onDone }: { drop: RainDrop; onDone: () => void }) {
+function GlobalRainBubble({ drop, onDone, frozen }: { drop: RainDrop; onDone: () => void; frozen: boolean }) {
   useEffect(() => {
-    const dur = drop.depth === 0 ? 5600 : drop.depth === 1 ? 4400 : 3800;
-    const t = setTimeout(onDone, dur + drop.delay * 1000 + 300);
+    if (frozen) return;
+    const dur = drop.depth === 0 ? 7000 : drop.depth === 1 ? 5500 : 4500;
+    const t = setTimeout(onDone, dur + drop.delay * 1000 + 400);
     return () => clearTimeout(t);
-  }, [drop, onDone]);
+  }, [drop, onDone, frozen]);
 
-  const depthClass = `feed-rain-drop--d${drop.depth}`;
-  const laneOffset = 4 + (drop.lane / LANES) * 78;
-  const avatarSrc = drop.avatarUrl || AVATAR_PHOTOS[drop.avatarIdx];
+  const depthClass = `global-rain-drop--d${drop.depth}`;
+  const laneOffset = 3 + (drop.lane / LANES) * 82;
+  const avatarSrc = AVATAR_PHOTOS[drop.avatarIdx];
 
   const style: React.CSSProperties = {
-    '--rain-left': `${laneOffset}%`,
-    '--rain-delay': `${drop.delay}s`,
-    '--rain-dur': drop.depth === 0 ? '5.6s' : drop.depth === 1 ? '4.4s' : '3.8s',
+    '--gr-left': `${laneOffset}%`,
+    '--gr-delay': `${drop.delay}s`,
+    '--gr-dur': drop.depth === 0 ? '7s' : drop.depth === 1 ? '5.5s' : '4.5s',
   } as React.CSSProperties;
 
   const isClose = drop.depth === 2;
   const isMid = drop.depth === 1;
 
   return (
-    <div className={`feed-rain-drop ${depthClass}`} style={style}>
-      <img className="feed-rain-avatar" src={avatarSrc} alt="" loading="lazy" />
-      <div className="feed-rain-body">
-        <strong>{drop.author}</strong>
-        {(isClose || isMid) && <span className="feed-rain-title">{drop.title}</span>}
-        {isClose && drop.city && (
-          <span className="feed-rain-meta">
-            {drop.city} · {drop.type}{drop.pricing ? ` · ${drop.pricing}` : ''}
-          </span>
-        )}
+    <div className={`global-rain-drop ${depthClass}`} style={style}>
+      <img className="global-rain-avatar" src={avatarSrc} alt="" loading="lazy" />
+      <div className="global-rain-body">
+        <strong>{drop.name}</strong>
+        {(isClose || isMid) && <span className="global-rain-caption">{drop.caption}</span>}
       </div>
     </div>
   );

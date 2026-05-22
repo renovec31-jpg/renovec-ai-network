@@ -6,7 +6,6 @@ import {
 } from 'lucide-react';
 import { supabase, ProfileListing } from '../lib/supabase';
 import { avatarBg, initials, relTime as relativeTime } from '../lib/ui';
-import FeedRain from '../components/FeedRain';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -417,20 +416,59 @@ export default function FeedPage({
         })}
       </div>
 
-      {/* ── Rain of listings ─────────────────────────────────── */}
-      <div className="flex items-center justify-between mb-3">
-        <p className="text-[11px] text-white/22">
-          {total > 0 ? `${total} annonce${total > 1 ? 's' : ''} dans le réseau` : ''}
-        </p>
-        <button
-          onClick={() => { setPage(0); loadListings(0, filter, sort, search); }}
-          className="text-[11px] text-white/22 hover:text-white/50 flex items-center gap-1 transition-colors"
-        >
-          <RefreshCw size={10} /> Actualiser
-        </button>
-      </div>
+      {/* ── Feed grid ───────────────────────────────────────── */}
+      {loading ? (
+        <div className="py-16 flex justify-center">
+          <div className="w-6 h-6 border border-white/15 border-t-white/50 rounded-full animate-spin" />
+        </div>
+      ) : listings.length === 0 ? (
+        <div className="py-14 text-center">
+          <Sparkles size={24} className="text-white/15 mx-auto mb-3" />
+          <p className="text-white/28 text-sm">
+            {search ? 'Aucun résultat pour cette recherche.' : 'Aucune annonce pour le moment.'}
+          </p>
+        </div>
+      ) : (
+        <>
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-[11px] text-white/22">
+              {search ? `${total} résultat${total > 1 ? 's' : ''}` : `${total} annonce${total > 1 ? 's' : ''}`}
+            </p>
+            <button
+              onClick={() => { setPage(0); loadListings(0, filter, sort, search); }}
+              className="text-[11px] text-white/22 hover:text-white/50 flex items-center gap-1 transition-colors"
+            >
+              <RefreshCw size={10} /> Actualiser
+            </button>
+          </div>
 
-      <FeedRain listings={listings} loading={loading} />
+          <div className="grid grid-cols-1 gap-3">
+            {listings.map(l => (
+              <FeedCard
+                key={l.id}
+                listing={l}
+                onViewProfile={onViewProfile}
+                onContact={(profileId) => {
+                  const title = l._profile?.title ?? '';
+                  onContact(profileId, title);
+                }}
+              />
+            ))}
+          </div>
+
+          {hasMore && (
+            <button
+              onClick={loadMore}
+              disabled={loadingMore}
+              className="w-full mt-4 py-3 rounded-xl border border-white/8 hover:border-white/18 text-sm text-white/30 hover:text-white/65 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+            >
+              {loadingMore
+                ? <span className="w-4 h-4 border border-white/20 border-t-white/60 rounded-full animate-spin" />
+                : `Voir plus · ${total - listings.length} restantes`}
+            </button>
+          )}
+        </>
+      )}
     </div>
   );
 }

@@ -6189,6 +6189,98 @@ button, a, input, textarea, select {
   margin-top: 6px; font-style: italic;
 }
 
+/* ── Global Rain Layer (full-page, behind chatbot) ─────────────────── */
+.global-rain {
+  position: fixed; inset: 0;
+  z-index: 15;
+  pointer-events: none;
+  overflow: hidden;
+  transition: opacity 0.6s ease;
+}
+.global-rain--frozen {
+  opacity: 0.35;
+}
+.global-rain--frozen .global-rain-drop {
+  animation-play-state: paused !important;
+}
+
+.global-rain-drop {
+  position: absolute; top: -60px;
+  left: var(--gr-left, 20%);
+  display: flex; align-items: center; gap: 8px;
+  will-change: transform, opacity;
+  pointer-events: none;
+  animation:
+    grFall var(--gr-dur, 5s) cubic-bezier(.3,.0,.5,.96) var(--gr-delay, 0s) forwards,
+    grBounce .5s cubic-bezier(.33,1,.68,1) calc(var(--gr-dur, 5s) * 0.84 + var(--gr-delay, 0s)) forwards,
+    grDissolve .6s cubic-bezier(.4,0,.2,1) calc(var(--gr-dur, 5s) * 0.93 + var(--gr-delay, 0s)) forwards;
+}
+
+.global-rain-drop--d0 {
+  opacity: 0.15;
+  filter: blur(1.2px);
+  --depth-opacity: 0.15;
+}
+.global-rain-drop--d0 .global-rain-avatar { width: 20px; height: 20px; }
+.global-rain-drop--d0 .global-rain-body strong { font-size: 9px; }
+
+.global-rain-drop--d1 {
+  opacity: 0.38;
+  --depth-opacity: 0.38;
+}
+.global-rain-drop--d1 .global-rain-avatar { width: 28px; height: 28px; }
+.global-rain-drop--d1 .global-rain-body strong { font-size: 10.5px; }
+.global-rain-drop--d1 .global-rain-caption { font-size: 10px; }
+
+.global-rain-drop--d2 {
+  opacity: 0.62;
+  --depth-opacity: 0.62;
+}
+.global-rain-drop--d2 .global-rain-avatar { width: 34px; height: 34px; }
+.global-rain-drop--d2 .global-rain-body strong { font-size: 12px; }
+
+.global-rain-avatar {
+  border-radius: 50%; flex-shrink: 0;
+  object-fit: cover; aspect-ratio: 1;
+  border: 1.5px solid rgba(255,255,255,0.06);
+}
+
+.global-rain-body {
+  min-width: 0; display: flex; flex-direction: column; gap: 1px;
+}
+.global-rain-body strong {
+  font-weight: 520; color: rgba(255,255,255,0.45);
+  letter-spacing: -0.01em; white-space: nowrap;
+}
+.global-rain-caption {
+  font-size: 10.5px; font-weight: 400; color: rgba(255,255,255,0.22);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  max-width: 180px;
+}
+
+@keyframes grFall {
+  0%   { transform: translateY(0); opacity: var(--depth-opacity, 0.5); }
+  84%  { transform: translateY(calc(100vh - 40px)); opacity: var(--depth-opacity, 0.5); }
+  100% { transform: translateY(calc(100vh - 30px)); opacity: var(--depth-opacity, 0.5); }
+}
+@keyframes grBounce {
+  0%   { transform: translateY(calc(100vh - 30px)); }
+  30%  { transform: translateY(calc(100vh - 38px)); }
+  55%  { transform: translateY(calc(100vh - 32px)); }
+  75%  { transform: translateY(calc(100vh - 34px)); }
+  100% { transform: translateY(calc(100vh - 33px)); }
+}
+@keyframes grDissolve {
+  0%   { opacity: var(--depth-opacity, 0.5); transform: translateY(calc(100vh - 33px)) translateX(0); }
+  100% { opacity: 0; transform: translateY(calc(100vh - 33px)) translateX(22px); filter: blur(2.5px); }
+}
+
+@media (max-width: 768px) {
+  .global-rain-drop--d0 { display: none; }
+  .global-rain-caption { max-width: 120px; }
+  .global-rain-drop--d2 .global-rain-avatar { width: 28px; height: 28px; }
+}
+
 /* ── Feed Rain View ────────────────────────────────────────────────── */
 .feed-rain {
   display: flex; flex-direction: column; gap: 10px;

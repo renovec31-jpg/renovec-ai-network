@@ -5,6 +5,7 @@ import WorkspaceOverlay from '../components/workspace/WorkspaceOverlay';
 import TeaserMap from '../components/TeaserMap';
 import GuestMatchFlow from '../components/GuestMatchFlow';
 import LiveFeedSidebar from '../components/LiveFeedSidebar';
+import GlobalRain from '../components/GlobalRain';
 import { avatarBg as teaserAvatarBg } from '../lib/ui';
 import { supabase } from '../lib/supabase';
 import { NETWORK_STATS } from '../data/mockOccitanie';
@@ -1015,6 +1016,9 @@ export default function LandingPage({ onEnter, onHowItWorks, onGoToPresence, onM
         <div className="lp-blob lp-blob-b" />
         <div className="lp-blob lp-blob-c" />
       </div>
+
+      {/* ── Global rain of profiles ── */}
+      <GlobalRain frozen={aiOpen} />
 
       {/* ── Full-page spine connectome ── */}
       <PageSpine />
