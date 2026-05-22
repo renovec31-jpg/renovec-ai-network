@@ -188,6 +188,7 @@ export default function WorkspaceOverlay({ onClose, onJoinNetwork }: Props) {
   const historyRef = useRef<Turn[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
   const sendTranscriptRef = useRef<(text: string) => Promise<void>>(async () => {});
+  const startRetriesRef = useRef(0);
 
   useEffect(() => { historyRef.current = history; }, [history]);
 
@@ -442,11 +443,19 @@ export default function WorkspaceOverlay({ onClose, onJoinNetwork }: Props) {
     setVoiceState('listening');
     try {
       recognition.start();
+      startRetriesRef.current = 0;
     } catch {
       isListening.current = false;
       recognitionRef.current = null;
-      setVoiceState('paused');
-      setTimeout(() => inputRef.current?.focus(), 100);
+      startRetriesRef.current++;
+      if (streamRef.current && startRetriesRef.current < 5) {
+        setTimeout(() => {
+          if (streamRef.current && !processingRef.current) beginListening();
+        }, 800);
+      } else {
+        setVoiceState('paused');
+        setTimeout(() => inputRef.current?.focus(), 100);
+      }
     }
   }, []);
 
@@ -526,7 +535,6 @@ export default function WorkspaceOverlay({ onClose, onJoinNetwork }: Props) {
       setVoiceState('speaking');
       await playTTS(greetText);
       if (cancelled) return;
-      setVoiceState('idle');
       if (streamRef.current) {
         beginListening();
       } else {
