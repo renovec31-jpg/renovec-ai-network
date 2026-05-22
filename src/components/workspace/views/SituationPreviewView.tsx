@@ -1,4 +1,4 @@
-import { Clock, MapPin, Zap } from 'lucide-react';
+import { MapPin, Zap } from 'lucide-react';
 import type { SituationDraft } from '../types';
 
 interface Props {
@@ -7,39 +7,34 @@ interface Props {
 
 export default function SituationPreviewView({ draft }: Props) {
   return (
-    <div className="aib-view aib-situation">
-      <div className="aib-section-label">Situation en construction</div>
+    <div className="aib-view aib-situ">
+      <div className="aib-situ-glow" />
 
-      <div className="aib-draft-card">
-        <h4 className="aib-draft-title">{draft.title}</h4>
-        <p className="aib-draft-summary">{draft.summary}</p>
+      <span className="aib-situ-label">Situation en construction</span>
 
-        <div className="aib-draft-meta">
+      <h4 className="aib-situ-title">{draft.title}</h4>
+      <p className="aib-situ-text">{draft.summary}</p>
+
+      {(draft.territory || draft.urgency > 0.5) && (
+        <div className="aib-situ-meta">
           {draft.territory && (
-            <span className="aib-draft-tag">
-              <MapPin size={10} /> {draft.territory}
-            </span>
+            <span><MapPin size={9} /> {draft.territory}</span>
           )}
           {draft.urgency > 0.5 && (
-            <span className="aib-draft-tag aib-draft-tag--urgency">
-              <Zap size={10} /> Urgent
-            </span>
+            <span className="aib-situ-urg"><Zap size={9} /> Urgent</span>
           )}
         </div>
+      )}
 
-        {draft.keywords.length > 0 && (
-          <div className="aib-draft-keywords">
-            {draft.keywords.map((kw, i) => (
-              <span key={i}>{kw}</span>
-            ))}
-          </div>
-        )}
-
-        <div className="aib-draft-footer">
-          <Clock size={10} />
-          <span>Brouillon — s'affine au fil de l'echange</span>
+      {draft.keywords.length > 0 && (
+        <div className="aib-situ-tokens">
+          {draft.keywords.map((kw, i) => (
+            <span key={i} style={{ animationDelay: `${i * 60}ms` }}>{kw}</span>
+          ))}
         </div>
-      </div>
+      )}
+
+      <span className="aib-situ-state">S'affine au fil de l'echange</span>
     </div>
   );
 }

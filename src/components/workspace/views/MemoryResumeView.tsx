@@ -8,7 +8,7 @@ interface Props {
 export default function MemoryResumeView({ userName, lastContext }: Props) {
   return (
     <div className="aib-view aib-memory">
-      <div className="aib-section-label">Reprise de contexte</div>
+      <span className="aib-match-label">Reprise de contexte</span>
 
       <div className="aib-memory-card">
         <h4>Bonjour {userName}</h4>

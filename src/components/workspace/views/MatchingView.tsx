@@ -9,32 +9,36 @@ interface Props {
 
 export default function MatchingView({ profiles, isConnected, onJoinNetwork }: Props) {
   return (
-    <div className="aib-view aib-matching">
-      <div className="aib-section-label">Profils identifies</div>
+    <div className="aib-view aib-match">
+      <span className="aib-match-label">Profils identifies</span>
 
-      <div className="aib-profiles-list">
-        {profiles.map(p => (
-          <div key={p.id} className="aib-profile-row">
-            <div className="aib-profile-avatar" style={{ background: p.color }}>
+      <div className="aib-match-flow">
+        {profiles.map((p, i) => (
+          <div
+            key={p.id}
+            className="aib-match-capsule"
+            style={{ animationDelay: `${i * 120}ms` }}
+          >
+            <div className="aib-match-avatar" style={{ background: p.color }}>
               {p.prenom[0]}
             </div>
-            <div className="aib-profile-body">
-              <span className="aib-profile-name">{p.prenom}</span>
-              <span className="aib-profile-cap">{p.capacite}</span>
-              <div className="aib-profile-meta">
-                <span><MapPin size={9} /> {p.ville}</span>
-                <span><Star size={9} /> {p.pts} pts</span>
-              </div>
+            <div className="aib-match-body">
+              <strong>{p.prenom}</strong>
+              <span className="aib-match-cap">{p.capacite}</span>
+              <span className="aib-match-sub">
+                <MapPin size={8} /> {p.ville}
+                <Star size={8} /> {p.pts}
+              </span>
             </div>
-            <div className={`aib-profile-status aib-profile-status--${p.disponibilite}`}>
+            <span className={`aib-match-dispo aib-match-dispo--${p.disponibilite}`}>
               {p.disponibilite === 'disponible' ? 'Dispo' : 'Bientot'}
-            </div>
+            </span>
           </div>
         ))}
       </div>
 
       {!isConnected && (
-        <div className="aib-action-banner">
+        <div className="aib-match-cta">
           <p>Rejoignez le reseau pour activer la mise en relation.</p>
           <button onClick={onJoinNetwork}>Rejoindre</button>
         </div>

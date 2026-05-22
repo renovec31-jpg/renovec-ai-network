@@ -3,7 +3,7 @@ import { MOCK_FEED } from '../../../data/mockOccitanie';
 export default function FeedExploreView() {
   return (
     <div className="aib-view aib-feed">
-      <div className="aib-section-label">Ce qui circule dans le reseau</div>
+      <span className="aib-match-label">Ce qui circule dans le reseau</span>
 
       <div className="aib-feed-list">
         {MOCK_FEED.slice(0, 8).map(item => (
