@@ -187,7 +187,6 @@ export default function WorkspaceOverlay({ onClose, onJoinNetwork }: Props) {
   const processingRef = useRef(false);
   const historyRef = useRef<Turn[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
-  const mountedRef = useRef(false);
   const sendTranscriptRef = useRef<(text: string) => Promise<void>>(async () => {});
 
   useEffect(() => { historyRef.current = history; }, [history]);
@@ -424,7 +423,14 @@ export default function WorkspaceOverlay({ onClose, onJoinNetwork }: Props) {
     silenceStart.current = Date.now();
     speechStart.current = 0;
     setVoiceState('listening');
-    try { recognition.start(); } catch {}
+    try {
+      recognition.start();
+    } catch {
+      isListening.current = false;
+      recognitionRef.current = null;
+      setVoiceState('paused');
+      setTimeout(() => inputRef.current?.focus(), 100);
+    }
   }, []);
 
   const startMonitoring = useCallback(() => {
@@ -450,10 +456,9 @@ export default function WorkspaceOverlay({ onClose, onJoinNetwork }: Props) {
     tick();
   }, []);
 
-  // Start voice on mount (guard against React StrictMode double-fire)
+  // Start voice on mount
   useEffect(() => {
-    if (mountedRef.current) return;
-    mountedRef.current = true;
+    let cancelled = false;
 
     (async () => {
       let stream: MediaStream | null = null;
@@ -465,6 +470,11 @@ export default function WorkspaceOverlay({ onClose, onJoinNetwork }: Props) {
         } catch {
           try { stream = await navigator.mediaDevices.getUserMedia({ audio: true }); } catch { stream = null; }
         }
+      }
+
+      if (cancelled) {
+        stream?.getTracks().forEach(t => t.stop());
+        return;
       }
 
       if (!audioCtxRef.current || audioCtxRef.current.state === 'closed') {
@@ -481,6 +491,8 @@ export default function WorkspaceOverlay({ onClose, onJoinNetwork }: Props) {
         startMonitoring();
       }
 
+      if (cancelled) return;
+
       // Generate greeting
       let greetText: string;
       if (isConnected && knownUser) {
@@ -496,8 +508,11 @@ export default function WorkspaceOverlay({ onClose, onJoinNetwork }: Props) {
       addTurn('assistant', greetText);
       setVoiceState('speaking');
       await playTTS(greetText);
+      if (cancelled) return;
       if (streamRef.current) beginListening();
     })();
+
+    return () => { cancelled = true; };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const interruptAndListen = useCallback(() => {

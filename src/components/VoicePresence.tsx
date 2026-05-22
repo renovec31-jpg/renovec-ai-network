@@ -62,6 +62,7 @@ export default function VoicePresence({ onOpenChat }: { onOpenChat?: () => void 
   const historyRef     = useRef<Turn[]>([]);
   const processingRef  = useRef(false);
   const recognitionRef = useRef<SpeechRecognition | null>(null);
+  const sendTranscriptRef = useRef<(text: string) => Promise<void>>(async () => {});
 
   useEffect(() => { historyRef.current = history; }, [history]);
 
@@ -161,6 +162,8 @@ export default function VoicePresence({ onOpenChat }: { onOpenChat?: () => void 
     }
   }, [addTurn, playTTS]);
 
+  sendTranscriptRef.current = sendTranscript;
+
   // --- Begin continuous listening via Web Speech API ---
   const beginListening = useCallback(() => {
     if (processingRef.current) return;
@@ -182,14 +185,17 @@ export default function VoicePresence({ onOpenChat }: { onOpenChat?: () => void 
     recognition.interimResults = true;
     recognition.maxAlternatives = 1;
 
+    let handledFinal = false;
+
     recognition.onresult = (e) => {
       for (let i = e.resultIndex; i < e.results.length; i++) {
-        if (e.results[i].isFinal) {
+        if (e.results[i].isFinal && !handledFinal) {
           const transcript = e.results[i][0].transcript.trim();
           if (transcript.length > 1) {
+            handledFinal = true;
             isListening.current = false;
             try { recognition.stop(); } catch {}
-            sendTranscript(transcript).then(() => {
+            sendTranscriptRef.current(transcript).then(() => {
               if (streamRef.current && !processingRef.current) beginListening();
             });
           }
@@ -198,6 +204,7 @@ export default function VoicePresence({ onOpenChat }: { onOpenChat?: () => void 
     };
 
     recognition.onend = () => {
+      if (handledFinal) return;
       if (isListening.current && !processingRef.current && streamRef.current) {
         try { recognition.start(); } catch {}
       }
@@ -227,8 +234,16 @@ export default function VoicePresence({ onOpenChat }: { onOpenChat?: () => void 
     speechStart.current = 0;
     setUiState('listening');
 
-    try { recognition.start(); } catch {}
-  }, [sendTranscript, addTurn]);
+    try {
+      recognition.start();
+    } catch {
+      isListening.current = false;
+      recognitionRef.current = null;
+      setUiState('paused');
+      addTurn('assistant', 'Reconnaissance vocale indisponible. Écris ta question ci-dessous.');
+      setTimeout(() => inputRef.current?.focus(), 100);
+    }
+  }, [addTurn]);
 
   // --- Audio level monitoring (visual waveform only) ---
   const startMonitoring = useCallback(() => {
