@@ -6221,41 +6221,37 @@ button, a, input, textarea, select {
   will-change: transform, opacity;
 }
 
-/* Enter: fall from top with bounce */
+/* Enter: inertial fall with damped micro-settle */
 .feed-gravity-item--enter {
-  animation: feedGravityDrop .7s cubic-bezier(.22,.68,.36,1.12) both;
+  animation: feedGravityDrop .9s cubic-bezier(.25,.46,.45,.94) both;
 }
 
-/* Visible: settled with subtle breathe */
+/* Visible: at rest */
 .feed-gravity-item--visible {
-  opacity: 1; transform: translateY(0);
-  animation: feedSettle .3s cubic-bezier(.16,1,.3,1) both;
+  opacity: 1; transform: translateY(0) translateX(0);
 }
 
-/* Exit: slide out laterally */
+/* Exit: gentle lateral drift */
 .feed-gravity-item--exit {
-  animation: feedSlideOut .55s cubic-bezier(.4,0,.6,1) both;
+  animation: feedSlideOut .8s cubic-bezier(.4,0,.15,1) both;
 }
 
 @keyframes feedGravityDrop {
   0% {
     opacity: 0;
-    transform: translateY(-40px) scale(0.96);
-    filter: blur(4px);
+    transform: translateY(-32px) scale(0.98);
+    filter: blur(3px);
   }
-  30% {
+  45% {
     opacity: 1;
-    transform: translateY(var(--bounce-offset, 4px)) scale(1.01);
+    transform: translateY(var(--bounce-offset, 2.5px)) scale(1);
     filter: blur(0);
   }
-  50% {
-    transform: translateY(calc(var(--bounce-offset, 4px) * -0.4)) scale(0.995);
+  65% {
+    transform: translateY(calc(var(--bounce-offset, 2.5px) * -0.2)) scale(1);
   }
-  70% {
-    transform: translateY(calc(var(--bounce-offset, 4px) * 0.2)) scale(1.002);
-  }
-  85% {
-    transform: translateY(calc(var(--bounce-offset, 4px) * -0.08));
+  80% {
+    transform: translateY(calc(var(--bounce-offset, 2.5px) * 0.06)) scale(1);
   }
   100% {
     opacity: 1;
@@ -6264,24 +6260,15 @@ button, a, input, textarea, select {
   }
 }
 
-@keyframes feedSettle {
-  from { transform: translateY(0); }
-  to   { transform: translateY(0); }
-}
-
 @keyframes feedSlideOut {
   0% {
     opacity: 1;
     transform: translateX(0) scale(1);
   }
-  40% {
-    opacity: 0.7;
-    transform: translateX(calc(12px * var(--exit-dir, 1))) scale(0.98);
-  }
   100% {
     opacity: 0;
-    transform: translateX(calc(60px * var(--exit-dir, 1))) scale(0.94);
-    filter: blur(3px);
+    transform: translateX(calc(40px * var(--exit-dir, 1))) scale(0.98);
+    filter: blur(2px);
   }
 }
 

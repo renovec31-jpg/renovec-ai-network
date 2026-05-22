@@ -44,9 +44,8 @@ export default function FeedExploreView() {
   }, [phase, advance]);
 
   const variationStyle = {
-    '--bounce-offset': `${2 + (currentIdx % 3) * 1.5}px`,
+    '--bounce-offset': `${1.5 + (currentIdx % 3) * 0.8}px`,
     '--exit-dir': currentIdx % 2 === 0 ? '1' : '-1',
-    '--settle-delay': `${0.05 + (currentIdx % 4) * 0.02}s`,
   } as React.CSSProperties;
 
   return (
