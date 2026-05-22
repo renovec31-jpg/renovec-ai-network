@@ -192,11 +192,20 @@ export default function WorkspaceOverlay({ onClose, onJoinNetwork }: Props) {
 
   useEffect(() => { historyRef.current = history; }, [history]);
 
-  // Animate waveform
+  // Animate waveform (throttled on mobile, paused when hidden)
   useEffect(() => {
     let id: number;
-    function frame() { setTick(t => t + 1); id = requestAnimationFrame(frame); }
-    id = requestAnimationFrame(frame);
+    const isMobile = window.innerWidth < 768;
+    const interval = isMobile ? 1000 / 30 : 0;
+    let last = 0;
+    function tick(now: number) {
+      if (document.hidden) { id = requestAnimationFrame(tick); return; }
+      if (interval && now - last < interval) { id = requestAnimationFrame(tick); return; }
+      last = now;
+      setTick(t => t + 1);
+      id = requestAnimationFrame(tick);
+    }
+    id = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(id);
   }, []);
 
@@ -205,8 +214,15 @@ export default function WorkspaceOverlay({ onClose, onJoinNetwork }: Props) {
     setHistory(h => [...h, { role, content, id: `${role}_${Date.now()}_${Math.random()}` }]);
   }, []);
 
+  const stopTTS = useCallback(() => {
+    try { window.speechSynthesis?.cancel(); } catch {}
+    try { audioRef.current?.stop(); } catch {}
+    audioRef.current = null;
+  }, []);
+
   const playTTS = useCallback(async (text: string): Promise<void> => {
     if (muted) return;
+    stopTTS();
     try {
       const ctx = audioCtxRef.current;
       if (!ctx || ctx.state === 'closed') return;
@@ -243,7 +259,7 @@ export default function WorkspaceOverlay({ onClose, onJoinNetwork }: Props) {
         source.start(0);
       });
     } catch {}
-  }, [muted]);
+  }, [muted, stopTTS]);
 
   // ── AI Browser processing ──────────────────────────────────────────
   const processUserInput = useCallback((text: string) => {
@@ -400,6 +416,8 @@ export default function WorkspaceOverlay({ onClose, onJoinNetwork }: Props) {
     tick();
   }, []);
 
+  const silenceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   // Start SpeechRecognition — only call AFTER mic permission granted
   const beginListening = useCallback(() => {
     if (processingRef.current) return;
@@ -408,6 +426,8 @@ export default function WorkspaceOverlay({ onClose, onJoinNetwork }: Props) {
       try { recognitionRef.current.abort(); } catch {}
       recognitionRef.current = null;
     }
+    if (silenceTimerRef.current) { clearTimeout(silenceTimerRef.current); silenceTimerRef.current = null; }
+
     const Ctor = getSpeechRecognitionCtor();
     if (!Ctor) {
       setMicError('Reconnaissance vocale non supportee par ce navigateur.');
@@ -421,7 +441,20 @@ export default function WorkspaceOverlay({ onClose, onJoinNetwork }: Props) {
     recognition.interimResults = true;
     recognition.maxAlternatives = 1;
 
+    // Auto-stop after 2s silence to save battery
+    let hadSpeech = false;
+    silenceTimerRef.current = setTimeout(() => {
+      if (!hadSpeech && isListening.current && recognitionRef.current) {
+        isListening.current = false;
+        try { recognition.stop(); } catch {}
+        recognitionRef.current = null;
+        setVoiceState('paused');
+      }
+    }, 2000);
+
     recognition.onresult = (e: any) => {
+      hadSpeech = true;
+      if (silenceTimerRef.current) { clearTimeout(silenceTimerRef.current); silenceTimerRef.current = null; }
       for (let i = e.resultIndex; i < e.results.length; i++) {
         if (e.results[i].isFinal) {
           const transcript = e.results[i][0].transcript.trim();
@@ -438,6 +471,7 @@ export default function WorkspaceOverlay({ onClose, onJoinNetwork }: Props) {
     };
 
     recognition.onend = () => {
+      if (silenceTimerRef.current) { clearTimeout(silenceTimerRef.current); silenceTimerRef.current = null; }
       if (isListening.current && !processingRef.current && streamRef.current) {
         recognitionRef.current = null;
         setTimeout(() => beginListening(), 150);
@@ -569,6 +603,8 @@ export default function WorkspaceOverlay({ onClose, onJoinNetwork }: Props) {
 
     return () => {
       cancelled = true;
+      try { window.speechSynthesis?.cancel(); } catch {}
+      if (silenceTimerRef.current) { clearTimeout(silenceTimerRef.current); silenceTimerRef.current = null; }
       streamRef.current?.getTracks().forEach(t => t.stop());
       streamRef.current = null;
       try { audioRef.current?.stop(); } catch {}
@@ -585,11 +621,10 @@ export default function WorkspaceOverlay({ onClose, onJoinNetwork }: Props) {
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const interruptAndListen = useCallback(() => {
-    try { audioRef.current?.stop(); } catch {}
-    audioRef.current = null;
+    stopTTS();
     processingRef.current = false;
     if (streamRef.current) beginListening();
-  }, [beginListening]);
+  }, [stopTTS, beginListening]);
 
   const togglePause = useCallback(() => {
     if (voiceState === 'paused' && streamRef.current) {
@@ -604,10 +639,10 @@ export default function WorkspaceOverlay({ onClose, onJoinNetwork }: Props) {
 
   const handleMute = useCallback(() => {
     setMuted(m => {
-      if (!m) { try { audioRef.current?.stop(); } catch {}; audioRef.current = null; }
+      if (!m) stopTTS();
       return !m;
     });
-  }, []);
+  }, [stopTTS]);
 
   // Text submit
   const handleTextSubmit = useCallback(async () => {

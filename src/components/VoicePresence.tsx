@@ -79,12 +79,21 @@ export default function VoicePresence({ onOpenChat }: { onOpenChat?: () => void 
     cancelAnimationFrame(rafRef.current);
   }, []);
 
-  // Animation frame for waveform
+  // Animation frame for waveform (throttled on mobile, paused when hidden)
   useEffect(() => {
     if (!panelOpen) return;
     let id: number;
-    function frame() { setTick(t => t + 1); id = requestAnimationFrame(frame); }
-    id = requestAnimationFrame(frame);
+    const isMobile = window.innerWidth < 768;
+    const interval = isMobile ? 1000 / 30 : 0;
+    let last = 0;
+    function tick(now: number) {
+      if (document.hidden) { id = requestAnimationFrame(tick); return; }
+      if (interval && now - last < interval) { id = requestAnimationFrame(tick); return; }
+      last = now;
+      setTick(t => t + 1);
+      id = requestAnimationFrame(tick);
+    }
+    id = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(id);
   }, [panelOpen]);
 

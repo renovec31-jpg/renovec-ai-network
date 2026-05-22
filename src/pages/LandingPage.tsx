@@ -103,6 +103,13 @@ function PageSpine() {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
     const dpr = window.devicePixelRatio || 1;
+    const isMobile = window.innerWidth < 768;
+    const frameInterval = isMobile ? 1000 / 30 : 0;
+    let lastFrameTime = 0;
+    let paused = false;
+
+    const onVisibility = () => { paused = document.hidden; };
+    document.addEventListener('visibilitychange', onVisibility);
 
     let W = 0, H = 0;
     const setSize = () => {
@@ -114,10 +121,18 @@ function PageSpine() {
     };
     setSize();
 
-    const { nodes, links } = buildSpine();
+    const full = buildSpine();
+    const nodes = isMobile ? full.nodes.filter((_, i) => i % 2 === 0) : full.nodes;
+    const nodeSet = new Set(nodes.map((_, i) => (isMobile ? i * 2 : i)));
+    const links = isMobile
+      ? full.links.filter(l => nodeSet.has(l.a) && nodeSet.has(l.b)).map(l => isMobile ? { ...l, a: l.a / 2, b: l.b / 2 } : l)
+      : full.links;
     let frame = 0;
 
-    const draw = () => {
+    const draw = (now: number) => {
+      if (paused) { rafRef.current = requestAnimationFrame(draw); return; }
+      if (frameInterval && now - lastFrameTime < frameInterval) { rafRef.current = requestAnimationFrame(draw); return; }
+      lastFrameTime = now;
       frame++;
       ctx.clearRect(0, 0, W, H);
 
@@ -220,7 +235,7 @@ function PageSpine() {
 
     const ro = new ResizeObserver(setSize);
     ro.observe(canvas);
-    return () => { cancelAnimationFrame(rafRef.current); ro.disconnect(); };
+    return () => { cancelAnimationFrame(rafRef.current); ro.disconnect(); document.removeEventListener('visibilitychange', onVisibility); };
   }, []);
 
   return (
@@ -304,6 +319,15 @@ function HeroConnectome({ className }: { className?: string }) {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
     const dpr = window.devicePixelRatio || 1;
+    const isMobile = window.innerWidth < 768;
+    const nodeCount = isMobile ? 11 : 22;
+    const frameInterval = isMobile ? 1000 / 30 : 0;
+    let lastFrameTime = 0;
+    let paused = false;
+
+    const onVisibility = () => { paused = document.hidden; };
+    document.addEventListener('visibilitychange', onVisibility);
+
     let W = 0, H = 0;
     const setSize = () => {
       const rect = canvas.getBoundingClientRect();
@@ -313,7 +337,7 @@ function HeroConnectome({ className }: { className?: string }) {
     };
     setSize();
 
-    let graph = buildHeroGraph(W, H, 22);
+    let graph = buildHeroGraph(W, H, nodeCount);
     let frame = 0;
     let nextActivation = 90 + Math.random()*100;
 
@@ -327,7 +351,10 @@ function HeroConnectome({ className }: { className?: string }) {
       });
     };
 
-    const draw = () => {
+    const draw = (now: number) => {
+      if (paused) { rafRef.current = requestAnimationFrame(draw); return; }
+      if (frameInterval && now - lastFrameTime < frameInterval) { rafRef.current = requestAnimationFrame(draw); return; }
+      lastFrameTime = now;
       frame++; ctx.clearRect(0,0,W,H);
       nextActivation--;
       if (nextActivation<=0) { triggerActivation(); nextActivation=80+Math.random()*130; }
@@ -430,9 +457,9 @@ function HeroConnectome({ className }: { className?: string }) {
       rafRef.current=requestAnimationFrame(draw);
     };
     rafRef.current=requestAnimationFrame(draw);
-    const ro=new ResizeObserver(()=>{ setSize(); graph=buildHeroGraph(W,H,22); });
+    const ro=new ResizeObserver(()=>{ setSize(); graph=buildHeroGraph(W,H,nodeCount); });
     ro.observe(canvas);
-    return ()=>{ cancelAnimationFrame(rafRef.current); ro.disconnect(); };
+    return ()=>{ cancelAnimationFrame(rafRef.current); ro.disconnect(); document.removeEventListener('visibilitychange', onVisibility); };
   }, []);
 
   return <canvas ref={canvasRef} className={className} style={{ display:'block', width:'100%', height:'100%' }} />;
