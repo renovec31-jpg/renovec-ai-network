@@ -10,10 +10,29 @@ interface RainDrop {
   color: string;
   pricing?: string;
   lane: number;
-  depth: number; // 0=far, 1=mid, 2=close
+  depth: number;
   delay: number;
-  startedAt: number;
+  avatarIdx: number;
 }
+
+const AVATAR_PHOTOS = [
+  'https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg?auto=compress&cs=tinysrgb&w=80&h=80&fit=crop&crop=face',
+  'https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=80&h=80&fit=crop&crop=face',
+  'https://images.pexels.com/photos/1681010/pexels-photo-1681010.jpeg?auto=compress&cs=tinysrgb&w=80&h=80&fit=crop&crop=face',
+  'https://images.pexels.com/photos/733872/pexels-photo-733872.jpeg?auto=compress&cs=tinysrgb&w=80&h=80&fit=crop&crop=face',
+  'https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg?auto=compress&cs=tinysrgb&w=80&h=80&fit=crop&crop=face',
+  'https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=80&h=80&fit=crop&crop=face',
+  'https://images.pexels.com/photos/1043471/pexels-photo-1043471.jpeg?auto=compress&cs=tinysrgb&w=80&h=80&fit=crop&crop=face',
+  'https://images.pexels.com/photos/1130626/pexels-photo-1130626.jpeg?auto=compress&cs=tinysrgb&w=80&h=80&fit=crop&crop=face',
+  'https://images.pexels.com/photos/2128807/pexels-photo-2128807.jpeg?auto=compress&cs=tinysrgb&w=80&h=80&fit=crop&crop=face',
+  'https://images.pexels.com/photos/1036623/pexels-photo-1036623.jpeg?auto=compress&cs=tinysrgb&w=80&h=80&fit=crop&crop=face',
+  'https://images.pexels.com/photos/614810/pexels-photo-614810.jpeg?auto=compress&cs=tinysrgb&w=80&h=80&fit=crop&crop=face',
+  'https://images.pexels.com/photos/1065084/pexels-photo-1065084.jpeg?auto=compress&cs=tinysrgb&w=80&h=80&fit=crop&crop=face',
+  'https://images.pexels.com/photos/91227/pexels-photo-91227.jpeg?auto=compress&cs=tinysrgb&w=80&h=80&fit=crop&crop=face',
+  'https://images.pexels.com/photos/1040881/pexels-photo-1040881.jpeg?auto=compress&cs=tinysrgb&w=80&h=80&fit=crop&crop=face',
+  'https://images.pexels.com/photos/1542085/pexels-photo-1542085.jpeg?auto=compress&cs=tinysrgb&w=80&h=80&fit=crop&crop=face',
+  'https://images.pexels.com/photos/712513/pexels-photo-712513.jpeg?auto=compress&cs=tinysrgb&w=80&h=80&fit=crop&crop=face',
+];
 
 const ALL_ITEMS = [
   ...MOCK_FEED.map(f => ({
@@ -37,7 +56,7 @@ const ALL_ITEMS = [
 ];
 
 const LANES = 4;
-const MAX_DROPS = 6;
+const MAX_DROPS = 7;
 
 export default function FeedExploreView() {
   const [drops, setDrops] = useState<RainDrop[]>([]);
@@ -49,12 +68,13 @@ export default function FeedExploreView() {
     const item = ALL_ITEMS[poolIdx.current % ALL_ITEMS.length];
     poolIdx.current++;
     const id = counterRef.current++;
-    const depth = Math.random() < 0.25 ? 0 : Math.random() < 0.55 ? 1 : 2;
+    const depth = Math.random() < 0.22 ? 0 : Math.random() < 0.5 ? 1 : 2;
     const lane = Math.floor(Math.random() * LANES);
-    const delay = Math.random() * 0.3;
+    const delay = Math.random() * 0.4;
+    const avatarIdx = id % AVATAR_PHOTOS.length;
 
     setDrops(prev => {
-      const next = [...prev, { ...item, id, lane, depth, delay, startedAt: Date.now() }];
+      const next = [...prev, { ...item, id, lane, depth, delay, avatarIdx }];
       if (next.length > MAX_DROPS) return next.slice(next.length - MAX_DROPS);
       return next;
     });
@@ -66,10 +86,10 @@ export default function FeedExploreView() {
 
   useEffect(() => {
     spawnDrop();
-    const t = setTimeout(() => spawnDrop(), 400);
+    const t = setTimeout(() => spawnDrop(), 500);
     intervalRef.current = setInterval(() => {
       spawnDrop();
-    }, 1400 + Math.random() * 600);
+    }, 1300 + Math.random() * 700);
     return () => {
       clearTimeout(t);
       if (intervalRef.current) clearInterval(intervalRef.current);
@@ -89,31 +109,33 @@ export default function FeedExploreView() {
 }
 
 function RainBubble({ drop, onDone }: { drop: RainDrop; onDone: () => void }) {
-  const ref = useRef<HTMLDivElement>(null);
-
   useEffect(() => {
-    const dur = drop.depth === 0 ? 4800 : drop.depth === 1 ? 3800 : 3200;
-    const t = setTimeout(onDone, dur + drop.delay * 1000);
+    const dur = drop.depth === 0 ? 5200 : drop.depth === 1 ? 4200 : 3600;
+    const t = setTimeout(onDone, dur + drop.delay * 1000 + 200);
     return () => clearTimeout(t);
   }, [drop, onDone]);
 
   const depthClass = `feed-rain-drop--d${drop.depth}`;
-  const laneOffset = 8 + (drop.lane / LANES) * 72;
+  const laneOffset = 6 + (drop.lane / LANES) * 74;
 
   const style: React.CSSProperties = {
     '--rain-left': `${laneOffset}%`,
     '--rain-delay': `${drop.delay}s`,
-    '--rain-dur': drop.depth === 0 ? '4.8s' : drop.depth === 1 ? '3.8s' : '3.2s',
+    '--rain-dur': drop.depth === 0 ? '5.2s' : drop.depth === 1 ? '4.2s' : '3.6s',
   } as React.CSSProperties;
 
   const isClose = drop.depth === 2;
   const isMid = drop.depth === 1;
+  const avatarSrc = AVATAR_PHOTOS[drop.avatarIdx];
 
   return (
-    <div ref={ref} className={`feed-rain-drop ${depthClass}`} style={style}>
-      <div className="feed-rain-avatar" style={{ background: drop.color }}>
-        {drop.author[0]}
-      </div>
+    <div className={`feed-rain-drop ${depthClass}`} style={style}>
+      <img
+        className="feed-rain-avatar"
+        src={avatarSrc}
+        alt=""
+        loading="lazy"
+      />
       <div className="feed-rain-body">
         <strong>{drop.author}</strong>
         {(isClose || isMid) && <span className="feed-rain-title">{drop.title}</span>}

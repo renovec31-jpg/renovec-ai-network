@@ -6191,59 +6191,60 @@ button, a, input, textarea, select {
 
 /* ── Feed Rain View ────────────────────────────────────────────────── */
 .feed-rain {
-  display: flex; flex-direction: column; gap: 14px;
-  min-height: 220px; position: relative;
+  display: flex; flex-direction: column; gap: 10px;
+  min-height: 340px; position: relative;
 }
 .feed-rain-label {
   font-size: 9px; font-weight: 550; color: rgba(255,255,255,0.12);
   letter-spacing: .05em; text-transform: uppercase;
 }
 .feed-rain-stage {
-  position: relative; flex: 1; min-height: 200px;
+  position: relative; flex: 1; min-height: 300px; height: 100%;
   overflow: hidden;
-  mask-image: linear-gradient(to bottom, transparent 0%, black 6%, black 82%, transparent 100%);
-  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 6%, black 82%, transparent 100%);
+  mask-image: linear-gradient(to bottom, transparent 0%, black 4%, black 90%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 4%, black 90%, transparent 100%);
 }
 
 /* ── Individual drop ─────────────────────────────────── */
 .feed-rain-drop {
-  position: absolute; top: -60px;
+  position: absolute; top: -50px;
   left: var(--rain-left, 20%);
   display: flex; align-items: center; gap: 9px;
   will-change: transform, opacity;
   animation:
-    rainFall var(--rain-dur, 3.5s) cubic-bezier(.35,.0,.45,.95) var(--rain-delay, 0s) forwards,
-    rainBounce .6s cubic-bezier(.33,1,.68,1) calc(var(--rain-dur, 3.5s) * 0.82 + var(--rain-delay, 0s)) forwards,
-    rainDissolve .7s cubic-bezier(.4,0,.2,1) calc(var(--rain-dur, 3.5s) * 0.92 + var(--rain-delay, 0s)) forwards;
+    rainFall var(--rain-dur, 4s) cubic-bezier(.32,.0,.5,.98) var(--rain-delay, 0s) forwards,
+    rainBounce .55s cubic-bezier(.33,1,.68,1) calc(var(--rain-dur, 4s) * 0.83 + var(--rain-delay, 0s)) forwards,
+    rainDissolve .65s cubic-bezier(.4,0,.2,1) calc(var(--rain-dur, 4s) * 0.93 + var(--rain-delay, 0s)) forwards;
   pointer-events: none;
 }
 
 /* Depth layers */
 .feed-rain-drop--d0 {
-  opacity: 0.25; transform: scale(0.7);
-  filter: blur(1.5px);
+  opacity: 0.2;
+  filter: blur(1.2px);
 }
-.feed-rain-drop--d0 .feed-rain-avatar { width: 18px; height: 18px; font-size: 7px; }
+.feed-rain-drop--d0 .feed-rain-avatar { width: 18px; height: 18px; }
 .feed-rain-drop--d0 .feed-rain-body strong { font-size: 8.5px; }
 
 .feed-rain-drop--d1 {
-  opacity: 0.55; transform: scale(0.85);
+  opacity: 0.5;
 }
-.feed-rain-drop--d1 .feed-rain-avatar { width: 24px; height: 24px; font-size: 9px; }
+.feed-rain-drop--d1 .feed-rain-avatar { width: 26px; height: 26px; }
 .feed-rain-drop--d1 .feed-rain-body strong { font-size: 10px; }
 .feed-rain-drop--d1 .feed-rain-title { font-size: 10.5px; }
 
 .feed-rain-drop--d2 {
-  opacity: 0.8; transform: scale(1);
+  opacity: 0.82;
 }
-.feed-rain-drop--d2 .feed-rain-avatar { width: 30px; height: 30px; font-size: 11px; }
-.feed-rain-drop--d2 .feed-rain-body strong { font-size: 11px; }
+.feed-rain-drop--d2 .feed-rain-avatar { width: 32px; height: 32px; }
+.feed-rain-drop--d2 .feed-rain-body strong { font-size: 11.5px; }
 
-/* Avatar */
+/* Avatar — real photo */
 .feed-rain-avatar {
   border-radius: 50%; flex-shrink: 0;
-  display: flex; align-items: center; justify-content: center;
-  font-weight: 600; color: #fff;
+  object-fit: cover;
+  aspect-ratio: 1;
+  border: 1.5px solid rgba(255,255,255,0.08);
 }
 
 /* Body */
@@ -6263,53 +6264,68 @@ button, a, input, textarea, select {
   margin-top: 1px;
 }
 
-/* ── Keyframes ─────────────────────────────────── */
+/* ── Keyframes — full-height fall ───────────────── */
 @keyframes rainFall {
   0% {
-    transform: translateY(0) var(--depth-scale, scale(1));
-    opacity: var(--depth-opacity, 0.8);
+    transform: translateY(0);
+    opacity: var(--depth-opacity, 0.82);
   }
-  82% {
-    transform: translateY(calc(200px + 20px)) var(--depth-scale, scale(1));
-    opacity: var(--depth-opacity, 0.8);
+  83% {
+    transform: translateY(calc(100cqb - 10px));
+    opacity: var(--depth-opacity, 0.82);
   }
   100% {
-    transform: translateY(210px) var(--depth-scale, scale(1));
-    opacity: var(--depth-opacity, 0.8);
+    transform: translateY(calc(100cqb - 6px));
+    opacity: var(--depth-opacity, 0.82);
   }
 }
 
 @keyframes rainBounce {
-  0% { transform: translateY(210px); }
-  30% { transform: translateY(205px); }
-  55% { transform: translateY(208px); }
-  75% { transform: translateY(207px); }
-  100% { transform: translateY(208px); }
+  0%   { transform: translateY(calc(100cqb - 6px)); }
+  25%  { transform: translateY(calc(100cqb - 12px)); }
+  50%  { transform: translateY(calc(100cqb - 7px)); }
+  72%  { transform: translateY(calc(100cqb - 9px)); }
+  100% { transform: translateY(calc(100cqb - 8px)); }
 }
 
 @keyframes rainDissolve {
-  0% { opacity: var(--depth-opacity, 0.8); transform: translateY(208px) translateX(0); }
-  100% { opacity: 0; transform: translateY(208px) translateX(18px); filter: blur(2px); }
+  0%   { opacity: var(--depth-opacity, 0.82); transform: translateY(calc(100cqb - 8px)) translateX(0); }
+  100% { opacity: 0; transform: translateY(calc(100cqb - 8px)) translateX(20px); filter: blur(2px); }
 }
 
-/* Depth-specific overrides for fall distance */
-.feed-rain-drop--d0 {
-  --depth-scale: scale(0.7);
-  --depth-opacity: 0.25;
+/* Container query fallback for older browsers */
+@supports not (height: 100cqb) {
+  @keyframes rainFall {
+    0%   { transform: translateY(0); opacity: var(--depth-opacity, 0.82); }
+    83%  { transform: translateY(280px); opacity: var(--depth-opacity, 0.82); }
+    100% { transform: translateY(286px); opacity: var(--depth-opacity, 0.82); }
+  }
+  @keyframes rainBounce {
+    0%   { transform: translateY(286px); }
+    25%  { transform: translateY(280px); }
+    50%  { transform: translateY(284px); }
+    72%  { transform: translateY(282px); }
+    100% { transform: translateY(283px); }
+  }
+  @keyframes rainDissolve {
+    0%   { opacity: var(--depth-opacity, 0.82); transform: translateY(283px) translateX(0); }
+    100% { opacity: 0; transform: translateY(283px) translateX(20px); filter: blur(2px); }
+  }
 }
-.feed-rain-drop--d1 {
-  --depth-scale: scale(0.85);
-  --depth-opacity: 0.55;
-}
-.feed-rain-drop--d2 {
-  --depth-scale: scale(1);
-  --depth-opacity: 0.8;
-}
+
+/* Depth-specific vars */
+.feed-rain-drop--d0 { --depth-opacity: 0.2; }
+.feed-rain-drop--d1 { --depth-opacity: 0.5; }
+.feed-rain-drop--d2 { --depth-opacity: 0.82; }
+
+/* Container type for cqb units */
+.feed-rain-stage { container-type: size; }
 
 @media (max-width: 768px) {
-  .feed-rain-stage { min-height: 160px; }
+  .feed-rain { min-height: 260px; }
+  .feed-rain-stage { min-height: 220px; }
   .feed-rain-drop--d0 { display: none; }
-  .feed-rain-title { max-width: 140px; }
+  .feed-rain-title { max-width: 130px; }
 }
 
 /* ── Memory Resume View ────────────────────────────────────────────── */
