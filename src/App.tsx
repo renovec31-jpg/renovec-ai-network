@@ -302,7 +302,6 @@ function AppInner() {
           onTabChange={handleTabChange}
           notifCount={notifCount}
           isAdmin={isAdmin(profile ?? null)}
-          onShowHowItWorks={() => setShowHowItWorks(true)}
           onGoLanding={() => { setActiveTab('demander'); setOverlay({ kind: 'none' }); }}
           onOpenMyProfile={user ? () => openProfile(user.id) : undefined}
           onLogin={() => setView('auth')}

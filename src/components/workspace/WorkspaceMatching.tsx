@@ -1,4 +1,4 @@
-import { MapPin, Star, Clock, ChevronRight } from 'lucide-react';
+import { MapPin, Star, Clock, ChevronRight, MessageSquare } from 'lucide-react';
 import { useWorkspace } from '../../contexts/WorkspaceContext';
 import { avatarBg, initials } from '../../lib/ui';
 
@@ -72,13 +72,22 @@ export default function WorkspaceMatching() {
               </div>
             </div>
 
-            {/* Best match badge */}
-            {idx === 0 && (
-              <div className="mt-4 pt-3 border-t border-white/[0.04] flex items-center gap-2">
-                <Star size={11} className="text-amber-400/80" />
-                <span className="text-[11px] text-amber-400/60 font-medium">Meilleure correspondance pour votre situation</span>
-              </div>
-            )}
+            {/* Footer: badge + contact */}
+            <div className="mt-4 pt-3 border-t border-white/[0.04] flex items-center justify-between">
+              {idx === 0 ? (
+                <div className="flex items-center gap-2">
+                  <Star size={11} className="text-amber-400/80" />
+                  <span className="text-[11px] text-amber-400/60 font-medium">Meilleure correspondance</span>
+                </div>
+              ) : <div />}
+              <span
+                className="flex items-center gap-1.5 text-[11px] text-white/30 hover:text-white/60 transition-colors font-medium"
+                onClick={(e) => { e.stopPropagation(); }}
+              >
+                <MessageSquare size={11} />
+                Contacter
+              </span>
+            </div>
           </button>
         ))}
       </div>

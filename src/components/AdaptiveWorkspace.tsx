@@ -13,8 +13,8 @@ export default function AdaptiveWorkspace() {
       {/* Context bar — visible when AI has understood something */}
       {contextLines.length > 0 && <ContextBar lines={contextLines} />}
 
-      {/* Workspace content with smooth transitions */}
-      <div className="flex-1 overflow-hidden">
+      {/* Workspace content — keyed for animated transitions */}
+      <div key={view} className="flex-1 overflow-hidden animate-fade-up">
         {view === 'neutral' && <WorkspaceNeutral />}
         {view === 'matching' && <WorkspaceMatching />}
         {view === 'profile' && <WorkspaceProfile />}

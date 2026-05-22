@@ -39,46 +39,59 @@ function phaseIndicator(phase: SituationPhase): { color: string; label: string }
   }
 }
 
-export default function Layout({ children, activeTab, onTabChange, notifCount = 0, isAdmin = false, onShowHowItWorks, onGoLanding, onOpenMyProfile, onLogin }: Props) {
+export default function Layout({ children, activeTab, onTabChange, notifCount = 0, isAdmin = false, onGoLanding, onOpenMyProfile, onLogin }: Props) {
   const { profile } = useAuth();
   const { phase } = useSituation();
   const [mobileView, setMobileView] = useState<'chat' | 'workspace'>('chat');
   const indicator = phaseIndicator(phase);
 
-  // The right panel shows AdaptiveWorkspace on "demander" tab, or legacy content on other tabs
   const showWorkspace = activeTab === 'demander';
 
   return (
     <div className="h-screen flex flex-col bg-stone-950 overflow-hidden">
-      {/* ─── Top bar ─────────────────────────────────────────────────────── */}
-      <header className="flex-shrink-0 h-[52px] bg-stone-950 border-b border-white/5 z-40">
-        <div className="h-full px-4 lg:px-6 flex items-center justify-between">
+      {/* ─── Header ──────────────────────────────────────────────────────── */}
+      <header className="flex-shrink-0 h-[52px] bg-stone-950 border-b border-white/[0.04] z-40">
+        <div className="h-full px-4 md:px-6 flex items-center justify-between">
           {/* Left: brand */}
-          <button onClick={onGoLanding} className="flex items-center gap-2 group">
+          <button onClick={onGoLanding} className="flex items-center gap-2.5 group">
             <div className="w-5 h-5 bg-[#F26522] rounded flex items-center justify-center flex-shrink-0">
               <div className="w-2 h-2 rounded-sm bg-white opacity-90" />
             </div>
             <span className="text-sm font-semibold tracking-tight text-white">RENOVEC</span>
           </button>
 
-          {/* Center: phase indicator (desktop) */}
-          {indicator.label && (
-            <div className="hidden md:flex items-center gap-2">
-              <div className={`w-1.5 h-1.5 rounded-full ${indicator.color}`} />
-              <span className="text-[11px] tracking-wide text-white/30">{indicator.label}</span>
-            </div>
-          )}
+          {/* Center: navigation links */}
+          <nav className="hidden md:flex items-center gap-6">
+            <button
+              onClick={() => onTabChange('feed')}
+              className={`text-[12px] font-medium transition-colors ${activeTab === 'feed' ? 'text-white/70' : 'text-white/25 hover:text-white/50'}`}
+            >
+              Fil
+            </button>
+            <button
+              onClick={() => onTabChange('capacites')}
+              className={`text-[12px] font-medium transition-colors ${activeTab === 'capacites' ? 'text-white/70' : 'text-white/25 hover:text-white/50'}`}
+            >
+              Réseau
+            </button>
+            <button
+              onClick={() => onTabChange('carte')}
+              className={`text-[12px] font-medium transition-colors ${activeTab === 'carte' ? 'text-white/70' : 'text-white/25 hover:text-white/50'}`}
+            >
+              À propos
+            </button>
+          </nav>
 
           {/* Right: actions */}
-          <div className="flex items-center gap-1">
-            {onShowHowItWorks && (
-              <button
-                onClick={onShowHowItWorks}
-                className="hidden md:block text-[11px] text-white/25 hover:text-white/60 transition-colors px-2 py-1 rounded-lg hover:bg-white/5"
-              >
-                Comment ca marche
-              </button>
+          <div className="flex items-center gap-1.5">
+            {/* Phase indicator pill */}
+            {indicator.label && (
+              <div className="hidden md:flex items-center gap-2 mr-3 px-2.5 py-1 rounded-full bg-white/[0.03] border border-white/[0.05]">
+                <div className={`w-1.5 h-1.5 rounded-full ${indicator.color}`} />
+                <span className="text-[10px] tracking-wide text-white/30">{indicator.label}</span>
+              </div>
             )}
+
             {profile ? (
               <>
                 {isAdmin && (
@@ -86,16 +99,16 @@ export default function Layout({ children, activeTab, onTabChange, notifCount = 
                     onClick={() => onTabChange('admin')}
                     className={`p-2 rounded-xl transition-all ${activeTab === 'admin' ? 'text-red-400' : 'text-white/20 hover:text-white/50'}`}
                   >
-                    <ShieldCheck size={15} strokeWidth={1.5} />
+                    <ShieldCheck size={14} strokeWidth={1.5} />
                   </button>
                 )}
                 <button
                   onClick={() => onTabChange('notifications')}
                   className={`relative p-2 rounded-xl transition-all ${activeTab === 'notifications' ? 'text-white' : 'text-white/25 hover:text-white/50'}`}
                 >
-                  <Bell size={15} strokeWidth={1.5} />
+                  <Bell size={14} strokeWidth={1.5} />
                   {notifCount > 0 && (
-                    <span className="absolute top-1.5 right-1.5 w-3 h-3 bg-[#F26522] text-white text-[8px] font-bold rounded-full flex items-center justify-center leading-none">
+                    <span className="absolute top-1 right-1 w-3 h-3 bg-[#F26522] text-white text-[7px] font-bold rounded-full flex items-center justify-center leading-none">
                       {notifCount > 9 ? '9' : notifCount}
                     </span>
                   )}
@@ -103,7 +116,7 @@ export default function Layout({ children, activeTab, onTabChange, notifCount = 
                 <button
                   onClick={() => onOpenMyProfile ? onOpenMyProfile() : onTabChange('espace')}
                   className={`w-7 h-7 ml-1 rounded-full flex items-center justify-center overflow-hidden transition-all border ${
-                    activeTab === 'espace' ? 'border-white/60' : 'border-white/10 hover:border-white/30'
+                    activeTab === 'espace' ? 'border-white/60' : 'border-white/[0.08] hover:border-white/30'
                   }`}
                 >
                   {profile.avatar_url
@@ -114,7 +127,7 @@ export default function Layout({ children, activeTab, onTabChange, notifCount = 
             ) : (
               <button
                 onClick={onLogin}
-                className="text-[12px] text-white/40 hover:text-white/80 transition-colors px-3 py-1.5 rounded-lg border border-white/10 hover:border-white/25 hover:bg-white/5"
+                className="text-[11px] text-white/35 hover:text-white/75 transition-colors px-3.5 py-1.5 rounded-lg border border-white/[0.08] hover:border-white/20 hover:bg-white/[0.03]"
               >
                 Entrer
               </button>
@@ -123,15 +136,13 @@ export default function Layout({ children, activeTab, onTabChange, notifCount = 
         </div>
       </header>
 
-      {/* ─── Main area: always two columns on desktop ────────────────────── */}
+      {/* ─── Main area ───────────────────────────────────────────────────── */}
       <div className="flex-1 flex overflow-hidden">
-        {/* === DESKTOP layout (>768px): both columns visible === */}
-        {/* Left column: Chat — always visible */}
+        {/* === DESKTOP (>768px): both columns visible === */}
         <div className="hidden md:flex w-[40%] min-w-[340px] max-w-[480px] border-r border-white/[0.04] flex-col">
           <ChatColumn />
         </div>
 
-        {/* Right column: Adaptive workspace OR legacy tab content */}
         <div className="hidden md:flex flex-1 flex-col overflow-hidden">
           {showWorkspace ? (
             <AdaptiveWorkspace />
@@ -148,14 +159,13 @@ export default function Layout({ children, activeTab, onTabChange, notifCount = 
           )}
         </div>
 
-        {/* === MOBILE layout (<768px): toggle between views === */}
+        {/* === MOBILE (<768px): toggle === */}
         <div className="md:hidden flex-1 flex flex-col">
-          {/* Mobile toggle bar */}
-          <div className="flex-shrink-0 h-10 border-b border-white/5 flex items-center px-4 gap-2">
+          <div className="flex-shrink-0 h-10 border-b border-white/[0.04] flex items-center px-4 gap-2">
             <button
               onClick={() => setMobileView('chat')}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-medium transition-all ${
-                mobileView === 'chat' ? 'bg-white/10 text-white/80' : 'text-white/30 hover:text-white/50'
+                mobileView === 'chat' ? 'bg-white/[0.08] text-white/80' : 'text-white/30 hover:text-white/50'
               }`}
             >
               <MessageSquare size={11} /> Parler
@@ -163,7 +173,7 @@ export default function Layout({ children, activeTab, onTabChange, notifCount = 
             <button
               onClick={() => setMobileView('workspace')}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-medium transition-all ${
-                mobileView === 'workspace' ? 'bg-white/10 text-white/80' : 'text-white/30 hover:text-white/50'
+                mobileView === 'workspace' ? 'bg-white/[0.08] text-white/80' : 'text-white/30 hover:text-white/50'
               }`}
             >
               {mobileView === 'workspace' ? <PanelRightClose size={11} /> : <PanelRightOpen size={11} />}
@@ -177,7 +187,6 @@ export default function Layout({ children, activeTab, onTabChange, notifCount = 
             )}
           </div>
 
-          {/* Mobile content */}
           <div className="flex-1 overflow-hidden">
             {mobileView === 'chat' ? (
               <ChatColumn />
@@ -194,8 +203,15 @@ export default function Layout({ children, activeTab, onTabChange, notifCount = 
         </div>
       </div>
 
-      {/* ─── Bottom nav ──────────────────────────────────────────────────── */}
-      <nav className="flex-shrink-0 h-14 bg-stone-950 border-t border-white/5 z-40">
+      {/* ─── Footer ──────────────────────────────────────────────────────── */}
+      <footer className="flex-shrink-0 h-8 bg-stone-950 border-t border-white/[0.03] flex items-center justify-center z-40">
+        <p className="text-[10px] tracking-widest text-white/12 font-medium uppercase">
+          RENOVEC · Occitanie · Infrastructure relationnelle IA
+        </p>
+      </footer>
+
+      {/* ─── Bottom nav (mobile) ─────────────────────────────────────────── */}
+      <nav className="md:hidden flex-shrink-0 h-14 bg-stone-950 border-t border-white/[0.05] z-40">
         <div className="h-full max-w-lg mx-auto px-2 flex">
           {NAV.map(({ id, label, icon: Icon }) => {
             const active = activeTab === id;
