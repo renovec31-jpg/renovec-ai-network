@@ -6,16 +6,16 @@ export default function WorkspaceMatching() {
   const { matchingProfiles, selectProfile } = useWorkspace();
 
   return (
-    <div className="px-5 py-6 animate-fade-up">
-      <div className="mb-6">
-        <p className="text-[11px] tracking-widest uppercase text-white/20 font-medium mb-1.5">
-          Presences identifiees
+    <div className="h-full overflow-y-auto px-6 py-8 scrollbar-hide animate-fade-up">
+      <div className="mb-8">
+        <p className="text-[11px] tracking-widest uppercase text-white/20 font-medium mb-2">
+          Présences identifiées
         </p>
-        <h2 className="text-lg font-medium text-white/80 mb-1">
-          {matchingProfiles.length} appuis pertinents
+        <h2 className="text-xl font-semibold text-white/80 leading-snug mb-1.5">
+          {matchingProfiles.length} appuis pertinents dans votre zone
         </h2>
-        <p className="text-[13px] text-white/35 leading-relaxed">
-          Evalues par le reseau. Pertinence calculee selon votre situation.
+        <p className="text-[13px] text-white/30 leading-relaxed">
+          Évalués par le réseau selon votre situation. Score de pertinence calculé en temps réel.
         </p>
       </div>
 
@@ -24,12 +24,12 @@ export default function WorkspaceMatching() {
           <button
             key={profile.id}
             onClick={() => selectProfile(profile.id)}
-            className="w-full text-left p-4 rounded-xl border border-white/[0.06] bg-white/[0.02] hover:bg-white/[0.05] hover:border-white/[0.12] transition-all group"
+            className="w-full text-left p-5 rounded-2xl border border-white/[0.05] bg-gradient-to-br from-white/[0.025] to-transparent hover:from-white/[0.05] hover:border-white/[0.1] transition-all duration-300 group"
           >
-            <div className="flex items-start gap-3.5">
+            <div className="flex items-start gap-4">
               {/* Avatar */}
               <div
-                className="w-11 h-11 rounded-xl flex items-center justify-center text-white font-bold text-sm flex-shrink-0"
+                className="w-12 h-12 rounded-xl flex items-center justify-center text-white font-bold text-sm flex-shrink-0 shadow-lg"
                 style={{ background: avatarBg(profile.name) }}
               >
                 {initials(profile.name)}
@@ -37,23 +37,23 @@ export default function WorkspaceMatching() {
 
               <div className="flex-1 min-w-0">
                 {/* Top row */}
-                <div className="flex items-center justify-between mb-1">
-                  <h3 className="text-[14px] font-semibold text-white/85 truncate">{profile.name}</h3>
-                  <div className="flex items-center gap-1 flex-shrink-0 ml-2">
-                    <span className="text-[11px] font-bold text-emerald-400">{profile.score}%</span>
-                    <ChevronRight size={12} className="text-white/15 group-hover:text-white/40 transition-colors" />
+                <div className="flex items-center justify-between mb-1.5">
+                  <h3 className="text-[15px] font-semibold text-white/85 truncate">{profile.name}</h3>
+                  <div className="flex items-center gap-1.5 flex-shrink-0 ml-3">
+                    <span className="text-[12px] font-bold text-emerald-400">{profile.score}%</span>
+                    <ChevronRight size={13} className="text-white/10 group-hover:text-white/40 group-hover:translate-x-0.5 transition-all" />
                   </div>
                 </div>
 
                 {/* Tagline */}
-                <p className="text-[12px] text-white/40 mb-2 truncate">{profile.tagline}</p>
+                <p className="text-[12px] text-white/35 mb-3">{profile.tagline}</p>
 
                 {/* Capabilities */}
-                <div className="flex flex-wrap gap-1.5 mb-2.5">
-                  {profile.capabilities.slice(0, 3).map(cap => (
+                <div className="flex flex-wrap gap-1.5 mb-3">
+                  {profile.capabilities.map(cap => (
                     <span
                       key={cap}
-                      className="text-[10px] px-2 py-0.5 rounded-full bg-white/[0.05] border border-white/[0.08] text-white/40"
+                      className="text-[10px] px-2.5 py-1 rounded-lg bg-white/[0.04] border border-white/[0.06] text-white/40 font-medium"
                     >
                       {cap}
                     </span>
@@ -61,35 +61,32 @@ export default function WorkspaceMatching() {
                 </div>
 
                 {/* Meta */}
-                <div className="flex items-center gap-3 text-[11px] text-white/25">
-                  <span className="flex items-center gap-1">
-                    <MapPin size={9} /> {profile.city}
+                <div className="flex items-center gap-4 text-[11px] text-white/25">
+                  <span className="flex items-center gap-1.5">
+                    <MapPin size={10} /> {profile.city}
                   </span>
-                  <span className="flex items-center gap-1">
-                    <Clock size={9} /> {profile.availability}
+                  <span className="flex items-center gap-1.5">
+                    <Clock size={10} /> {profile.availability}
                   </span>
                 </div>
               </div>
             </div>
 
-            {/* Rank indicator */}
+            {/* Best match badge */}
             {idx === 0 && (
-              <div className="mt-3 pt-3 border-t border-white/[0.05] flex items-center gap-2">
-                <Star size={10} className="text-amber-400/70" />
-                <span className="text-[10px] text-amber-400/60 font-medium">Meilleure correspondance pour votre situation</span>
+              <div className="mt-4 pt-3 border-t border-white/[0.04] flex items-center gap-2">
+                <Star size={11} className="text-amber-400/80" />
+                <span className="text-[11px] text-amber-400/60 font-medium">Meilleure correspondance pour votre situation</span>
               </div>
             )}
           </button>
         ))}
       </div>
 
-      {/* Action */}
-      <div className="mt-6 p-4 rounded-xl border border-dashed border-white/[0.08] text-center">
-        <p className="text-[12px] text-white/30 mb-2">
-          Vous pouvez demander au coordinateur de les contacter en votre nom.
-        </p>
-        <p className="text-[11px] text-white/15">
-          Dites simplement "contacte-les" dans la conversation.
+      {/* Action hint */}
+      <div className="mt-8 p-5 rounded-2xl border border-dashed border-white/[0.06] bg-white/[0.01]">
+        <p className="text-[12px] text-white/35 leading-relaxed text-center">
+          Dites "contacte-les" dans la conversation pour lancer une mise en relation.
         </p>
       </div>
     </div>

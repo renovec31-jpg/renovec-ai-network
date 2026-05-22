@@ -63,7 +63,7 @@ export default function Layout({ children, activeTab, onTabChange, notifCount = 
 
           {/* Center: phase indicator (desktop) */}
           {indicator.label && (
-            <div className="hidden lg:flex items-center gap-2">
+            <div className="hidden md:flex items-center gap-2">
               <div className={`w-1.5 h-1.5 rounded-full ${indicator.color}`} />
               <span className="text-[11px] tracking-wide text-white/30">{indicator.label}</span>
             </div>
@@ -74,7 +74,7 @@ export default function Layout({ children, activeTab, onTabChange, notifCount = 
             {onShowHowItWorks && (
               <button
                 onClick={onShowHowItWorks}
-                className="hidden lg:block text-[11px] text-white/25 hover:text-white/60 transition-colors px-2 py-1 rounded-lg hover:bg-white/5"
+                className="hidden md:block text-[11px] text-white/25 hover:text-white/60 transition-colors px-2 py-1 rounded-lg hover:bg-white/5"
               >
                 Comment ca marche
               </button>
@@ -125,14 +125,14 @@ export default function Layout({ children, activeTab, onTabChange, notifCount = 
 
       {/* ─── Main area: always two columns on desktop ────────────────────── */}
       <div className="flex-1 flex overflow-hidden">
-        {/* === DESKTOP layout === */}
+        {/* === DESKTOP layout (>768px): both columns visible === */}
         {/* Left column: Chat — always visible */}
-        <div className="hidden lg:flex w-[40%] min-w-[360px] max-w-[520px] border-r border-white/5 flex-col">
+        <div className="hidden md:flex w-[40%] min-w-[340px] max-w-[480px] border-r border-white/[0.04] flex-col">
           <ChatColumn />
         </div>
 
         {/* Right column: Adaptive workspace OR legacy tab content */}
-        <div className="hidden lg:flex flex-1 flex-col overflow-hidden">
+        <div className="hidden md:flex flex-1 flex-col overflow-hidden">
           {showWorkspace ? (
             <AdaptiveWorkspace />
           ) : activeTab === 'carte' ? (
@@ -148,8 +148,8 @@ export default function Layout({ children, activeTab, onTabChange, notifCount = 
           )}
         </div>
 
-        {/* === MOBILE layout === */}
-        <div className="lg:hidden flex-1 flex flex-col">
+        {/* === MOBILE layout (<768px): toggle between views === */}
+        <div className="md:hidden flex-1 flex flex-col">
           {/* Mobile toggle bar */}
           <div className="flex-shrink-0 h-10 border-b border-white/5 flex items-center px-4 gap-2">
             <button

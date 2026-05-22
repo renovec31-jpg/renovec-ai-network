@@ -9,18 +9,16 @@ export default function AdaptiveWorkspace() {
   const { view, contextLines } = useWorkspace();
 
   return (
-    <div className="flex flex-col h-full bg-stone-950/50">
-      {/* Context bar — always visible when context exists */}
+    <div className="flex flex-col h-full bg-gradient-to-br from-stone-950 via-stone-950 to-stone-900/50">
+      {/* Context bar — visible when AI has understood something */}
       {contextLines.length > 0 && <ContextBar lines={contextLines} />}
 
-      {/* Workspace content */}
-      <div className="flex-1 overflow-y-auto">
-        <div className="transition-all duration-500 ease-out">
-          {view === 'neutral' && <WorkspaceNeutral />}
-          {view === 'matching' && <WorkspaceMatching />}
-          {view === 'profile' && <WorkspaceProfile />}
-          {view === 'publication' && <WorkspacePublication />}
-        </div>
+      {/* Workspace content with smooth transitions */}
+      <div className="flex-1 overflow-hidden">
+        {view === 'neutral' && <WorkspaceNeutral />}
+        {view === 'matching' && <WorkspaceMatching />}
+        {view === 'profile' && <WorkspaceProfile />}
+        {view === 'publication' && <WorkspacePublication />}
       </div>
     </div>
   );
