@@ -188,7 +188,6 @@ export default function WorkspaceOverlay({ onClose, onJoinNetwork }: Props) {
   const historyRef = useRef<Turn[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
   const sendTranscriptRef = useRef<(text: string) => Promise<void>>(async () => {});
-  const startRetriesRef = useRef(0);
 
   useEffect(() => { historyRef.current = history; }, [history]);
 
@@ -425,15 +424,8 @@ export default function WorkspaceOverlay({ onClose, onJoinNetwork }: Props) {
       if (e.error === 'no-speech' || e.error === 'aborted') return;
       isListening.current = false;
       recognitionRef.current = null;
-      if (e.error === 'not-allowed' || e.error === 'service-not-allowed' || e.error === 'audio-capture') {
-        setMicBlocked(true);
-        setVoiceState('paused');
-        setTimeout(() => inputRef.current?.focus(), 100);
-      } else {
-        setTimeout(() => {
-          if (streamRef.current && !processingRef.current) beginListening();
-        }, 500);
-      }
+      setVoiceState('paused');
+      setTimeout(() => inputRef.current?.focus(), 100);
     };
 
     recognitionRef.current = recognition;
@@ -443,19 +435,11 @@ export default function WorkspaceOverlay({ onClose, onJoinNetwork }: Props) {
     setVoiceState('listening');
     try {
       recognition.start();
-      startRetriesRef.current = 0;
     } catch {
       isListening.current = false;
       recognitionRef.current = null;
-      startRetriesRef.current++;
-      if (streamRef.current && startRetriesRef.current < 5) {
-        setTimeout(() => {
-          if (streamRef.current && !processingRef.current) beginListening();
-        }, 800);
-      } else {
-        setVoiceState('paused');
-        setTimeout(() => inputRef.current?.focus(), 100);
-      }
+      setVoiceState('paused');
+      setTimeout(() => inputRef.current?.focus(), 100);
     }
   }, []);
 
