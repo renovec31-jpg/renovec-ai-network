@@ -23,6 +23,7 @@ import PublicProfilePage from './pages/PublicProfilePage';
 import EditProfilePage from './pages/EditProfilePage';
 import CartePage from './pages/CartePage';
 import FeedPage from './pages/FeedPage';
+import LandingPage from './pages/LandingPage';
 
 type Tab = 'demander' | 'capacites' | 'discussions' | 'contributions' | 'espace' | 'notifications' | 'admin' | 'carte' | 'feed';
 type AppView = 'landing' | 'auth' | 'app' | '404';
@@ -215,6 +216,16 @@ function AppInner() {
           <div className="absolute inset-2 border border-amber-300/30 rounded-full animate-breathe" style={{ animationDelay: '0.5s' }} />
         </div>
       </div>
+    );
+  }
+
+  // ── Landing page ─────────────────────────────────────────────────────────────
+  if (view === 'landing' && !user) {
+    return (
+      <LandingPage
+        onEnter={() => setView('auth')}
+        onHowItWorks={() => setShowHowItWorks(true)}
+      />
     );
   }
 
