@@ -482,44 +482,16 @@ export default function WorkspaceOverlay({ onClose, onJoinNetwork }: Props) {
     tick();
   }, []);
 
-  // Start voice on mount
+  // Play greeting on mount (no mic yet — requires user gesture)
   useEffect(() => {
     let cancelled = false;
 
     (async () => {
-      let stream: MediaStream | null = null;
-      if (navigator.mediaDevices?.getUserMedia) {
-        try {
-          stream = await navigator.mediaDevices.getUserMedia({
-            audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
-          });
-        } catch {
-          try { stream = await navigator.mediaDevices.getUserMedia({ audio: true }); } catch { stream = null; }
-        }
-      }
-
-      if (cancelled) {
-        stream?.getTracks().forEach(t => t.stop());
-        return;
-      }
-
       if (!audioCtxRef.current || audioCtxRef.current.state === 'closed') {
         audioCtxRef.current = new AudioContext();
       }
       audioCtxRef.current.resume().catch(() => {});
 
-      if (!stream) {
-        setMicBlocked(true);
-        setVoiceState('paused');
-        setTimeout(() => inputRef.current?.focus(), 200);
-      } else {
-        streamRef.current = stream;
-        startMonitoring();
-      }
-
-      if (cancelled) return;
-
-      // Generate greeting
       let greetText: string;
       if (isConnected && knownUser) {
         const g = generateKnownUserGreeting(knownUser);
@@ -535,12 +507,7 @@ export default function WorkspaceOverlay({ onClose, onJoinNetwork }: Props) {
       setVoiceState('speaking');
       await playTTS(greetText);
       if (cancelled) return;
-      if (streamRef.current) {
-        beginListening();
-      } else {
-        setVoiceState('paused');
-        setTimeout(() => inputRef.current?.focus(), 200);
-      }
+      setVoiceState('paused');
     })();
 
     return () => {
@@ -559,6 +526,33 @@ export default function WorkspaceOverlay({ onClose, onJoinNetwork }: Props) {
       cancelAnimationFrame(rafRef.current);
     };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Activate mic (must be called from user gesture)
+  const activateMic = useCallback(async () => {
+    if (!audioCtxRef.current || audioCtxRef.current.state === 'closed') {
+      audioCtxRef.current = new AudioContext();
+    }
+    audioCtxRef.current.resume().catch(() => {});
+
+    let stream: MediaStream | null = null;
+    if (navigator.mediaDevices?.getUserMedia) {
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({
+          audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
+        });
+      } catch {
+        try { stream = await navigator.mediaDevices.getUserMedia({ audio: true }); } catch { stream = null; }
+      }
+    }
+
+    if (stream) {
+      streamRef.current = stream;
+      startMonitoring();
+    }
+
+    setMicBlocked(false);
+    beginListening();
+  }, [startMonitoring, beginListening]);
 
   const interruptAndListen = useCallback(() => {
     try { audioRef.current?.stop(); } catch {}
@@ -728,6 +722,11 @@ export default function WorkspaceOverlay({ onClose, onJoinNetwork }: Props) {
             <button className="ai-ptt ai-ptt--playing" onClick={interruptAndListen}>
               <Mic size={14} />
               <span>Interrompre</span>
+            </button>
+          ) : isPaused && !streamRef.current ? (
+            <button className="ai-ptt" onClick={activateMic}>
+              <Mic size={14} />
+              <span>Activer le micro</span>
             </button>
           ) : (
             <button
