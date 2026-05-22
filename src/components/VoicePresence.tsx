@@ -232,6 +232,10 @@ export default function VoicePresence({ onOpenChat }: { onOpenChat?: () => void 
         setUiState('paused');
         addTurn('assistant', 'Micro indisponible. Ecris ta question ci-dessous.');
         setTimeout(() => inputRef.current?.focus(), 100);
+      } else {
+        setTimeout(() => {
+          if (streamRef.current && !processingRef.current) beginListening();
+        }, 500);
       }
     };
 

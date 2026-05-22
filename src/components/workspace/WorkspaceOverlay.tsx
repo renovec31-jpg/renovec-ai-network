@@ -359,6 +359,8 @@ export default function WorkspaceOverlay({ onClose, onJoinNetwork }: Props) {
       await playTTS(reply);
     } catch {
       addTurn('assistant', 'Je suis la. Dis-moi.');
+    } finally {
+      setVoiceState('idle');
     }
   }, [addTurn, playTTS, processUserInput]);
 
@@ -419,16 +421,17 @@ export default function WorkspaceOverlay({ onClose, onJoinNetwork }: Props) {
     };
 
     recognition.onerror = (e: any) => {
-      if (e.error === 'no-speech' || e.error === 'aborted') {
-        // Chrome fires 'no-speech' after ~5s silence then fires onend which restarts
-        return;
-      }
+      if (e.error === 'no-speech' || e.error === 'aborted') return;
       isListening.current = false;
       recognitionRef.current = null;
       if (e.error === 'not-allowed' || e.error === 'service-not-allowed' || e.error === 'audio-capture') {
         setMicBlocked(true);
         setVoiceState('paused');
         setTimeout(() => inputRef.current?.focus(), 100);
+      } else {
+        setTimeout(() => {
+          if (streamRef.current && !processingRef.current) beginListening();
+        }, 500);
       }
     };
 
@@ -523,7 +526,13 @@ export default function WorkspaceOverlay({ onClose, onJoinNetwork }: Props) {
       setVoiceState('speaking');
       await playTTS(greetText);
       if (cancelled) return;
-      if (streamRef.current) beginListening();
+      setVoiceState('idle');
+      if (streamRef.current) {
+        beginListening();
+      } else {
+        setVoiceState('paused');
+        setTimeout(() => inputRef.current?.focus(), 200);
+      }
     })();
 
     return () => {
