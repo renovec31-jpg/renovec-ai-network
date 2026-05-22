@@ -5239,8 +5239,32 @@ button, a, input, textarea, select {
   border: 1px solid rgba(255,255,255,0.04);
 }
 .chat-rain-bubble--d3 img {
-  border: 1.5px solid rgba(242,101,34,0.08);
-  box-shadow: 0 0 12px rgba(242,101,34,0.06);
+  border: 1.5px solid rgba(242,101,34,0.12);
+  box-shadow: 0 0 16px rgba(242,101,34,0.08);
+}
+.chat-rain-bubble--d2 img {
+  border: 1px solid rgba(255,255,255,0.1);
+}
+.chat-rain-label {
+  position: absolute; left: calc(100% + 6px); top: 50%;
+  transform: translateY(-50%);
+  display: flex; flex-direction: column; gap: 1px;
+  white-space: nowrap; pointer-events: none;
+}
+.chat-rain-name {
+  font-size: 11px; font-weight: 550;
+  color: rgba(255,255,255,0.7);
+  letter-spacing: -0.01em;
+}
+.chat-rain-bubble--d3 .chat-rain-name {
+  font-size: 13px; color: rgba(255,255,255,0.82);
+}
+.chat-rain-caption {
+  font-size: 10px; font-weight: 400;
+  color: rgba(255,255,255,0.35);
+}
+.chat-rain-bubble--d3 .chat-rain-caption {
+  font-size: 11px; color: rgba(255,255,255,0.45);
 }
 
 @keyframes crFall {
