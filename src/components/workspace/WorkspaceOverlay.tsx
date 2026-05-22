@@ -211,22 +211,36 @@ export default function WorkspaceOverlay({ onClose, onJoinNetwork }: Props) {
     try {
       const ctx = audioCtxRef.current;
       if (!ctx || ctx.state === 'closed') return;
-      if (ctx.state === 'suspended') await ctx.resume();
+      if (ctx.state === 'suspended') {
+        await ctx.resume();
+        if (ctx.state !== 'running') return;
+      }
       const res = await fetch(TTS_URL, {
         method: 'POST',
         headers: { ...API_HEADERS, 'Content-Type': 'application/json' },
         body: JSON.stringify({ text, voice_id: "3xmA3rwGMRsLGbkC7E3u" }),
+        signal: AbortSignal.timeout(10000),
       });
       if (!res.ok) return;
       const arrayBuf = await res.arrayBuffer();
       if (arrayBuf.byteLength === 0) return;
       const audioBuffer = await ctx.decodeAudioData(arrayBuf);
+      const maxDuration = Math.min((audioBuffer.duration + 2) * 1000, 30000);
       await new Promise<void>((resolve) => {
         const source = ctx.createBufferSource();
         source.buffer = audioBuffer;
         source.connect(ctx.destination);
         audioRef.current = source;
-        source.onended = () => { audioRef.current = null; resolve(); };
+        const timeout = setTimeout(() => {
+          try { source.stop(); } catch {}
+          audioRef.current = null;
+          resolve();
+        }, maxDuration);
+        source.onended = () => {
+          clearTimeout(timeout);
+          audioRef.current = null;
+          resolve();
+        };
         source.start(0);
       });
     } catch {}
@@ -352,8 +366,11 @@ export default function WorkspaceOverlay({ onClose, onJoinNetwork }: Props) {
     if (!text.trim() || processingRef.current) return;
     processingRef.current = true;
     setVoiceState('processing');
-    await sendToAPI(text.trim());
-    processingRef.current = false;
+    try {
+      await sendToAPI(text.trim());
+    } finally {
+      processingRef.current = false;
+    }
   }, [sendToAPI]);
 
   // Keep ref in sync so recognition handler always uses latest
@@ -734,3 +751,5 @@ export default function WorkspaceOverlay({ onClose, onJoinNetwork }: Props) {
     </div>
   );
 }
+
+export default WorkspaceOverlay

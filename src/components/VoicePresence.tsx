@@ -92,41 +92,47 @@ export default function VoicePresence({ onOpenChat }: { onOpenChat?: () => void 
     setHistory(h => [...h, { role, content, id: `${role}_${Date.now()}_${Math.random()}` }]);
   }, []);
 
-  // Play TTS audio via AudioContext (bypasses Android/iOS autoplay block on HTMLAudioElement)
   const playTTS = useCallback(async (text: string): Promise<void> => {
     if (muted) return;
     try {
-      // Ensure AudioContext is running (may have been suspended on iOS between interactions)
       const ctx = audioCtxRef.current;
       if (!ctx || ctx.state === 'closed') return;
-      if (ctx.state === 'suspended') await ctx.resume();
+      if (ctx.state === 'suspended') {
+        await ctx.resume();
+        if (ctx.state !== 'running') return;
+      }
 
       const res = await fetch(TTS_URL, {
         method: 'POST',
         headers: { ...API_HEADERS, 'Content-Type': 'application/json' },
         body: JSON.stringify({ text, voice_id: "3xmA3rwGMRsLGbkC7E3u" }),
+        signal: AbortSignal.timeout(10000),
       });
       if (!res.ok) return;
       const arrayBuf = await res.arrayBuffer();
       if (arrayBuf.byteLength === 0) return;
 
-      // decodeAudioData works on all mobile browsers without autoplay restrictions
       const audioBuffer = await ctx.decodeAudioData(arrayBuf);
+      const maxDuration = Math.min((audioBuffer.duration + 2) * 1000, 30000);
 
       await new Promise<void>((resolve) => {
         const source = ctx.createBufferSource();
         source.buffer = audioBuffer;
         source.connect(ctx.destination);
         audioRef.current = source;
+        const timeout = setTimeout(() => {
+          try { source.stop(); } catch {}
+          audioRef.current = null;
+          resolve();
+        }, maxDuration);
         source.onended = () => {
+          clearTimeout(timeout);
           audioRef.current = null;
           resolve();
         };
         source.start(0);
       });
-    } catch {
-      // TTS failure is non-fatal
-    }
+    } catch {}
   }, [muted]);
 
   // --- Send transcript text to get Claude reply ---
