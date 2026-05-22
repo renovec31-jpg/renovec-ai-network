@@ -1,5 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { X, Mic, MicOff, Send, Loader, MapPin, Star, Check, Sparkles, Eye } from 'lucide-react';
+import { X, Mic, MicOff, Send, Loader, MapPin, Star, Check, Sparkles, Eye, Volume2, VolumeX } from 'lucide-react';
 import { useUserMode } from '../../hooks/useUserMode';
 import { useVisitorProfile } from '../../hooks/useVisitorProfile';
 import { useKnownUserContext } from '../../hooks/useKnownUserContext';
@@ -7,12 +8,28 @@ import { useInitialHypotheses } from '../../hooks/useInitialHypotheses';
 import {
   generateVisitorGreeting,
   generateKnownUserGreeting,
-  generateFollowUp,
   buildContextHintsFromConversation,
 } from '../../services/welcome/orchestrator';
-import type { GreetingState, ContextHint, InitialHypotheses } from '../../services/welcome/types';
+import type { ContextHint, InitialHypotheses } from '../../services/welcome/types';
 import { MOCK_PROFILES, MOCK_FEED } from '../../data/mockOccitanie';
 import type { MockProfile } from '../../data/mockOccitanie';
+
+// ── Supabase edge function endpoints ──────────────────────────────────
+const SUPABASE_URL  = import.meta.env.VITE_SUPABASE_URL as string;
+const SUPABASE_ANON = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
+const CHAT_URL = `${SUPABASE_URL}/functions/v1/voice-welcome`;
+const TTS_URL  = `${SUPABASE_URL}/functions/v1/tts-elevenlabs`;
+const API_HEADERS = {
+  'Authorization': `Bearer ${SUPABASE_ANON}`,
+  'Apikey': SUPABASE_ANON,
+};
+
+const SILENCE_THRESHOLD = 0.015;
+
+function getSpeechRecognitionCtor(): (new () => any) | null {
+  const w = window as any;
+  return w.SpeechRecognition || w.webkitSpeechRecognition || null;
+}
 
 interface Props {
   onClose: () => void;
@@ -20,6 +37,13 @@ interface Props {
 }
 
 type AIPhase = 'greeting' | 'listening' | 'analyzing' | 'resolved';
+type VoiceState = 'idle' | 'listening' | 'user_speaking' | 'processing' | 'speaking' | 'paused';
+
+interface Turn {
+  role: 'user' | 'assistant';
+  content: string;
+  id: string;
+}
 
 function matchProfiles(text: string): MockProfile[] {
   const lower = text.toLowerCase();
@@ -44,80 +68,287 @@ export default function WorkspaceOverlay({ onClose, onJoinNetwork }: Props) {
   const knownUser = useKnownUserContext();
   const { computeFromText } = useInitialHypotheses();
 
-  const [textInput, setTextInput] = useState('');
+  // ── AI Canvas state ─────────────────────────────────────────────────
   const [phase, setPhase] = useState<AIPhase>('greeting');
-  const [greeting, setGreeting] = useState<GreetingState | null>(null);
-  const [aiMessages, setAiMessages] = useState<string[]>([]);
-  const [currentHypotheses, setCurrentHypotheses] = useState<InitialHypotheses | null>(null);
+  const [, setGreeting] = useState<any>(null);
+  const [, setCurrentHypotheses] = useState<InitialHypotheses | null>(null);
   const [contextHints, setContextHints] = useState<ContextHint[]>([]);
   const [results, setResults] = useState<MockProfile[]>([]);
   const [presenceCard, setPresenceCard] = useState<{ titre: string; caps: string[]; tags: string[] } | null>(null);
   const [feedVisible, setFeedVisible] = useState(false);
-  const [micActive, setMicActive] = useState(true);
-  const [turnCount, setTurnCount] = useState(0);
   const [showContextBlock, setShowContextBlock] = useState(false);
+  const [, setTurnCount] = useState(0);
+  const [latestAiMessage, setLatestAiMessage] = useState('');
 
+  // ── Voice panel state (from V192 VoicePresence) ─────────────────────
+  const [voiceState, setVoiceState] = useState<VoiceState>('idle');
+  const [history, setHistory] = useState<Turn[]>([]);
+  const [textInput, setTextInput] = useState('');
+  const [thinking, setThinking] = useState(false);
+  const [muted, setMuted] = useState(false);
+  const [amplitude, setAmplitude] = useState(0);
+  const [micBlocked, setMicBlocked] = useState(false);
+  const [, setTick] = useState(0);
+
+  const streamRef = useRef<MediaStream | null>(null);
+  const audioRef = useRef<AudioBufferSourceNode | null>(null);
+  const audioCtxRef = useRef<AudioContext | null>(null);
+  const monitorCtxRef = useRef<AudioContext | null>(null);
+  const rafRef = useRef<number>(0);
+  const silenceStart = useRef<number>(0);
+  const speechStart = useRef<number>(0);
+  const isListening = useRef(false);
+  const recognitionRef = useRef<any>(null);
+  const processingRef = useRef(false);
+  const historyRef = useRef<Turn[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
   const canvasRef = useRef<HTMLDivElement>(null);
 
-  // Waveform
-  const [barHeights, setBarHeights] = useState(() => Array.from({ length: 24 }, () => 4));
+  useEffect(() => { historyRef.current = history; }, [history]);
 
+  // Animate waveform tick
   useEffect(() => {
-    let raf: number;
-    function animate() {
-      setBarHeights(prev => prev.map((h, i) => {
-        const base = 3;
-        const max = micActive && (phase === 'greeting' || phase === 'listening') ? 16 : 7;
-        const target = base + Math.sin(Date.now() * 0.003 + i * 0.5) * (max - base) * 0.5 + (max - base) * 0.25;
-        return h + (target - h) * 0.07;
-      }));
-      raf = requestAnimationFrame(animate);
+    let id: number;
+    function frame() { setTick(t => t + 1); id = requestAnimationFrame(frame); }
+    id = requestAnimationFrame(frame);
+    return () => cancelAnimationFrame(id);
+  }, []);
+
+  // Cleanup on unmount
+  useEffect(() => () => {
+    streamRef.current?.getTracks().forEach(t => t.stop());
+    try { audioRef.current?.stop(); } catch {}
+    try { recognitionRef.current?.abort(); } catch {}
+    if (audioCtxRef.current?.state !== 'closed') audioCtxRef.current?.close();
+    if (monitorCtxRef.current?.state !== 'closed') monitorCtxRef.current?.close();
+    cancelAnimationFrame(rafRef.current);
+  }, []);
+
+  // ── Voice helpers ───────────────────────────────────────────────────
+  const addTurn = useCallback((role: 'user' | 'assistant', content: string) => {
+    setHistory(h => [...h, { role, content, id: `${role}_${Date.now()}_${Math.random()}` }]);
+    if (role === 'assistant') setLatestAiMessage(content);
+  }, []);
+
+  const playTTS = useCallback(async (text: string): Promise<void> => {
+    if (muted) return;
+    try {
+      const ctx = audioCtxRef.current;
+      if (!ctx || ctx.state === 'closed') return;
+      if (ctx.state === 'suspended') await ctx.resume();
+      const res = await fetch(TTS_URL, {
+        method: 'POST',
+        headers: { ...API_HEADERS, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text, voice_id: "3xmA3rwGMRsLGbkC7E3u" }),
+      });
+      if (!res.ok) return;
+      const arrayBuf = await res.arrayBuffer();
+      if (arrayBuf.byteLength === 0) return;
+      const audioBuffer = await ctx.decodeAudioData(arrayBuf);
+      await new Promise<void>((resolve) => {
+        const source = ctx.createBufferSource();
+        source.buffer = audioBuffer;
+        source.connect(ctx.destination);
+        audioRef.current = source;
+        source.onended = () => { audioRef.current = null; resolve(); };
+        source.start(0);
+      });
+    } catch {}
+  }, [muted]);
+
+  const sendTranscript = useCallback(async (text: string) => {
+    if (!text.trim() || processingRef.current) return;
+    processingRef.current = true;
+    setVoiceState('processing');
+
+    // Also process for AI canvas
+    processUserInput(text.trim());
+
+    addTurn('user', text.trim());
+    try {
+      const res = await fetch(CHAT_URL, {
+        method: 'POST',
+        headers: { ...API_HEADERS, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: text.trim(),
+          history: historyRef.current.slice(-8).map(t => ({ role: t.role, content: t.content })),
+        }),
+        signal: AbortSignal.timeout(15000),
+      });
+      if (!res.ok) throw new Error(`http_${res.status}`);
+      const data = await res.json() as { reply?: string };
+      const reply = data.reply || 'Je suis là.';
+      addTurn('assistant', reply);
+      setVoiceState('speaking');
+      await playTTS(reply);
+    } catch {
+      addTurn('assistant', 'Je suis là. Dis-moi.');
+    } finally {
+      processingRef.current = false;
     }
-    raf = requestAnimationFrame(animate);
-    return () => cancelAnimationFrame(raf);
-  }, [micActive, phase]);
+  }, [addTurn, playTTS]);
 
-  // Generate greeting on mount
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      let greetState: GreetingState;
-      if (isConnected && knownUser) {
-        greetState = generateKnownUserGreeting(knownUser);
-      } else if (visitorProfile) {
-        greetState = generateVisitorGreeting(visitorProfile);
-      } else {
-        greetState = {
-          message: 'Bonjour. Je suis RENOVEC. Décrivez librement ce qui vous amène.',
-          tone: 'warm',
-          followUp: 'Je vous écoute.',
-          contextHints: [],
-          phase: 'greeting',
-        };
-      }
-      setGreeting(greetState);
-      setAiMessages([greetState.message]);
-      setContextHints(greetState.contextHints);
-      if (greetState.contextHints.length > 0) {
-        setTimeout(() => setShowContextBlock(true), 1200);
-      }
+  const beginListening = useCallback(() => {
+    if (processingRef.current) return;
+    if (recognitionRef.current) {
+      try { recognitionRef.current.abort(); } catch {}
+      recognitionRef.current = null;
+    }
+    const Ctor = getSpeechRecognitionCtor();
+    if (!Ctor) { setVoiceState('paused'); return; }
 
-      setTimeout(() => {
-        if (greetState.followUp) {
-          setAiMessages(prev => [...prev, greetState.followUp!]);
+    const recognition = new Ctor();
+    recognition.lang = 'fr-FR';
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    recognition.maxAlternatives = 1;
+
+    recognition.onresult = (e: any) => {
+      for (let i = e.resultIndex; i < e.results.length; i++) {
+        if (e.results[i].isFinal) {
+          const transcript = e.results[i][0].transcript.trim();
+          if (transcript.length > 1) {
+            isListening.current = false;
+            try { recognition.stop(); } catch {}
+            sendTranscript(transcript).then(() => {
+              if (streamRef.current && !processingRef.current) beginListening();
+            });
+          }
         }
-        setPhase('listening');
-        inputRef.current?.focus();
-      }, 1500);
-    }, 400);
-    return () => clearTimeout(timer);
-  }, [isConnected, knownUser, visitorProfile]);
+      }
+    };
 
-  const handleSubmit = useCallback(() => {
-    const msg = textInput.trim();
-    if (!msg) return;
-    setTextInput('');
-    recordTextInput(msg);
+    recognition.onend = () => {
+      if (isListening.current && !processingRef.current && streamRef.current) {
+        try { recognition.start(); } catch {}
+      }
+    };
+
+    recognition.onerror = (e: any) => {
+      if (e.error === 'no-speech' || e.error === 'aborted') return;
+      isListening.current = false;
+      recognitionRef.current = null;
+      if (e.error === 'not-allowed' || e.error === 'service-not-allowed' || e.error === 'audio-capture') {
+        setMicBlocked(true);
+        setVoiceState('paused');
+        setTimeout(() => inputRef.current?.focus(), 100);
+      }
+    };
+
+    recognitionRef.current = recognition;
+    isListening.current = true;
+    silenceStart.current = Date.now();
+    speechStart.current = 0;
+    setVoiceState('listening');
+    try { recognition.start(); } catch {}
+  }, [sendTranscript]);
+
+  const startMonitoring = useCallback(() => {
+    if (!streamRef.current) return;
+    if (monitorCtxRef.current?.state !== 'closed') {
+      try { monitorCtxRef.current?.close(); } catch {}
+    }
+    monitorCtxRef.current = new AudioContext();
+    const ctx = monitorCtxRef.current;
+    const source = ctx.createMediaStreamSource(streamRef.current);
+    const analyser = ctx.createAnalyser();
+    analyser.fftSize = 256;
+    analyser.smoothingTimeConstant = 0.7;
+    source.connect(analyser);
+    const data = new Uint8Array(analyser.frequencyBinCount);
+    function tick() {
+      analyser.getByteTimeDomainData(data);
+      let sum = 0;
+      for (let i = 0; i < data.length; i++) { const v = (data[i] - 128) / 128; sum += v * v; }
+      setAmplitude(Math.sqrt(sum / data.length));
+      rafRef.current = requestAnimationFrame(tick);
+    }
+    tick();
+  }, []);
+
+  // Start voice on mount
+  useEffect(() => {
+    (async () => {
+      let stream: MediaStream | null = null;
+      if (navigator.mediaDevices?.getUserMedia) {
+        try {
+          stream = await navigator.mediaDevices.getUserMedia({
+            audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
+          });
+        } catch {
+          try { stream = await navigator.mediaDevices.getUserMedia({ audio: true }); } catch { stream = null; }
+        }
+      }
+
+      if (!audioCtxRef.current || audioCtxRef.current.state === 'closed') {
+        audioCtxRef.current = new AudioContext();
+      }
+      audioCtxRef.current.resume().catch(() => {});
+
+      if (!stream) {
+        setMicBlocked(true);
+        setVoiceState('paused');
+        setTimeout(() => inputRef.current?.focus(), 200);
+        return;
+      }
+
+      streamRef.current = stream;
+      startMonitoring();
+
+      // Generate greeting
+      let greetText: string;
+      if (isConnected && knownUser) {
+        const g = generateKnownUserGreeting(knownUser);
+        setGreeting(g);
+        setContextHints(g.contextHints);
+        greetText = g.message;
+      } else if (visitorProfile) {
+        const g = generateVisitorGreeting(visitorProfile);
+        setGreeting(g);
+        setContextHints(g.contextHints);
+        greetText = g.message;
+      } else {
+        greetText = 'Bonjour. Je suis RENOVEC. Décrivez librement ce qui vous amène.';
+      }
+
+      setLatestAiMessage(greetText);
+      addTurn('assistant', greetText);
+      setVoiceState('speaking');
+      setPhase('listening');
+      await playTTS(greetText);
+      if (contextHints.length > 0) setShowContextBlock(true);
+      beginListening();
+    })();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const interruptAndListen = useCallback(() => {
+    try { audioRef.current?.stop(); } catch {}
+    audioRef.current = null;
+    processingRef.current = false;
+    beginListening();
+  }, [beginListening]);
+
+  const togglePause = useCallback(() => {
+    if (voiceState === 'paused') {
+      beginListening();
+    } else if (voiceState === 'listening' || voiceState === 'user_speaking') {
+      isListening.current = false;
+      try { recognitionRef.current?.abort(); } catch {}
+      recognitionRef.current = null;
+      setVoiceState('paused');
+    }
+  }, [voiceState, beginListening]);
+
+  const handleMute = useCallback(() => {
+    setMuted(m => {
+      if (!m) { try { audioRef.current?.stop(); } catch {}; audioRef.current = null; }
+      return !m;
+    });
+  }, []);
+
+  // ── AI Canvas processing ────────────────────────────────────────────
+  const processUserInput = useCallback((text: string) => {
+    recordTextInput(text);
     recordInteraction();
     setTurnCount(prev => prev + 1);
     setPhase('analyzing');
@@ -125,11 +356,11 @@ export default function WorkspaceOverlay({ onClose, onJoinNetwork }: Props) {
     setPresenceCard(null);
     setFeedVisible(false);
 
-    const hypotheses = computeFromText(msg, visitorProfile);
+    const hypotheses = computeFromText(text, visitorProfile);
     setCurrentHypotheses(hypotheses);
 
     const newHints = buildContextHintsFromConversation(
-      [...(visitorProfile?.signals.textInputs || []), msg],
+      [...(visitorProfile?.signals.textInputs || []), text],
       hypotheses,
       visitorProfile
     );
@@ -141,23 +372,80 @@ export default function WorkspaceOverlay({ onClose, onJoinNetwork }: Props) {
     setShowContextBlock(true);
 
     setTimeout(() => {
-      const followUp = generateFollowUp(hypotheses.probableIntent, turnCount + 1, isConnected);
-
       if (hypotheses.probableIntent === 'offer') {
-        setPresenceCard(generatePresenceCard(msg));
-        if (followUp) setAiMessages(prev => [...prev, followUp]);
+        setPresenceCard(generatePresenceCard(text));
       } else if (hypotheses.probableIntent === 'discovery' || hypotheses.probableIntent === 'hesitation') {
         setFeedVisible(true);
-        if (followUp) setAiMessages(prev => [...prev, followUp]);
       } else {
-        setResults(matchProfiles(msg));
-        if (followUp) setAiMessages(prev => [...prev, followUp]);
+        setResults(matchProfiles(text));
       }
       setPhase('resolved');
-    }, 1400);
-  }, [textInput, computeFromText, visitorProfile, recordTextInput, recordInteraction, turnCount, isConnected]);
+    }, 1200);
+  }, [computeFromText, visitorProfile, recordTextInput, recordInteraction]);
 
-  const latestMessage = aiMessages[aiMessages.length - 1] || '';
+  // Text submit fallback
+  const handleTextSubmit = useCallback(async () => {
+    const msg = textInput.trim();
+    if (!msg || thinking) return;
+    setTextInput('');
+    setThinking(true);
+
+    isListening.current = false;
+    try { recognitionRef.current?.abort(); } catch {};
+    recognitionRef.current = null;
+
+    processUserInput(msg);
+    addTurn('user', msg);
+
+    try {
+      const res = await fetch(CHAT_URL, {
+        method: 'POST',
+        headers: { ...API_HEADERS, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: msg,
+          history: historyRef.current.slice(-8).map(t => ({ role: t.role, content: t.content })),
+        }),
+        signal: AbortSignal.timeout(15000),
+      });
+      const data = await res.json();
+      const reply = (data.reply as string) || 'Je suis là.';
+      addTurn('assistant', reply);
+      setVoiceState('speaking');
+      await playTTS(reply);
+    } catch {
+      addTurn('assistant', 'Dis-moi.');
+    } finally {
+      setThinking(false);
+      if (streamRef.current) beginListening();
+    }
+  }, [textInput, thinking, addTurn, playTTS, beginListening, processUserInput]);
+
+  // Amplitude → visual voice state
+  useEffect(() => {
+    if (voiceState === 'listening' && amplitude > SILENCE_THRESHOLD * 2.5) {
+      setVoiceState('user_speaking');
+    } else if (voiceState === 'user_speaking' && amplitude <= SILENCE_THRESHOLD * 0.8) {
+      setVoiceState('listening');
+    }
+  }, [amplitude, voiceState]);
+
+  const isActive = voiceState === 'listening' || voiceState === 'user_speaking';
+  const isSpeaking = voiceState === 'speaking';
+  const isProcessing = voiceState === 'processing';
+  const isPaused = voiceState === 'paused';
+
+  // Waveform bars
+  const now = typeof performance !== 'undefined' ? performance.now() : Date.now();
+  const bars = 7;
+  const barHeights = Array.from({ length: bars }, (_, i) => {
+    const wave = Math.sin(now / 250 + i * 0.9) * 0.3 + 0.5;
+    const amp = Math.min(1, amplitude * 10);
+    if (voiceState === 'user_speaking') return 6 + amp * 22 + wave * 4;
+    if (isSpeaking) return 5 + Math.sin(now / 180 + i * 0.7) * 9 + 7;
+    if (isProcessing) return 4 + Math.sin(now / 400 + i) * 3 + 3;
+    if (isActive) return 3 + wave * 3;
+    return 3;
+  });
 
   return (
     <div className="ai-page">
@@ -176,10 +464,10 @@ export default function WorkspaceOverlay({ onClose, onJoinNetwork }: Props) {
       </header>
 
       {/* AI status / latest message */}
-      {latestMessage && (
+      {latestAiMessage && (
         <div className="ai-status-bar">
           <div className="ai-status-dot" />
-          <span className="ai-status-text">{latestMessage}</span>
+          <span className="ai-status-text">{latestAiMessage}</span>
         </div>
       )}
 
@@ -205,7 +493,7 @@ export default function WorkspaceOverlay({ onClose, onJoinNetwork }: Props) {
           </div>
         )}
 
-        {/* Greeting / waiting state */}
+        {/* Greeting / waiting */}
         {phase === 'greeting' && (
           <div className="ai-canvas-empty">
             <div className="ai-loader"><span /><span /><span /></div>
@@ -312,21 +600,33 @@ export default function WorkspaceOverlay({ onClose, onJoinNetwork }: Props) {
         )}
       </div>
 
-      {/* Fixed voice bubble at bottom */}
+      {/* ═══ VOICE BUBBLE — real vocal panel from V192 ═══ */}
       <div className="ai-voice-bubble">
         <div className="ai-bubble-header">
           <div className="ai-bubble-status">
-            <div className={`ai-bubble-dot ${phase === 'analyzing' ? 'ai-bubble-dot--proc' : ''}`} />
+            <div className={`ai-bubble-dot ${
+              voiceState === 'user_speaking' ? 'ai-bubble-dot--rec'
+              : isSpeaking ? 'ai-bubble-dot--play'
+              : isProcessing ? 'ai-bubble-dot--proc'
+              : ''
+            }`} />
             <span>RENOVEC</span>
             <span className="ai-bubble-state">
-              {phase === 'greeting' ? 'initialise…'
-                : phase === 'analyzing' ? 'réfléchit…'
-                : 'à l\'écoute'}
+              {voiceState === 'user_speaking' ? 'écoute…'
+                : isSpeaking ? 'parle…'
+                : isProcessing ? 'réfléchit…'
+                : isPaused ? 'en pause'
+                : isActive ? 'à l\'écoute' : ''}
             </span>
+          </div>
+          <div className="ai-bubble-actions">
+            <button className="ai-bubble-icon-btn" onClick={handleMute} title={muted ? 'Réactiver' : 'Couper le son'}>
+              {muted ? <VolumeX size={13} /> : <Volume2 size={13} />}
+            </button>
           </div>
         </div>
 
-        {/* Waveform */}
+        {/* Live waveform */}
         <div className="ai-waveform">
           {barHeights.map((h, i) => (
             <div
@@ -334,22 +634,49 @@ export default function WorkspaceOverlay({ onClose, onJoinNetwork }: Props) {
               className="ai-wave-bar"
               style={{
                 height: h,
-                background: micActive
-                  ? 'rgba(242,101,34,0.55)'
+                background: voiceState === 'user_speaking'
+                  ? `rgba(242,101,34,${Math.min(1, 0.5 + amplitude * 3)})`
+                  : isSpeaking
+                  ? 'rgba(90,180,120,0.65)'
+                  : isProcessing
+                  ? 'rgba(200,168,90,0.4)'
+                  : isActive
+                  ? 'rgba(242,101,34,0.4)'
                   : 'rgba(255,255,255,0.08)',
+                transition: 'background 0.2s',
               }}
             />
           ))}
         </div>
 
-        {/* Controls */}
+        {/* Voice controls */}
+        <div className="ai-voice-controls">
+          {micBlocked ? (
+            <div className="ai-ptt ai-ptt--disabled">
+              <MicOff size={14} />
+              <span>Mode texte</span>
+            </div>
+          ) : isSpeaking ? (
+            <button className="ai-ptt ai-ptt--playing" onClick={interruptAndListen}>
+              <Mic size={14} />
+              <span>Interrompre</span>
+            </button>
+          ) : (
+            <button
+              className={`ai-ptt ${isActive ? 'ai-ptt--recording' : isPaused ? '' : 'ai-ptt--processing'}`}
+              onClick={togglePause}
+              disabled={isProcessing}
+            >
+              {isProcessing ? <Loader size={14} className="ai-spin" /> : isPaused ? <MicOff size={14} /> : <Mic size={14} />}
+              <span>
+                {isProcessing ? 'Traitement…' : isPaused ? 'Reprendre' : 'À l\'écoute'}
+              </span>
+            </button>
+          )}
+        </div>
+
+        {/* Text input */}
         <div className="ai-bubble-controls">
-          <button
-            className={`ai-mic-btn ${micActive ? 'ai-mic-btn--active' : ''}`}
-            onClick={() => setMicActive(!micActive)}
-          >
-            {micActive ? <Mic size={15} /> : <MicOff size={15} />}
-          </button>
           <input
             ref={inputRef}
             type="text"
@@ -357,15 +684,16 @@ export default function WorkspaceOverlay({ onClose, onJoinNetwork }: Props) {
             placeholder="Ou écrivez…"
             value={textInput}
             onChange={e => setTextInput(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && handleSubmit()}
-            disabled={phase === 'analyzing' || phase === 'greeting'}
+            onKeyDown={e => e.key === 'Enter' && handleTextSubmit()}
+            disabled={thinking}
+            autoComplete="off"
           />
           <button
             className="ai-send-btn"
-            onClick={handleSubmit}
-            disabled={!textInput.trim() || phase === 'analyzing' || phase === 'greeting'}
+            onClick={handleTextSubmit}
+            disabled={!textInput.trim() || thinking}
           >
-            {phase === 'analyzing' ? <Loader size={14} className="ai-spin" /> : <Send size={14} />}
+            {thinking ? <Loader size={14} className="ai-spin" /> : <Send size={14} />}
           </button>
         </div>
       </div>

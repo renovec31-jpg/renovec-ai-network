@@ -99,7 +99,7 @@ export function useInitialHypotheses() {
       intentConfidence,
       urgencyLevel,
       territorialNeed: signals.approximateRegion,
-      needVsOffer: probableIntent === 'offer' ? 0.2 : 0.5,
+      needVsOffer: (probableIntent as string) === 'offer' ? 0.2 : 0.5,
       explorationLikelihood: probableIntent === 'discovery' ? 0.8 : 0.3,
       hesitationSignals: 0,
     };
