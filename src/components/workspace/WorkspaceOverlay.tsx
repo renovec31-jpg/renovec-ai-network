@@ -16,6 +16,7 @@ import type { MockProfile } from '../../data/mockOccitanie';
 import ConversationRail from './ConversationRail';
 import AIBrowserSurface from './AIBrowserSurface';
 import ContextBar from './ContextBar';
+import ChatRain from '../ChatRain';
 import type { AIBrowserState, AIView, ContextSummary, PresenceDraft, SituationDraft, SuggestedAction } from './types';
 import { intentToLabel, clarityFromConfidence } from './types';
 
@@ -693,6 +694,7 @@ export default function WorkspaceOverlay({ onClose, onJoinNetwork }: Props) {
 
   return (
     <div className="ai-page">
+      <ChatRain />
       {/* Fixed header */}
       <header className="ai-page-header">
         <div className="ai-page-header-left">

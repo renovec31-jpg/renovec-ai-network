@@ -5210,6 +5210,55 @@ button, a, input, textarea, select {
   to   { opacity: 1; }
 }
 
+/* ── Chat Rain (inside chatbot) ────────────────────────────────────── */
+.chat-rain {
+  position: absolute; inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+.ai-page > *:not(.chat-rain) {
+  position: relative; z-index: 1;
+}
+.chat-rain-bubble {
+  position: absolute; top: -60px;
+  left: var(--cr-left, 30%);
+  width: var(--cr-size, 28px); height: var(--cr-size, 28px);
+  opacity: var(--cr-opacity, 0.2);
+  filter: blur(var(--cr-blur, 0px));
+  will-change: transform, opacity;
+  animation:
+    crFall var(--cr-dur, 6s) cubic-bezier(.25,.0,.5,.94) var(--cr-delay, 0s) forwards,
+    crBounce .45s cubic-bezier(.33,1,.68,1) calc(var(--cr-dur, 6s) * 0.85 + var(--cr-delay, 0s)) forwards,
+    crFade .5s ease-out calc(var(--cr-dur, 6s) * 0.92 + var(--cr-delay, 0s)) forwards;
+}
+.chat-rain-bubble img {
+  width: 100%; height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid rgba(255,255,255,0.04);
+}
+.chat-rain-bubble--d3 img {
+  border: 1.5px solid rgba(242,101,34,0.08);
+  box-shadow: 0 0 12px rgba(242,101,34,0.06);
+}
+
+@keyframes crFall {
+  0%   { transform: translateY(0) scale(1); }
+  85%  { transform: translateY(calc(100vh - 50px)) scale(1); }
+  100% { transform: translateY(calc(100vh - 40px)) scale(1); }
+}
+@keyframes crBounce {
+  0%   { transform: translateY(calc(100vh - 40px)) scale(1); }
+  40%  { transform: translateY(calc(100vh - 52px)) scale(1.02); }
+  70%  { transform: translateY(calc(100vh - 42px)) scale(1); }
+  100% { transform: translateY(calc(100vh - 44px)) scale(1); }
+}
+@keyframes crFade {
+  0%   { opacity: var(--cr-opacity, 0.2); }
+  100% { opacity: 0; filter: blur(4px); }
+}
+
 /* ── AI Page Header ────────────────────────────────────────────────── */
 .ai-page-header {
   display: flex; align-items: center; justify-content: space-between;
@@ -6205,53 +6254,41 @@ button, a, input, textarea, select {
 }
 
 .global-rain-drop {
-  position: absolute; top: -60px;
+  position: absolute; top: -70px;
   left: var(--gr-left, 20%);
   display: flex; align-items: center; gap: 8px;
+  opacity: var(--gr-opacity, 0.3);
+  filter: blur(var(--gr-blur, 0px));
   will-change: transform, opacity;
   pointer-events: none;
   animation:
-    grFall var(--gr-dur, 5s) cubic-bezier(.3,.0,.5,.96) var(--gr-delay, 0s) forwards,
-    grBounce .5s cubic-bezier(.33,1,.68,1) calc(var(--gr-dur, 5s) * 0.84 + var(--gr-delay, 0s)) forwards,
-    grDissolve .6s cubic-bezier(.4,0,.2,1) calc(var(--gr-dur, 5s) * 0.93 + var(--gr-delay, 0s)) forwards;
+    grFall var(--gr-dur, 6s) cubic-bezier(.28,.0,.5,.95) var(--gr-delay, 0s) forwards,
+    grBounce .5s cubic-bezier(.33,1,.68,1) calc(var(--gr-dur, 6s) * 0.86 + var(--gr-delay, 0s)) forwards,
+    grDissolve .6s cubic-bezier(.4,0,.2,1) calc(var(--gr-dur, 6s) * 0.94 + var(--gr-delay, 0s)) forwards;
 }
-
-.global-rain-drop--d0 {
-  opacity: 0.15;
-  filter: blur(1.2px);
-  --depth-opacity: 0.15;
-}
-.global-rain-drop--d0 .global-rain-avatar { width: 20px; height: 20px; }
-.global-rain-drop--d0 .global-rain-body strong { font-size: 9px; }
-
-.global-rain-drop--d1 {
-  opacity: 0.38;
-  --depth-opacity: 0.38;
-}
-.global-rain-drop--d1 .global-rain-avatar { width: 28px; height: 28px; }
-.global-rain-drop--d1 .global-rain-body strong { font-size: 10.5px; }
-.global-rain-drop--d1 .global-rain-caption { font-size: 10px; }
-
-.global-rain-drop--d2 {
-  opacity: 0.62;
-  --depth-opacity: 0.62;
-}
-.global-rain-drop--d2 .global-rain-avatar { width: 34px; height: 34px; }
-.global-rain-drop--d2 .global-rain-body strong { font-size: 12px; }
 
 .global-rain-avatar {
+  width: var(--gr-size, 28px); height: var(--gr-size, 28px);
   border-radius: 50%; flex-shrink: 0;
   object-fit: cover; aspect-ratio: 1;
-  border: 1.5px solid rgba(255,255,255,0.06);
+  border: 1.5px solid rgba(255,255,255,0.05);
+}
+.global-rain-drop--d3 .global-rain-avatar {
+  border: 2px solid rgba(242,101,34,0.1);
+  box-shadow: 0 2px 16px rgba(242,101,34,0.06);
 }
 
 .global-rain-body {
   min-width: 0; display: flex; flex-direction: column; gap: 1px;
 }
+.global-rain-drop--d0 .global-rain-body,
+.global-rain-drop--d1 .global-rain-body { display: none; }
 .global-rain-body strong {
-  font-weight: 520; color: rgba(255,255,255,0.45);
+  font-weight: 520; color: rgba(255,255,255,0.5);
   letter-spacing: -0.01em; white-space: nowrap;
+  font-size: 11px;
 }
+.global-rain-drop--d3 .global-rain-body strong { font-size: 13px; color: rgba(255,255,255,0.6); }
 .global-rain-caption {
   font-size: 10.5px; font-weight: 400; color: rgba(255,255,255,0.22);
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
@@ -6259,26 +6296,26 @@ button, a, input, textarea, select {
 }
 
 @keyframes grFall {
-  0%   { transform: translateY(0); opacity: var(--depth-opacity, 0.5); }
-  84%  { transform: translateY(calc(100vh - 40px)); opacity: var(--depth-opacity, 0.5); }
-  100% { transform: translateY(calc(100vh - 30px)); opacity: var(--depth-opacity, 0.5); }
+  0%   { transform: translateY(0); }
+  86%  { transform: translateY(calc(100vh - 50px)); }
+  100% { transform: translateY(calc(100vh - 40px)); }
 }
 @keyframes grBounce {
-  0%   { transform: translateY(calc(100vh - 30px)); }
-  30%  { transform: translateY(calc(100vh - 38px)); }
-  55%  { transform: translateY(calc(100vh - 32px)); }
-  75%  { transform: translateY(calc(100vh - 34px)); }
-  100% { transform: translateY(calc(100vh - 33px)); }
+  0%   { transform: translateY(calc(100vh - 40px)); }
+  35%  { transform: translateY(calc(100vh - 52px)); }
+  60%  { transform: translateY(calc(100vh - 42px)); }
+  80%  { transform: translateY(calc(100vh - 45px)); }
+  100% { transform: translateY(calc(100vh - 44px)); }
 }
 @keyframes grDissolve {
-  0%   { opacity: var(--depth-opacity, 0.5); transform: translateY(calc(100vh - 33px)) translateX(0); }
-  100% { opacity: 0; transform: translateY(calc(100vh - 33px)) translateX(22px); filter: blur(2.5px); }
+  0%   { opacity: var(--gr-opacity, 0.3); transform: translateY(calc(100vh - 44px)) translateX(0); }
+  100% { opacity: 0; transform: translateY(calc(100vh - 44px)) translateX(18px); filter: blur(3px); }
 }
 
 @media (max-width: 768px) {
   .global-rain-drop--d0 { display: none; }
-  .global-rain-caption { max-width: 120px; }
-  .global-rain-drop--d2 .global-rain-avatar { width: 28px; height: 28px; }
+  .global-rain-caption { max-width: 110px; }
+  .global-rain-drop--d3 .global-rain-avatar { width: 40px; height: 40px; }
 }
 
 /* ── Feed Rain View ────────────────────────────────────────────────── */
