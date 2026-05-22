@@ -331,7 +331,7 @@ export default function WorkspaceOverlay({ onClose, onJoinNetwork }: Props) {
         setContextHints(g.contextHints);
         greetText = g.message;
       } else {
-        greetText = 'Bonjour. Je suis RENOVEC. Décrivez librement ce qui vous amène.';
+        greetText = 'Bonjour. Je suis RENOVEC. Parlez-moi de votre situation, je peux déjà comprendre et vous orienter.';
       }
 
       setLatestAiMessage(greetText);

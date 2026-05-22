@@ -49,16 +49,16 @@ export function generateVisitorGreeting(profile: VisitorProfile): GreetingState 
   }
 
   if (hypotheses.urgencyLevel > 0.5) {
-    message = `${greeting}. Je suis RENOVEC, le coordinateur du réseau. Vous semblez avoir besoin d'aide rapidement — dites-moi ce qu'il se passe, je vais vous orienter.`;
+    message = `${greeting}. Dites-moi ce qu'il se passe, je suis là pour comprendre et vous orienter tout de suite.`;
     followUp = null;
   } else if (signals.referrer && signals.referrer.includes('google')) {
-    message = `${greeting}. Bienvenue sur RENOVEC. Vous êtes au bon endroit — ici, l'IA comprend votre situation en langage libre et vous relie aux bonnes personnes, près de chez vous.`;
+    message = `${greeting}. Vous pouvez me parler librement. Je comprends les situations humaines — un besoin, un coup de main, une compétence à partager — et je vous relie aux bonnes personnes.`;
     followUp = 'Qu\'est-ce qui vous amène ?';
   } else if (signals.timeOnSiteMs > 20000) {
-    message = `${greeting}. Je vois que vous explorez le réseau depuis un moment. RENOVEC est un espace où chaque personne peut exprimer un besoin ou partager ce qu'elle sait faire. Envie de tester ?`;
+    message = `${greeting}. Je suis là. Vous pouvez me décrire une situation, un besoin, ou simplement ce qui vous passe par la tête. Je peux déjà comprendre et vous montrer ce qui pourrait s'activer autour de vous.`;
     followUp = null;
   } else {
-    message = `${greeting}. Je suis RENOVEC, l'intelligence qui coordonne ce réseau. Ici, pas de formulaire — décrivez simplement ce qui vous amène, un besoin, une envie de partager, ou juste de la curiosité.`;
+    message = `${greeting}. Je suis RENOVEC. Parlez-moi comme à quelqu'un qui peut vous aider — décrivez votre situation, ce dont vous avez besoin, ou ce que vous savez faire. On part de vous.`;
     followUp = 'Je vous écoute.';
   }
 
@@ -131,18 +131,18 @@ export function generateFollowUp(
     switch (intent) {
       case 'need':
       case 'urgency':
-        return 'Je cherche dans le réseau les profils qui correspondent. Pouvez-vous préciser votre zone géographique si c\'est important ?';
+        return 'Je comprends. Je regarde déjà qui pourrait correspondre. Vous êtes dans quelle zone, si c\'est important ?';
       case 'offer':
-        return 'Intéressant. Pour créer votre fiche, dites-m\'en un peu plus : quand êtes-vous disponible, et dans quelle zone ?';
+        return 'Bien reçu. Je peux commencer à construire votre fiche. Dans quelle zone et quand êtes-vous disponible ?';
       case 'hesitation':
-        return 'Prenez votre temps. Vous pouvez simplement me dire ce qui vous passe par la tête. Je ne suis pas un formulaire.';
+        return 'Pas de souci. Dites ce qui vous vient, même vague. Je peux clarifier avec vous au fur et à mesure.';
       case 'discovery':
-        return 'RENOVEC relie des personnes qui s\'entraident localement. Vous pouvez exprimer un besoin ou proposer un savoir-faire. Qu\'est-ce qui vous intrigue ?';
+        return 'Ici, chacun peut exprimer un besoin ou proposer ce qu\'il sait faire. Qu\'est-ce qui vous intéresse ?';
     }
   }
 
   if (turnCount === 2 && !isConnected) {
-    return 'Très bien. Je vais vous montrer ce que le réseau peut faire pour vous.';
+    return 'Je vous montre ce qui pourrait s\'activer pour vous.';
   }
 
   return '';
