@@ -195,6 +195,7 @@ export default function VoicePresence({ onOpenChat }: { onOpenChat?: () => void 
             handledFinal = true;
             isListening.current = false;
             try { recognition.stop(); } catch {}
+            recognitionRef.current = null;
             sendTranscriptRef.current(transcript).then(() => {
               if (streamRef.current && !processingRef.current) beginListening();
             });
@@ -206,24 +207,24 @@ export default function VoicePresence({ onOpenChat }: { onOpenChat?: () => void 
     recognition.onend = () => {
       if (handledFinal) return;
       if (isListening.current && !processingRef.current && streamRef.current) {
-        try { recognition.start(); } catch {}
+        recognitionRef.current = null;
+        setTimeout(() => beginListening(), 100);
       }
     };
 
     recognition.onerror = (e) => {
-      if (e.error === 'no-speech') return;
-      if (e.error === 'aborted') return;
+      if (e.error === 'no-speech' || e.error === 'aborted') return;
       isListening.current = false;
       recognitionRef.current = null;
       if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
         setMicBlocked(true);
         setUiState('paused');
-        addTurn('assistant', 'Micro non autorisé. Écris ta question ci-dessous.');
+        addTurn('assistant', 'Micro non autorise. Ecris ta question ci-dessous.');
         setTimeout(() => inputRef.current?.focus(), 100);
       } else if (e.error === 'audio-capture') {
         setMicBlocked(true);
         setUiState('paused');
-        addTurn('assistant', 'Micro indisponible. Écris ta question ci-dessous.');
+        addTurn('assistant', 'Micro indisponible. Ecris ta question ci-dessous.');
         setTimeout(() => inputRef.current?.focus(), 100);
       }
     };

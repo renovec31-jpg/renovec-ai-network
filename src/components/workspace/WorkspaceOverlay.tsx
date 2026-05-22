@@ -199,15 +199,7 @@ export default function WorkspaceOverlay({ onClose, onJoinNetwork }: Props) {
     return () => cancelAnimationFrame(id);
   }, []);
 
-  // Cleanup on unmount
-  useEffect(() => () => {
-    streamRef.current?.getTracks().forEach(t => t.stop());
-    try { audioRef.current?.stop(); } catch {}
-    try { recognitionRef.current?.abort(); } catch {}
-    if (audioCtxRef.current?.state !== 'closed') audioCtxRef.current?.close();
-    if (monitorCtxRef.current?.state !== 'closed') monitorCtxRef.current?.close();
-    cancelAnimationFrame(rafRef.current);
-  }, []);
+  // Cleanup is handled in the voice init effect's return function
 
   // ── Voice helpers ───────────────────────────────────────────────────
   const addTurn = useCallback((role: 'user' | 'assistant', content: string) => {
@@ -392,6 +384,7 @@ export default function WorkspaceOverlay({ onClose, onJoinNetwork }: Props) {
             handledFinal = true;
             isListening.current = false;
             try { recognition.stop(); } catch {}
+            recognitionRef.current = null;
             sendTranscriptRef.current(transcript).then(() => {
               if (streamRef.current && !processingRef.current) beginListening();
             });
@@ -403,12 +396,16 @@ export default function WorkspaceOverlay({ onClose, onJoinNetwork }: Props) {
     recognition.onend = () => {
       if (handledFinal) return;
       if (isListening.current && !processingRef.current && streamRef.current) {
-        try { recognition.start(); } catch {}
+        recognitionRef.current = null;
+        setTimeout(() => beginListening(), 100);
       }
     };
 
     recognition.onerror = (e: any) => {
-      if (e.error === 'no-speech' || e.error === 'aborted') return;
+      if (e.error === 'no-speech' || e.error === 'aborted') {
+        // Chrome fires 'no-speech' after ~5s silence then fires onend which restarts
+        return;
+      }
       isListening.current = false;
       recognitionRef.current = null;
       if (e.error === 'not-allowed' || e.error === 'service-not-allowed' || e.error === 'audio-capture') {
@@ -512,7 +509,21 @@ export default function WorkspaceOverlay({ onClose, onJoinNetwork }: Props) {
       if (streamRef.current) beginListening();
     })();
 
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+      streamRef.current?.getTracks().forEach(t => t.stop());
+      streamRef.current = null;
+      try { audioRef.current?.stop(); } catch {}
+      audioRef.current = null;
+      try { recognitionRef.current?.abort(); } catch {}
+      recognitionRef.current = null;
+      isListening.current = false;
+      if (audioCtxRef.current?.state !== 'closed') audioCtxRef.current?.close();
+      audioCtxRef.current = null;
+      if (monitorCtxRef.current?.state !== 'closed') monitorCtxRef.current?.close();
+      monitorCtxRef.current = null;
+      cancelAnimationFrame(rafRef.current);
+    };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const interruptAndListen = useCallback(() => {
