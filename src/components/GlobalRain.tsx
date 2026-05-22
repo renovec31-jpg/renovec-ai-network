@@ -86,10 +86,10 @@ export default function GlobalRain({ frozen }: { frozen: boolean }) {
     const lane = Math.floor(Math.random() * LANES);
     const delay = Math.random() * 0.7;
     const avatarIdx = id % AVATAR_PHOTOS.length;
-    const size = depth === 0 ? 16 + Math.random() * 6
-      : depth === 1 ? 26 + Math.random() * 8
-      : depth === 2 ? 36 + Math.random() * 10
-      : 52 + Math.random() * 14;
+    const size = depth === 0 ? 12 + Math.random() * 5
+      : depth === 1 ? 24 + Math.random() * 8
+      : depth === 2 ? 44 + Math.random() * 12
+      : 68 + Math.random() * 18;
 
     setDrops(prev => {
       const next = [...prev, { ...person, id, lane, depth, delay, avatarIdx, size }];
@@ -129,7 +129,7 @@ export default function GlobalRain({ frozen }: { frozen: boolean }) {
 function GlobalRainBubble({ drop, onDone, frozen }: { drop: RainDrop; onDone: () => void; frozen: boolean }) {
   useEffect(() => {
     if (frozen) return;
-    const dur = drop.depth === 0 ? 9000 : drop.depth === 1 ? 7000 : drop.depth === 2 ? 5500 : 4200;
+    const dur = drop.depth === 0 ? 11000 : drop.depth === 1 ? 8500 : drop.depth === 2 ? 6000 : 4000;
     const t = setTimeout(onDone, dur + drop.delay * 1000 + 500);
     return () => clearTimeout(t);
   }, [drop, onDone, frozen]);
@@ -141,10 +141,10 @@ function GlobalRainBubble({ drop, onDone, frozen }: { drop: RainDrop; onDone: ()
   const style: React.CSSProperties = {
     '--gr-left': `${laneOffset}%`,
     '--gr-delay': `${drop.delay}s`,
-    '--gr-dur': drop.depth === 0 ? '9s' : drop.depth === 1 ? '7s' : drop.depth === 2 ? '5.5s' : '4.2s',
+    '--gr-dur': drop.depth === 0 ? '11s' : drop.depth === 1 ? '8.5s' : drop.depth === 2 ? '6s' : '4s',
     '--gr-size': `${drop.size}px`,
-    '--gr-opacity': drop.depth === 0 ? '0.1' : drop.depth === 1 ? '0.2' : drop.depth === 2 ? '0.38' : '0.55',
-    '--gr-blur': drop.depth === 0 ? '2px' : drop.depth === 1 ? '1px' : drop.depth === 2 ? '0.3px' : '0px',
+    '--gr-opacity': drop.depth === 0 ? '0.07' : drop.depth === 1 ? '0.16' : drop.depth === 2 ? '0.4' : '0.62',
+    '--gr-blur': drop.depth === 0 ? '3.5px' : drop.depth === 1 ? '1.6px' : drop.depth === 2 ? '0px' : '0px',
   } as React.CSSProperties;
 
   const isClose = drop.depth >= 2;

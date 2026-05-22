@@ -51,10 +51,10 @@ export default function ChatRain() {
     const lane = Math.floor(Math.random() * LANES);
     const delay = Math.random() * 0.8;
     const avatarIdx = id % AVATAR_PHOTOS.length;
-    const sizeVariation = depth === 0 ? 14 + Math.random() * 4
-      : depth === 1 ? 22 + Math.random() * 6
-      : depth === 2 ? 32 + Math.random() * 8
-      : 46 + Math.random() * 12;
+    const sizeVariation = depth === 0 ? 10 + Math.random() * 4
+      : depth === 1 ? 20 + Math.random() * 6
+      : depth === 2 ? 38 + Math.random() * 10
+      : 60 + Math.random() * 16;
 
     setDrops(prev => {
       const next = [...prev, { id, lane, depth, delay, avatarIdx, size: sizeVariation }];
@@ -88,7 +88,7 @@ export default function ChatRain() {
 
 function ChatRainBubble({ drop, onDone }: { drop: Drop; onDone: () => void }) {
   useEffect(() => {
-    const dur = drop.depth === 0 ? 9000 : drop.depth === 1 ? 7000 : drop.depth === 2 ? 5500 : 4200;
+    const dur = drop.depth === 0 ? 12000 : drop.depth === 1 ? 9000 : drop.depth === 2 ? 6200 : 4000;
     const t = setTimeout(onDone, dur + drop.delay * 1000 + 500);
     return () => clearTimeout(t);
   }, [drop, onDone]);
@@ -99,10 +99,10 @@ function ChatRainBubble({ drop, onDone }: { drop: Drop; onDone: () => void }) {
   const style: React.CSSProperties = {
     '--cr-left': `${laneOffset}%`,
     '--cr-delay': `${drop.delay}s`,
-    '--cr-dur': drop.depth === 0 ? '9s' : drop.depth === 1 ? '7s' : drop.depth === 2 ? '5.5s' : '4.2s',
+    '--cr-dur': drop.depth === 0 ? '12s' : drop.depth === 1 ? '9s' : drop.depth === 2 ? '6.2s' : '4s',
     '--cr-size': `${drop.size}px`,
-    '--cr-opacity': drop.depth === 0 ? '0.08' : drop.depth === 1 ? '0.14' : drop.depth === 2 ? '0.25' : '0.38',
-    '--cr-blur': drop.depth === 0 ? '2.5px' : drop.depth === 1 ? '1.2px' : drop.depth === 2 ? '0.4px' : '0px',
+    '--cr-opacity': drop.depth === 0 ? '0.05' : drop.depth === 1 ? '0.12' : drop.depth === 2 ? '0.28' : '0.45',
+    '--cr-blur': drop.depth === 0 ? '4px' : drop.depth === 1 ? '2px' : drop.depth === 2 ? '0px' : '0px',
   } as React.CSSProperties;
 
   return (
