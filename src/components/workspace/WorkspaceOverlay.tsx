@@ -1,8 +1,16 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { X, Mic, MicOff, Send, Loader, MapPin, Star, Check, Sparkles } from 'lucide-react';
+import { X, Mic, MicOff, Send, Loader, MapPin, Star, Check, Sparkles, Eye } from 'lucide-react';
 import { useUserMode } from '../../hooks/useUserMode';
-import { useIntentDetection } from '../../hooks/useIntentDetection';
-import type { Intent } from '../../hooks/useIntentDetection';
+import { useVisitorProfile } from '../../hooks/useVisitorProfile';
+import { useKnownUserContext } from '../../hooks/useKnownUserContext';
+import { useInitialHypotheses } from '../../hooks/useInitialHypotheses';
+import {
+  generateVisitorGreeting,
+  generateKnownUserGreeting,
+  generateFollowUp,
+  buildContextHintsFromConversation,
+} from '../../services/welcome/orchestrator';
+import type { GreetingState, ContextHint, InitialHypotheses } from '../../services/welcome/types';
 import { MOCK_PROFILES, MOCK_FEED } from '../../data/mockOccitanie';
 import type { MockProfile } from '../../data/mockOccitanie';
 
@@ -11,7 +19,7 @@ interface Props {
   onJoinNetwork: () => void;
 }
 
-type AIPhase = 'listening' | 'analyzing' | 'resolved';
+type AIPhase = 'greeting' | 'listening' | 'analyzing' | 'resolved';
 
 function matchProfiles(text: string): MockProfile[] {
   const lower = text.toLowerCase();
@@ -20,16 +28,6 @@ function matchProfiles(text: string): MockProfile[] {
   if (/bricol|plomb|électr|travaux|réparer/.test(lower)) return MOCK_PROFILES.filter(p => /bricol|répara|vélo/i.test(p.capacite)).slice(0, 4);
   if (/cuisine|jardin|yoga|sport|musique|guitare/.test(lower)) return MOCK_PROFILES.filter(p => /yoga|guitare|couture/i.test(p.capacite)).slice(0, 4);
   return MOCK_PROFILES.slice(0, 4);
-}
-
-function intentLabel(intent: Intent): string {
-  switch (intent) {
-    case 'situation': return 'besoin identifié';
-    case 'presence': return 'offre de capacité';
-    case 'urgency': return 'besoin urgent';
-    case 'discovery': return 'exploration';
-    default: return 'analyse en cours';
-  }
 }
 
 function generatePresenceCard(text: string) {
@@ -41,33 +39,38 @@ function generatePresenceCard(text: string) {
 }
 
 export default function WorkspaceOverlay({ onClose, onJoinNetwork }: Props) {
-  const { isConnected, user } = useUserMode();
-  const { detect } = useIntentDetection();
+  const { isConnected } = useUserMode();
+  const { profile: visitorProfile, recordTextInput, recordInteraction } = useVisitorProfile();
+  const knownUser = useKnownUserContext();
+  const { computeFromText } = useInitialHypotheses();
 
   const [textInput, setTextInput] = useState('');
-  const [phase, setPhase] = useState<AIPhase>('listening');
-  const [currentIntent, setCurrentIntent] = useState<Intent>(null);
-  const [statusText, setStatusText] = useState('');
+  const [phase, setPhase] = useState<AIPhase>('greeting');
+  const [greeting, setGreeting] = useState<GreetingState | null>(null);
+  const [aiMessages, setAiMessages] = useState<string[]>([]);
+  const [currentHypotheses, setCurrentHypotheses] = useState<InitialHypotheses | null>(null);
+  const [contextHints, setContextHints] = useState<ContextHint[]>([]);
   const [results, setResults] = useState<MockProfile[]>([]);
   const [presenceCard, setPresenceCard] = useState<{ titre: string; caps: string[]; tags: string[] } | null>(null);
   const [feedVisible, setFeedVisible] = useState(false);
   const [micActive, setMicActive] = useState(true);
+  const [turnCount, setTurnCount] = useState(0);
+  const [showContextBlock, setShowContextBlock] = useState(false);
 
   const inputRef = useRef<HTMLInputElement>(null);
   const canvasRef = useRef<HTMLDivElement>(null);
 
-  // Waveform bars
-  const [bars] = useState(() => Array.from({ length: 24 }, () => 4 + Math.random() * 8));
-  const [barHeights, setBarHeights] = useState(bars);
+  // Waveform
+  const [barHeights, setBarHeights] = useState(() => Array.from({ length: 24 }, () => 4));
 
   useEffect(() => {
     let raf: number;
     function animate() {
       setBarHeights(prev => prev.map((h, i) => {
-        const base = 4;
-        const max = micActive && phase === 'listening' ? 18 : 8;
-        const target = base + Math.sin(Date.now() * 0.003 + i * 0.5) * (max - base) * 0.5 + (max - base) * 0.3;
-        return h + (target - h) * 0.08;
+        const base = 3;
+        const max = micActive && (phase === 'greeting' || phase === 'listening') ? 16 : 7;
+        const target = base + Math.sin(Date.now() * 0.003 + i * 0.5) * (max - base) * 0.5 + (max - base) * 0.25;
+        return h + (target - h) * 0.07;
       }));
       raf = requestAnimationFrame(animate);
     }
@@ -75,36 +78,86 @@ export default function WorkspaceOverlay({ onClose, onJoinNetwork }: Props) {
     return () => cancelAnimationFrame(raf);
   }, [micActive, phase]);
 
+  // Generate greeting on mount
   useEffect(() => {
-    setTimeout(() => inputRef.current?.focus(), 200);
-  }, []);
+    const timer = setTimeout(() => {
+      let greetState: GreetingState;
+      if (isConnected && knownUser) {
+        greetState = generateKnownUserGreeting(knownUser);
+      } else if (visitorProfile) {
+        greetState = generateVisitorGreeting(visitorProfile);
+      } else {
+        greetState = {
+          message: 'Bonjour. Je suis RENOVEC. Décrivez librement ce qui vous amène.',
+          tone: 'warm',
+          followUp: 'Je vous écoute.',
+          contextHints: [],
+          phase: 'greeting',
+        };
+      }
+      setGreeting(greetState);
+      setAiMessages([greetState.message]);
+      setContextHints(greetState.contextHints);
+      if (greetState.contextHints.length > 0) {
+        setTimeout(() => setShowContextBlock(true), 1200);
+      }
+
+      setTimeout(() => {
+        if (greetState.followUp) {
+          setAiMessages(prev => [...prev, greetState.followUp!]);
+        }
+        setPhase('listening');
+        inputRef.current?.focus();
+      }, 1500);
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [isConnected, knownUser, visitorProfile]);
 
   const handleSubmit = useCallback(() => {
     const msg = textInput.trim();
     if (!msg) return;
     setTextInput('');
+    recordTextInput(msg);
+    recordInteraction();
+    setTurnCount(prev => prev + 1);
     setPhase('analyzing');
-    setStatusText('RENOVEC analyse...');
     setResults([]);
     setPresenceCard(null);
     setFeedVisible(false);
 
-    const intent = detect(msg);
-    setCurrentIntent(intent);
+    const hypotheses = computeFromText(msg, visitorProfile);
+    setCurrentHypotheses(hypotheses);
+
+    const newHints = buildContextHintsFromConversation(
+      [...(visitorProfile?.signals.textInputs || []), msg],
+      hypotheses,
+      visitorProfile
+    );
+    setContextHints(prev => {
+      const existing = prev.map(h => h.label);
+      const unique = newHints.filter(h => !existing.includes(h.label));
+      return [...prev, ...unique];
+    });
+    setShowContextBlock(true);
 
     setTimeout(() => {
-      setStatusText(`RENOVEC a compris : ${intentLabel(intent)}`);
-      setPhase('resolved');
+      const followUp = generateFollowUp(hypotheses.probableIntent, turnCount + 1, isConnected);
 
-      if (intent === 'presence') {
+      if (hypotheses.probableIntent === 'offer') {
         setPresenceCard(generatePresenceCard(msg));
-      } else if (intent === 'discovery') {
+        if (followUp) setAiMessages(prev => [...prev, followUp]);
+      } else if (hypotheses.probableIntent === 'discovery' || hypotheses.probableIntent === 'hesitation') {
         setFeedVisible(true);
+        if (followUp) setAiMessages(prev => [...prev, followUp]);
       } else {
         setResults(matchProfiles(msg));
+        if (followUp) setAiMessages(prev => [...prev, followUp]);
       }
+      setPhase('resolved');
     }, 1400);
-  }, [textInput, detect]);
+  }, [textInput, computeFromText, visitorProfile, recordTextInput, recordInteraction, turnCount, isConnected]);
+
+  const latestMessage = aiMessages[aiMessages.length - 1] || '';
 
   return (
     <div className="ai-page">
@@ -113,8 +166,8 @@ export default function WorkspaceOverlay({ onClose, onJoinNetwork }: Props) {
         <div className="ai-page-header-left">
           <div className="ai-page-dot" />
           <span className="ai-page-brand">RENOVEC</span>
-          {isConnected && user && (
-            <span className="ai-page-user">{user.prenom}</span>
+          {isConnected && knownUser && (
+            <span className="ai-page-user">{knownUser.prenom}</span>
           )}
         </div>
         <button className="ai-page-close" onClick={onClose} aria-label="Fermer">
@@ -122,32 +175,57 @@ export default function WorkspaceOverlay({ onClose, onJoinNetwork }: Props) {
         </button>
       </header>
 
-      {/* AI context status */}
-      {statusText && (
+      {/* AI status / latest message */}
+      {latestMessage && (
         <div className="ai-status-bar">
           <div className="ai-status-dot" />
-          <span>{statusText}</span>
+          <span className="ai-status-text">{latestMessage}</span>
         </div>
       )}
 
-      {/* Main canvas — full space between header and voice bubble */}
+      {/* Main canvas */}
       <div className="ai-canvas" ref={canvasRef}>
-        {phase === 'listening' && (
+        {/* Context perception block */}
+        {showContextBlock && contextHints.length > 0 && (
+          <div className="ai-context-block">
+            <div className="ai-context-header">
+              <Eye size={11} />
+              <span>Ce que RENOVEC perçoit pour mieux orienter</span>
+            </div>
+            <div className="ai-context-hints">
+              {contextHints.map((hint, i) => (
+                <div key={i} className="ai-context-hint" data-source={hint.source}>
+                  <span className="ai-hint-label">{hint.label}</span>
+                  <span className="ai-hint-source">
+                    {hint.source === 'session' ? 'session' : hint.source === 'history' ? 'historique' : 'échange'}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Greeting / waiting state */}
+        {phase === 'greeting' && (
+          <div className="ai-canvas-empty">
+            <div className="ai-loader"><span /><span /><span /></div>
+          </div>
+        )}
+
+        {phase === 'listening' && results.length === 0 && !presenceCard && !feedVisible && (
           <div className="ai-canvas-empty">
             <p className="ai-canvas-prompt">
-              {isConnected && user
-                ? `${user.prenom}, décrivez votre situation librement.`
+              {isConnected && knownUser
+                ? `${knownUser.prenom}, qu'est-ce qui vous amène ?`
                 : 'Décrivez votre situation librement.'}
             </p>
-            <p className="ai-canvas-sub">L'IA va analyser et vous orienter dans le réseau.</p>
+            <p className="ai-canvas-sub">Pas de formulaire. Juste du langage libre.</p>
           </div>
         )}
 
         {phase === 'analyzing' && (
           <div className="ai-canvas-loading">
-            <div className="ai-loader">
-              <span /><span /><span />
-            </div>
+            <div className="ai-loader"><span /><span /><span /></div>
           </div>
         )}
 
@@ -206,7 +284,7 @@ export default function WorkspaceOverlay({ onClose, onJoinNetwork }: Props) {
                 {presenceCard.tags.map(t => <span key={t}>{t}</span>)}
               </div>
               {!isConnected && (
-                <div className="ai-join-banner">
+                <div className="ai-join-banner" style={{ marginTop: 14 }}>
                   <p>Créez votre compte pour publier cette fiche.</p>
                   <button onClick={onJoinNetwork}>Créer mon compte</button>
                 </div>
@@ -241,7 +319,9 @@ export default function WorkspaceOverlay({ onClose, onJoinNetwork }: Props) {
             <div className={`ai-bubble-dot ${phase === 'analyzing' ? 'ai-bubble-dot--proc' : ''}`} />
             <span>RENOVEC</span>
             <span className="ai-bubble-state">
-              {phase === 'listening' ? 'à l\'écoute' : phase === 'analyzing' ? 'réfléchit…' : 'prêt'}
+              {phase === 'greeting' ? 'initialise…'
+                : phase === 'analyzing' ? 'réfléchit…'
+                : 'à l\'écoute'}
             </span>
           </div>
         </div>
@@ -278,12 +358,12 @@ export default function WorkspaceOverlay({ onClose, onJoinNetwork }: Props) {
             value={textInput}
             onChange={e => setTextInput(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && handleSubmit()}
-            disabled={phase === 'analyzing'}
+            disabled={phase === 'analyzing' || phase === 'greeting'}
           />
           <button
             className="ai-send-btn"
             onClick={handleSubmit}
-            disabled={!textInput.trim() || phase === 'analyzing'}
+            disabled={!textInput.trim() || phase === 'analyzing' || phase === 'greeting'}
           >
             {phase === 'analyzing' ? <Loader size={14} className="ai-spin" /> : <Send size={14} />}
           </button>

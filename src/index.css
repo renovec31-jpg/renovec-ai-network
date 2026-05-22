@@ -5225,9 +5225,13 @@ button, a, input, textarea, select {
   animation-delay: .1s;
 }
 .ai-status-dot {
-  width: 5px; height: 5px; border-radius: 50%;
+  width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0;
   background: rgba(242,101,34,0.7);
   animation: aiDotPulse 1.5s ease-in-out infinite;
+}
+.ai-status-text {
+  flex: 1; min-width: 0; white-space: nowrap;
+  overflow: hidden; text-overflow: ellipsis;
 }
 
 /* ── AI Canvas (main area) ─────────────────────────────────────────── */
@@ -5256,6 +5260,42 @@ button, a, input, textarea, select {
 }
 .ai-canvas-sub {
   font-size: 12.5px; color: rgba(255,255,255,0.2);
+}
+
+/* ── Context Perception Block ──────────────────────────────────────── */
+.ai-context-block {
+  margin-bottom: 20px; padding: 12px 14px; border-radius: 10px;
+  background: rgba(255,255,255,0.015); border: 1px solid rgba(255,255,255,0.04);
+  animation: aiCanvasIn .3s cubic-bezier(.16,1,.3,1) both;
+}
+.ai-context-header {
+  display: flex; align-items: center; gap: 6px; margin-bottom: 8px;
+  font-size: 10px; font-weight: 600; color: rgba(255,255,255,0.25);
+  letter-spacing: .03em; text-transform: uppercase;
+}
+.ai-context-header svg { color: rgba(242,101,34,0.5); }
+.ai-context-hints {
+  display: flex; flex-wrap: wrap; gap: 6px;
+}
+.ai-context-hint {
+  display: flex; align-items: center; gap: 6px;
+  padding: 4px 10px; border-radius: 6px;
+  background: rgba(255,255,255,0.025); border: 1px solid rgba(255,255,255,0.05);
+  animation: aiHintIn .2s cubic-bezier(.16,1,.3,1) both;
+}
+@keyframes aiHintIn {
+  from { opacity: 0; transform: scale(0.9); }
+  to   { opacity: 1; transform: scale(1); }
+}
+.ai-context-hint[data-source="session"] { border-color: rgba(100,160,250,0.12); }
+.ai-context-hint[data-source="conversation"] { border-color: rgba(242,101,34,0.12); }
+.ai-context-hint[data-source="history"] { border-color: rgba(34,197,94,0.12); }
+.ai-hint-label {
+  font-size: 10.5px; color: rgba(255,255,255,0.45); font-weight: 500;
+}
+.ai-hint-source {
+  font-size: 8.5px; color: rgba(255,255,255,0.15); font-weight: 400;
+  padding: 1px 4px; border-radius: 3px; background: rgba(255,255,255,0.03);
 }
 
 .ai-canvas-loading {
