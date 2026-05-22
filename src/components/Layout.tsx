@@ -44,9 +44,8 @@ export default function Layout({ children, activeTab, onTabChange, notifCount = 
   const [mobileView, setMobileView] = useState<'chat' | 'workspace'>('chat');
   const indicator = phaseIndicator(phase);
 
-  // On "demander" tab, show the split layout (chat + workspace)
-  // On other tabs, show legacy content in full workspace area
-  const isChatMode = activeTab === 'demander';
+  // The right panel shows AdaptiveWorkspace on "demander" tab, or legacy content on other tabs
+  const showWorkspace = activeTab === 'demander';
 
   return (
     <div className="h-screen flex flex-col bg-stone-950 overflow-hidden">
@@ -112,64 +111,75 @@ export default function Layout({ children, activeTab, onTabChange, notifCount = 
         </div>
       </header>
 
-      {/* ─── Main area ───────────────────────────────────────────────────── */}
+      {/* ─── Main area: always two columns on desktop ────────────────────── */}
       <div className="flex-1 flex overflow-hidden">
-        {isChatMode ? (
-          <>
-            {/* === DESKTOP: split layout === */}
-            {/* Chat column (40%) */}
-            <div className="hidden lg:flex w-[40%] min-w-[360px] max-w-[520px] border-r border-white/5 flex-col">
-              <ChatColumn />
-            </div>
+        {/* === DESKTOP layout === */}
+        {/* Left column: Chat — always visible */}
+        <div className="hidden lg:flex w-[40%] min-w-[360px] max-w-[520px] border-r border-white/5 flex-col">
+          <ChatColumn />
+        </div>
 
-            {/* Adaptive workspace (60%) */}
-            <div className="hidden lg:flex flex-1 flex-col">
-              <AdaptiveWorkspace />
-            </div>
-
-            {/* === MOBILE: togglable view === */}
-            <div className="lg:hidden flex-1 flex flex-col">
-              {/* Mobile toggle */}
-              <div className="flex-shrink-0 h-10 border-b border-white/5 flex items-center px-4 gap-2">
-                <button
-                  onClick={() => setMobileView('chat')}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-medium transition-all ${
-                    mobileView === 'chat' ? 'bg-white/10 text-white/80' : 'text-white/30'
-                  }`}
-                >
-                  <MessageSquare size={11} /> Conversation
-                </button>
-                <button
-                  onClick={() => setMobileView('workspace')}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-medium transition-all ${
-                    mobileView === 'workspace' ? 'bg-white/10 text-white/80' : 'text-white/30'
-                  }`}
-                >
-                  {mobileView === 'workspace' ? <PanelRightClose size={11} /> : <PanelRightOpen size={11} />}
-                  Surface
-                </button>
-                {indicator.label && (
-                  <div className="ml-auto flex items-center gap-1.5">
-                    <div className={`w-1.5 h-1.5 rounded-full ${indicator.color}`} />
-                    <span className="text-[10px] text-white/20">{indicator.label}</span>
-                  </div>
-                )}
-              </div>
-
-              {/* Content */}
-              <div className="flex-1 overflow-hidden">
-                {mobileView === 'chat' ? <ChatColumn /> : <AdaptiveWorkspace />}
-              </div>
-            </div>
-          </>
-        ) : (
-          /* Non-chat tabs: full-width legacy content */
-          <div className="flex-1 overflow-y-auto">
-            <div className="max-w-2xl mx-auto w-full px-4 py-7">
+        {/* Right column: Adaptive workspace OR legacy tab content */}
+        <div className="hidden lg:flex flex-1 flex-col overflow-hidden">
+          {showWorkspace ? (
+            <AdaptiveWorkspace />
+          ) : activeTab === 'carte' ? (
+            <div className="flex-1 overflow-hidden flex flex-col">
               {children}
             </div>
+          ) : (
+            <div className="flex-1 overflow-y-auto">
+              <div className="max-w-2xl mx-auto w-full px-4 py-7">
+                {children}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* === MOBILE layout === */}
+        <div className="lg:hidden flex-1 flex flex-col">
+          {/* Mobile toggle bar */}
+          <div className="flex-shrink-0 h-10 border-b border-white/5 flex items-center px-4 gap-2">
+            <button
+              onClick={() => setMobileView('chat')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-medium transition-all ${
+                mobileView === 'chat' ? 'bg-white/10 text-white/80' : 'text-white/30 hover:text-white/50'
+              }`}
+            >
+              <MessageSquare size={11} /> Parler
+            </button>
+            <button
+              onClick={() => setMobileView('workspace')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-medium transition-all ${
+                mobileView === 'workspace' ? 'bg-white/10 text-white/80' : 'text-white/30 hover:text-white/50'
+              }`}
+            >
+              {mobileView === 'workspace' ? <PanelRightClose size={11} /> : <PanelRightOpen size={11} />}
+              Surface
+            </button>
+            {indicator.label && (
+              <div className="ml-auto flex items-center gap-1.5">
+                <div className={`w-1.5 h-1.5 rounded-full ${indicator.color}`} />
+                <span className="text-[10px] text-white/20">{indicator.label}</span>
+              </div>
+            )}
           </div>
-        )}
+
+          {/* Mobile content */}
+          <div className="flex-1 overflow-hidden">
+            {mobileView === 'chat' ? (
+              <ChatColumn />
+            ) : showWorkspace ? (
+              <AdaptiveWorkspace />
+            ) : (
+              <div className="h-full overflow-y-auto">
+                <div className="max-w-2xl mx-auto w-full px-4 py-7">
+                  {children}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
 
       {/* ─── Bottom nav ──────────────────────────────────────────────────── */}

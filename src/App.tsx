@@ -288,13 +288,9 @@ function AppInner() {
     return <OnboardingSeeker onComplete={() => {}} />;
   }
 
+  // WelcomeScreen removed — the two-column split IS the welcome now
   if (showWelcome) {
-    return (
-      <WelcomeScreen
-        onSeeker={() => { setShowWelcome(false); setView('app'); setActiveTab('demander'); }}
-        onPresence={() => { setShowWelcome(false); setView('app'); setActiveTab('capacites'); }}
-      />
-    );
+    setShowWelcome(false);
   }
 
   if (showProviderOnboarding) {
