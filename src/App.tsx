@@ -3,7 +3,6 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { SituationProvider } from './contexts/SituationContext';
 import { WorkspaceProvider } from './contexts/WorkspaceContext';
 import { supabase, isAdmin } from './lib/supabase';
-import LandingPage from './pages/LandingPage';
 import AuthPage from './pages/AuthPage';
 import OnboardingSeeker from './pages/OnboardingSeeker';
 import OnboardingProvider from './pages/OnboardingProvider';
@@ -16,7 +15,7 @@ import NotificationsPage from './pages/NotificationsPage';
 import ContributionsPage from './pages/ContributionsPage';
 import AdminPage from './pages/AdminPage';
 import OnboardingModal from './components/OnboardingModal';
-import WelcomeScreen, { shouldShowWelcome } from './components/WelcomeScreen';
+import { shouldShowWelcome } from './components/WelcomeScreen';
 import CommentCaMarchePage from './pages/CommentCaMarchePage';
 import MentionsPage from './pages/MentionsPage';
 import PublicProfileModal from './components/PublicProfileModal';
@@ -219,108 +218,55 @@ function AppInner() {
     );
   }
 
-  // ── Public routes (accessible without auth) ──────────────────────────────────
-  // /carte is public
-  if (!user && activeTab === 'carte' && overlay.kind === 'none') {
-    return (
-      <CartePage
-        onOpenProfile={userId => openProfile(userId)}
-      />
-    );
+  // ── Auth page (explicit /entrer route) ────────────────────────────────────────
+  if (view === 'auth' && !user) {
+    return <AuthPage onBack={() => setView('landing')} />;
   }
 
-  // /profil/:id is public
-  if (!user && overlay.kind === 'public-profile') {
-    return (
-      <PublicProfilePage
-        profileUserId={overlay.userId}
-        onBack={() => { closeOverlay(); setView('landing'); }}
-        onEdit={() => {}}
-        onContact={() => setView('auth')}
-      />
-    );
-  }
+  // ── Authenticated-only gates ──────────────────────────────────────────────────
+  if (user) {
+    if (!profile) {
+      return (
+        <div className="min-h-screen bg-stone-950 flex items-center justify-center">
+          <div className="w-8 h-8 border border-white/10 border-t-white/40 rounded-full animate-spin" />
+        </div>
+      );
+    }
 
-  // ── Unauthenticated views ────────────────────────────────────────────────────
-  if (!user) {
-    return (
-      <>
-        {view === 'landing'
-          ? <LandingPage
-              onEnter={() => setView('auth')}
-              onHowItWorks={() => { setShowHowItWorks(true); navigate('/comment-ca-marche'); }}
-              onGoToPresence={() => setView('auth')}
-              onMentions={() => setShowMentions(true)}
-            />
-          : <AuthPage onBack={() => setView('landing')} />}
-        {showHowItWorks && (
-          <CommentCaMarchePage
-            standalone
-            onClose={() => { setShowHowItWorks(false); navigate('/'); }}
-            onEnter={() => { setShowHowItWorks(false); navigate('/entrer'); setView('auth'); }}
-            onGoToPresence={() => { setShowHowItWorks(false); navigate('/entrer'); setView('auth'); }}
-          />
-        )}
-        {showMentions && <MentionsPage onClose={() => setShowMentions(false)} />}
-        {publicProfileId && (
-          <PublicProfileModal
-            profileId={publicProfileId}
-            isGuest
-            onClose={() => setPublicProfileId(null)}
-            onEnter={() => { setPublicProfileId(null); setView('auth'); }}
-          />
-        )}
-      </>
-    );
-  }
+    if (!profile.onboarding_seeker_done) {
+      return <OnboardingSeeker onComplete={() => {}} />;
+    }
 
-  // ── Profile loading ──────────────────────────────────────────────────────────
-  if (!profile) {
-    return (
-      <div className="min-h-screen bg-stone-50 flex items-center justify-center">
-        <div className="w-8 h-8 border border-amber-200 border-t-amber-400 rounded-full animate-spin" />
-      </div>
-    );
-  }
+    if (showWelcome) setShowWelcome(false);
 
-  // ── Onboarding gates ─────────────────────────────────────────────────────────
-  if (!profile.onboarding_seeker_done) {
-    return <OnboardingSeeker onComplete={() => {}} />;
-  }
+    if (showProviderOnboarding) {
+      return (
+        <OnboardingProvider
+          onComplete={() => setShowProviderOnboarding(false)}
+          onSkip={() => setShowProviderOnboarding(false)}
+        />
+      );
+    }
 
-  // WelcomeScreen removed — the two-column split IS the welcome now
-  if (showWelcome) {
-    setShowWelcome(false);
-  }
+    if (overlay.kind === 'public-profile') {
+      return (
+        <PublicProfilePage
+          profileUserId={overlay.userId}
+          onBack={closeOverlay}
+          onEdit={openEditProfile}
+          onContact={() => { closeOverlay(); handleTabChange('discussions'); }}
+        />
+      );
+    }
 
-  if (showProviderOnboarding) {
-    return (
-      <OnboardingProvider
-        onComplete={() => setShowProviderOnboarding(false)}
-        onSkip={() => setShowProviderOnboarding(false)}
-      />
-    );
-  }
-
-  // ── Authenticated full-screen overlays ───────────────────────────────────────
-  if (overlay.kind === 'public-profile') {
-    return (
-      <PublicProfilePage
-        profileUserId={overlay.userId}
-        onBack={closeOverlay}
-        onEdit={openEditProfile}
-        onContact={() => { closeOverlay(); handleTabChange('discussions'); }}
-      />
-    );
-  }
-
-  if (overlay.kind === 'edit-profile') {
-    return (
-      <EditProfilePage
-        onBack={closeOverlay}
-        onSaved={closeOverlay}
-      />
-    );
+    if (overlay.kind === 'edit-profile') {
+      return (
+        <EditProfilePage
+          onBack={closeOverlay}
+          onSaved={closeOverlay}
+        />
+      );
+    }
   }
 
   // ── Main app with Layout ─────────────────────────────────────────────────────
@@ -343,7 +289,7 @@ function AppInner() {
       case 'contributions': return <ContributionsPage />;
       case 'espace':        return <MonEspacePage onStartProviderOnboarding={() => setShowProviderOnboarding(true)} />;
       case 'notifications': return <NotificationsPage />;
-      case 'admin':         return isAdmin(profile) ? <AdminPage /> : null;
+      case 'admin':         return (profile && isAdmin(profile)) ? <AdminPage /> : null;
       default:              return null;
     }
   };
@@ -355,14 +301,15 @@ function AppInner() {
           activeTab={activeTab}
           onTabChange={handleTabChange}
           notifCount={notifCount}
-          isAdmin={isAdmin(profile)}
+          isAdmin={isAdmin(profile ?? null)}
           onShowHowItWorks={() => setShowHowItWorks(true)}
-          onGoLanding={() => { setView('landing'); setActiveTab('demander'); setOverlay({ kind: 'none' }); }}
-          onOpenMyProfile={() => openProfile(user.id)}
+          onGoLanding={() => { setActiveTab('demander'); setOverlay({ kind: 'none' }); }}
+          onOpenMyProfile={user ? () => openProfile(user.id) : undefined}
+          onLogin={() => setView('auth')}
         >
           {renderTab()}
         </Layout>
-        <OnboardingModal />
+        {user && <OnboardingModal />}
         {showHowItWorks && (
           <CommentCaMarchePage
             onClose={() => setShowHowItWorks(false)}
@@ -374,9 +321,9 @@ function AppInner() {
         {publicProfileId && (
           <PublicProfileModal
             profileId={publicProfileId}
-            isGuest={false}
+            isGuest={!user}
             onClose={() => setPublicProfileId(null)}
-            onEnter={() => setPublicProfileId(null)}
+            onEnter={() => { setPublicProfileId(null); if (!user) setView('auth'); }}
           />
         )}
       </WorkspaceProvider>

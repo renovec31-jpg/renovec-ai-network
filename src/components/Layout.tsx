@@ -16,6 +16,7 @@ type Props = {
   onShowHowItWorks?: () => void;
   onGoLanding?: () => void;
   onOpenMyProfile?: () => void;
+  onLogin?: () => void;
 };
 
 const NAV: Array<{ id: Tab; label: string; icon: typeof MessageSquare }> = [
@@ -38,7 +39,7 @@ function phaseIndicator(phase: SituationPhase): { color: string; label: string }
   }
 }
 
-export default function Layout({ children, activeTab, onTabChange, notifCount = 0, isAdmin = false, onShowHowItWorks, onGoLanding, onOpenMyProfile }: Props) {
+export default function Layout({ children, activeTab, onTabChange, notifCount = 0, isAdmin = false, onShowHowItWorks, onGoLanding, onOpenMyProfile, onLogin }: Props) {
   const { profile } = useAuth();
   const { phase } = useSituation();
   const [mobileView, setMobileView] = useState<'chat' | 'workspace'>('chat');
@@ -78,35 +79,46 @@ export default function Layout({ children, activeTab, onTabChange, notifCount = 
                 Comment ca marche
               </button>
             )}
-            {isAdmin && (
+            {profile ? (
+              <>
+                {isAdmin && (
+                  <button
+                    onClick={() => onTabChange('admin')}
+                    className={`p-2 rounded-xl transition-all ${activeTab === 'admin' ? 'text-red-400' : 'text-white/20 hover:text-white/50'}`}
+                  >
+                    <ShieldCheck size={15} strokeWidth={1.5} />
+                  </button>
+                )}
+                <button
+                  onClick={() => onTabChange('notifications')}
+                  className={`relative p-2 rounded-xl transition-all ${activeTab === 'notifications' ? 'text-white' : 'text-white/25 hover:text-white/50'}`}
+                >
+                  <Bell size={15} strokeWidth={1.5} />
+                  {notifCount > 0 && (
+                    <span className="absolute top-1.5 right-1.5 w-3 h-3 bg-[#F26522] text-white text-[8px] font-bold rounded-full flex items-center justify-center leading-none">
+                      {notifCount > 9 ? '9' : notifCount}
+                    </span>
+                  )}
+                </button>
+                <button
+                  onClick={() => onOpenMyProfile ? onOpenMyProfile() : onTabChange('espace')}
+                  className={`w-7 h-7 ml-1 rounded-full flex items-center justify-center overflow-hidden transition-all border ${
+                    activeTab === 'espace' ? 'border-white/60' : 'border-white/10 hover:border-white/30'
+                  }`}
+                >
+                  {profile.avatar_url
+                    ? <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" />
+                    : <span className="text-[11px] font-semibold text-white/50">{profile.display_name?.[0]?.toUpperCase() || '?'}</span>}
+                </button>
+              </>
+            ) : (
               <button
-                onClick={() => onTabChange('admin')}
-                className={`p-2 rounded-xl transition-all ${activeTab === 'admin' ? 'text-red-400' : 'text-white/20 hover:text-white/50'}`}
+                onClick={onLogin}
+                className="text-[12px] text-white/40 hover:text-white/80 transition-colors px-3 py-1.5 rounded-lg border border-white/10 hover:border-white/25 hover:bg-white/5"
               >
-                <ShieldCheck size={15} strokeWidth={1.5} />
+                Entrer
               </button>
             )}
-            <button
-              onClick={() => onTabChange('notifications')}
-              className={`relative p-2 rounded-xl transition-all ${activeTab === 'notifications' ? 'text-white' : 'text-white/25 hover:text-white/50'}`}
-            >
-              <Bell size={15} strokeWidth={1.5} />
-              {notifCount > 0 && (
-                <span className="absolute top-1.5 right-1.5 w-3 h-3 bg-[#F26522] text-white text-[8px] font-bold rounded-full flex items-center justify-center leading-none">
-                  {notifCount > 9 ? '9' : notifCount}
-                </span>
-              )}
-            </button>
-            <button
-              onClick={() => onOpenMyProfile ? onOpenMyProfile() : onTabChange('espace')}
-              className={`w-7 h-7 ml-1 rounded-full flex items-center justify-center overflow-hidden transition-all border ${
-                activeTab === 'espace' ? 'border-white/60' : 'border-white/10 hover:border-white/30'
-              }`}
-            >
-              {profile?.avatar_url
-                ? <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" />
-                : <span className="text-[11px] font-semibold text-white/50">{profile?.display_name?.[0]?.toUpperCase() || '?'}</span>}
-            </button>
           </div>
         </div>
       </header>
