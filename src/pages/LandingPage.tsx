@@ -6,24 +6,82 @@ type Props = {
   onHowItWorks: () => void;
 };
 
-// ─── MEMBERS ────────────────────────────────────────────────────────────────
-const MEMBERS = [
-  { id: 'laurent', name: 'Laurent Esquié', role: 'Coordinateur chantier', city: 'Merville', x: 0.12, y: 0.18, photo: 'https://images.pexels.com/photos/2379005/pexels-photo-2379005.jpeg?auto=compress&cs=tinysrgb&w=150' },
-  { id: 'claire', name: 'Claire Fontan', role: 'Architecte intérieur', city: 'Toulouse', x: 0.38, y: 0.08, photo: 'https://images.pexels.com/photos/3756679/pexels-photo-3756679.jpeg?auto=compress&cs=tinysrgb&w=150' },
-  { id: 'bascou', name: 'Atelier Bascou', role: 'Menuiserie bois', city: 'Blagnac', x: 0.7, y: 0.12, photo: 'https://images.pexels.com/photos/5691622/pexels-photo-5691622.jpeg?auto=compress&cs=tinysrgb&w=150' },
-  { id: 'sophie', name: 'Sophie Cazenave', role: 'Plomberie / chauffage', city: 'Colomiers', x: 0.22, y: 0.55, photo: 'https://images.pexels.com/photos/3785079/pexels-photo-3785079.jpeg?auto=compress&cs=tinysrgb&w=150' },
-  { id: 'remi', name: 'Rémi Delcros', role: 'Électricité générale', city: 'L\'Isle-Jourdain', x: 0.58, y: 0.48, photo: 'https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg?auto=compress&cs=tinysrgb&w=150' },
-  { id: 'florian', name: 'Florian Boyer', role: 'Développement web', city: 'Perpignan', x: 0.85, y: 0.42, photo: 'https://images.pexels.com/photos/614810/pexels-photo-614810.jpeg?auto=compress&cs=tinysrgb&w=150' },
-  { id: 'sarah', name: 'Sarah Bonnet', role: 'Rédaction / CV', city: 'Rennes', x: 0.45, y: 0.72, photo: 'https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=150' },
-  { id: 'laura', name: 'Laura Fontaine', role: 'Couture & création', city: 'Amiens', x: 0.78, y: 0.7, photo: 'https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=150' },
-  { id: 'tom', name: 'Tom Du.', role: 'Transport de personnes', city: 'Avignon', x: 0.08, y: 0.78, photo: 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=150' },
+// ─── FOREGROUND MEMBERS (visible with full detail) ───────────────────────────
+const FG_MEMBERS = [
+  { id: 'laurent', name: 'Laurent Esquié', role: 'Coordinateur chantier', city: 'Merville', x: 0.15, y: 0.35, photo: 'https://images.pexels.com/photos/2379005/pexels-photo-2379005.jpeg?auto=compress&cs=tinysrgb&w=150' },
+  { id: 'claire', name: 'Claire Fontan', role: 'Architecte intérieur', city: 'Toulouse', x: 0.42, y: 0.2, photo: 'https://images.pexels.com/photos/3756679/pexels-photo-3756679.jpeg?auto=compress&cs=tinysrgb&w=150' },
+  { id: 'bascou', name: 'Atelier Bascou', role: 'Menuiserie bois', city: 'Blagnac', x: 0.68, y: 0.28, photo: 'https://images.pexels.com/photos/5691622/pexels-photo-5691622.jpeg?auto=compress&cs=tinysrgb&w=150' },
+  { id: 'sophie', name: 'Sophie Cazenave', role: 'Plomberie / chauffage', city: 'Colomiers', x: 0.28, y: 0.65, photo: 'https://images.pexels.com/photos/3785079/pexels-photo-3785079.jpeg?auto=compress&cs=tinysrgb&w=150' },
+  { id: 'remi', name: 'Rémi Delcros', role: 'Électricité générale', city: 'L\'Isle-Jourdain', x: 0.55, y: 0.55, photo: 'https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg?auto=compress&cs=tinysrgb&w=150' },
 ];
 
-const LINKS: [number, number][] = [
-  [0, 1], [1, 2], [0, 3], [3, 4], [1, 4], [2, 4], [1, 3],
-  [2, 5], [4, 5], [3, 6], [4, 6], [6, 8], [5, 7], [4, 7],
-  [7, 8], [6, 7], [0, 8], [3, 8], [1, 6], [2, 7], [5, 6],
+// ─── MID-LAYER NODES (smaller, discreet labels) ─────────────────────────────
+const MID_NODES: { x: number; y: number; label: string }[] = [
+  { x: -0.04, y: 0.12, label: 'M. Garnier' },
+  { x: 0.88, y: 0.08, label: 'Duval P.' },
+  { x: 0.95, y: 0.52, label: 'Leclerc' },
+  { x: -0.02, y: 0.58, label: 'Arnaud B.' },
+  { x: 0.78, y: 0.78, label: 'Martin J.' },
+  { x: 0.08, y: 0.88, label: 'Renaud' },
+  { x: 0.52, y: 0.88, label: 'Petit V.' },
+  { x: 0.35, y: 0.92, label: 'Lopez' },
+  { x: 0.92, y: 0.88, label: 'Blanc' },
+  { x: 1.02, y: 0.3, label: 'Faure' },
+  { x: -0.06, y: 0.38, label: 'Moreau' },
+  { x: 0.18, y: -0.02, label: 'Girard' },
+  { x: 0.62, y: -0.04, label: 'Roux H.' },
+  { x: 0.88, y: -0.02, label: 'Lambert' },
+  { x: 1.04, y: 0.68, label: 'Mercier' },
 ];
+
+// ─── BACKGROUND CONSTELLATION (dense, anonymous dots) ────────────────────────
+// Seeded pseudo-random for deterministic positions across renders
+function seededRandom(seed: number) {
+  let s = seed;
+  return () => { s = (s * 16807) % 2147483647; return (s - 1) / 2147483646; };
+}
+
+const BG_NODES: { x: number; y: number }[] = (() => {
+  const rng = seededRandom(42);
+  const pts: { x: number; y: number }[] = [];
+  for (let i = 0; i < 80; i++) {
+    pts.push({ x: -0.12 + rng() * 1.24, y: -0.12 + rng() * 1.24 });
+  }
+  return pts;
+})();
+
+// Build links between all layers
+type NetNode = { x: number; y: number; layer: 0 | 1 | 2 };
+
+function buildAllNodes(): NetNode[] {
+  const all: NetNode[] = [];
+  for (const m of FG_MEMBERS) all.push({ x: m.x, y: m.y, layer: 0 });
+  for (const m of MID_NODES) all.push({ x: m.x, y: m.y, layer: 1 });
+  for (const m of BG_NODES) all.push({ x: m.x, y: m.y, layer: 2 });
+  return all;
+}
+
+function buildAllLinks(nodes: NetNode[]): [number, number][] {
+  const links: [number, number][] = [];
+  const maxDist = 0.22;
+  for (let i = 0; i < nodes.length; i++) {
+    let connections = 0;
+    for (let j = i + 1; j < nodes.length; j++) {
+      const dx = nodes[i].x - nodes[j].x;
+      const dy = nodes[i].y - nodes[j].y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist < maxDist) {
+        links.push([i, j]);
+        connections++;
+        if (connections > 4) break;
+      }
+    }
+  }
+  return links;
+}
+
+const ALL_NODES = buildAllNodes();
+const ALL_LINKS = buildAllLinks(ALL_NODES);
 
 // ─── FEED ITEMS ─────────────────────────────────────────────────────────────
 const FEED_ITEMS = [
@@ -141,7 +199,7 @@ function Hero({ onEnter }: { onEnter: () => void }) {
   );
 }
 
-// ─── NETWORK VIS (Full-screen Canvas + Member Avatars) ───────────────────────
+// ─── NETWORK VIS (3-layer full-screen) ───────────────────────────────────────
 function NetworkVis() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animRef = useRef(0);
@@ -170,60 +228,83 @@ function NetworkVis() {
       ctx!.clearRect(0, 0, w, h);
       t++;
 
-      // Draw links with travelling impulses
-      for (let li = 0; li < LINKS.length; li++) {
-        const [ai, bi] = LINKS[li];
-        const a = MEMBERS[ai];
-        const b = MEMBERS[bi];
-        const ax = a.x * w, ay = a.y * h;
-        const bx = b.x * w, by = b.y * h;
-
-        // Link line — more visible
+      // ── LAYER 3: Background constellation dots ──
+      for (const bg of BG_NODES) {
+        const x = bg.x * w;
+        const y = bg.y * h;
         ctx!.beginPath();
-        ctx!.moveTo(ax, ay);
-        ctx!.lineTo(bx, by);
-        ctx!.strokeStyle = 'rgba(229, 90, 30, 0.12)';
-        ctx!.lineWidth = 1.2;
-        ctx!.stroke();
-
-        // Travelling impulse — brighter, larger
-        const speed = 0.001 + (li % 5) * 0.0003;
-        const pos = ((t * speed + li * 0.12) % 1);
-        const px = ax + (bx - ax) * pos;
-        const py = ay + (by - ay) * pos;
-
-        const grad = ctx!.createRadialGradient(px, py, 0, px, py, 16);
-        grad.addColorStop(0, 'rgba(229, 90, 30, 0.85)');
-        grad.addColorStop(0.4, 'rgba(229, 90, 30, 0.3)');
-        grad.addColorStop(1, 'rgba(229, 90, 30, 0)');
-        ctx!.beginPath();
-        ctx!.arc(px, py, 16, 0, Math.PI * 2);
-        ctx!.fillStyle = grad;
-        ctx!.fill();
-
-        // Secondary impulse
-        const pos2 = ((t * speed * 0.55 + li * 0.35 + 0.5) % 1);
-        const px2 = ax + (bx - ax) * pos2;
-        const py2 = ay + (by - ay) * pos2;
-        const grad2 = ctx!.createRadialGradient(px2, py2, 0, px2, py2, 10);
-        grad2.addColorStop(0, 'rgba(229, 90, 30, 0.5)');
-        grad2.addColorStop(1, 'rgba(229, 90, 30, 0)');
-        ctx!.beginPath();
-        ctx!.arc(px2, py2, 10, 0, Math.PI * 2);
-        ctx!.fillStyle = grad2;
+        ctx!.arc(x, y, 1.5, 0, Math.PI * 2);
+        ctx!.fillStyle = 'rgba(229, 90, 30, 0.12)';
         ctx!.fill();
       }
 
-      // Node halos
-      for (const m of MEMBERS) {
+      // ── Draw all links with layer-based styling ──
+      for (let li = 0; li < ALL_LINKS.length; li++) {
+        const [ai, bi] = ALL_LINKS[li];
+        const a = ALL_NODES[ai];
+        const b = ALL_NODES[bi];
+        const ax = a.x * w, ay = a.y * h;
+        const bx = b.x * w, by = b.y * h;
+
+        // Determine link opacity/width by deepest layer of the pair
+        const deepest = Math.max(a.layer, b.layer);
+        const lineAlpha = deepest === 0 ? 0.14 : deepest === 1 ? 0.07 : 0.03;
+        const lineWidth = deepest === 0 ? 1.2 : deepest === 1 ? 0.8 : 0.4;
+        const impulseR = deepest === 0 ? 14 : deepest === 1 ? 8 : 4;
+        const impulseAlpha = deepest === 0 ? 0.8 : deepest === 1 ? 0.4 : 0.15;
+
+        // Link line
+        ctx!.beginPath();
+        ctx!.moveTo(ax, ay);
+        ctx!.lineTo(bx, by);
+        ctx!.strokeStyle = `rgba(229, 90, 30, ${lineAlpha})`;
+        ctx!.lineWidth = lineWidth;
+        ctx!.stroke();
+
+        // Travelling impulse
+        const speed = 0.0007 + (li % 7) * 0.00015;
+        const pos = ((t * speed + li * 0.09) % 1);
+        const px = ax + (bx - ax) * pos;
+        const py = ay + (by - ay) * pos;
+
+        const grad = ctx!.createRadialGradient(px, py, 0, px, py, impulseR);
+        grad.addColorStop(0, `rgba(229, 90, 30, ${impulseAlpha})`);
+        grad.addColorStop(0.5, `rgba(229, 90, 30, ${impulseAlpha * 0.3})`);
+        grad.addColorStop(1, 'rgba(229, 90, 30, 0)');
+        ctx!.beginPath();
+        ctx!.arc(px, py, impulseR, 0, Math.PI * 2);
+        ctx!.fillStyle = grad;
+        ctx!.fill();
+      }
+
+      // ── LAYER 2: Mid-layer node dots ──
+      for (const mid of MID_NODES) {
+        const x = mid.x * w;
+        const y = mid.y * h;
+        const hGrad = ctx!.createRadialGradient(x, y, 0, x, y, 18);
+        hGrad.addColorStop(0, 'rgba(229, 90, 30, 0.08)');
+        hGrad.addColorStop(1, 'rgba(229, 90, 30, 0)');
+        ctx!.beginPath();
+        ctx!.arc(x, y, 18, 0, Math.PI * 2);
+        ctx!.fillStyle = hGrad;
+        ctx!.fill();
+
+        ctx!.beginPath();
+        ctx!.arc(x, y, 3.5, 0, Math.PI * 2);
+        ctx!.fillStyle = 'rgba(229, 90, 30, 0.3)';
+        ctx!.fill();
+      }
+
+      // ── LAYER 1: Foreground node halos ──
+      for (const m of FG_MEMBERS) {
         const x = m.x * w;
         const y = m.y * h;
-        const haloGrad = ctx!.createRadialGradient(x, y, 0, x, y, 50);
-        haloGrad.addColorStop(0, 'rgba(229, 90, 30, 0.1)');
-        haloGrad.addColorStop(0.5, 'rgba(229, 90, 30, 0.03)');
+        const haloGrad = ctx!.createRadialGradient(x, y, 0, x, y, 55);
+        haloGrad.addColorStop(0, 'rgba(229, 90, 30, 0.12)');
+        haloGrad.addColorStop(0.5, 'rgba(229, 90, 30, 0.04)');
         haloGrad.addColorStop(1, 'rgba(229, 90, 30, 0)');
         ctx!.beginPath();
-        ctx!.arc(x, y, 50, 0, Math.PI * 2);
+        ctx!.arc(x, y, 55, 0, Math.PI * 2);
         ctx!.fillStyle = haloGrad;
         ctx!.fill();
       }
@@ -239,10 +320,26 @@ function NetworkVis() {
   }, []);
 
   return (
-    <div className="absolute inset-0 top-14">
+    <div className="absolute inset-0 top-14 overflow-hidden">
       <canvas ref={canvasRef} className="absolute inset-0 w-full h-full" />
-      {/* Member nodes as HTML overlays */}
-      {MEMBERS.map(m => (
+
+      {/* Mid-layer labels (very discreet) */}
+      {MID_NODES.map((m, i) => {
+        const inView = m.x > -0.01 && m.x < 1.01 && m.y > -0.01 && m.y < 1.01;
+        if (!inView) return null;
+        return (
+          <div
+            key={`mid-${i}`}
+            className="absolute pointer-events-none"
+            style={{ left: `${m.x * 100}%`, top: `${m.y * 100}%`, transform: 'translate(-50%, -50%)' }}
+          >
+            <span className="text-[8px] text-white/12 font-medium whitespace-nowrap">{m.label}</span>
+          </div>
+        );
+      })}
+
+      {/* Foreground members with full detail */}
+      {FG_MEMBERS.map(m => (
         <div
           key={m.id}
           className="absolute flex flex-col items-center gap-1.5 pointer-events-none"
