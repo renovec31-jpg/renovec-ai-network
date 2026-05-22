@@ -339,7 +339,7 @@ export default function VoicePresence({ onOpenChat }: { onOpenChat?: () => void 
     streamRef.current = stream;
     startMonitoring();
 
-    const greeting = 'Salut. Dis-moi ce qui t\'amène.';
+    const greeting = 'Salut. Je suis Ali, l\'assistant virtuel de Renovec. Dis-moi ce qui t\'amène.';
     addTurn('assistant', greeting);
     setUiState('speaking');
     await playTTS(greeting);
@@ -581,14 +581,14 @@ export default function VoicePresence({ onOpenChat }: { onOpenChat?: () => void 
           <svg className="vp-connector" viewBox="0 0 200 200" preserveAspectRatio="none">
             <line className="vp-connector-line" x1="50%" y1="50%" x2="10%" y2="15%" />
           </svg>
-          <button className="vp-trigger" onClick={onOpenChat || handleOpen} aria-label="Parler avec RENOVEC">
+          <button className="vp-trigger" onClick={onOpenChat || handleOpen} aria-label="Parler avec Ali">
             <div className="vp-ring vp-ring--1" />
             <div className="vp-ring vp-ring--2" />
             <div className="vp-ring vp-ring--3" />
             <div className="vp-trigger-core">
               <Mic size={18} className="vp-mic-icon" />
             </div>
-            <span className="vp-trigger-label">Parler à RENOVEC</span>
+            <span className="vp-trigger-label">Parler à Ali</span>
             <span className="vp-trigger-hover-label">Le réseau vous écoute</span>
           </button>
         </div>

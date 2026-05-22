@@ -499,7 +499,7 @@ export default function WorkspaceOverlay({ onClose, onJoinNetwork }: Props) {
         const g = generateVisitorGreeting(visitorProfile);
         greetText = g.message;
       } else {
-        greetText = 'Bonjour. Je suis RENOVEC. Parlez-moi de votre situation, je peux deja comprendre et vous orienter.';
+        greetText = 'Bonjour. Je suis Ali, l\'assistant virtuel de Renovec. Parlez-moi de votre situation, je peux deja comprendre et vous orienter.';
       }
 
       addTurn('assistant', greetText);

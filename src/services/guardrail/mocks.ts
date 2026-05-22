@@ -12,7 +12,7 @@ export const VISITOR_FIRST_CONTACT: EvaluationContext = {
   intent: 'need',
   turnCount: 1,
   conversationHistory: [
-    { role: 'assistant', content: 'Bonjour. Je suis RENOVEC. Parlez-moi de votre situation.', timestamp: Date.now() - 5000 },
+    { role: 'assistant', content: 'Bonjour. Je suis Ali, l\'assistant virtuel de Renovec. Parlez-moi de votre situation.', timestamp: Date.now() - 5000 },
     { role: 'user', content: 'J\'ai besoin de quelqu\'un pour m\'aider avec ma comptabilité', timestamp: Date.now() },
   ],
   urgencyLevel: 0.2,

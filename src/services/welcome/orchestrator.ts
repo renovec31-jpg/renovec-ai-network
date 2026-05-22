@@ -58,7 +58,7 @@ export function generateVisitorGreeting(profile: VisitorProfile): GreetingState 
     message = `${greeting}. Je suis là. Vous pouvez me décrire une situation, un besoin, ou simplement ce qui vous passe par la tête. Je peux déjà comprendre et vous montrer ce qui pourrait s'activer autour de vous.`;
     followUp = null;
   } else {
-    message = `${greeting}. Je suis RENOVEC. Parlez-moi comme à quelqu'un qui peut vous aider — décrivez votre situation, ce dont vous avez besoin, ou ce que vous savez faire. On part de vous.`;
+    message = `${greeting}. Je suis Ali, l'assistant virtuel de Renovec. Parlez-moi comme à quelqu'un qui peut vous aider — décrivez votre situation, ce dont vous avez besoin, ou ce que vous savez faire. On part de vous.`;
     followUp = 'Je vous écoute.';
   }
 

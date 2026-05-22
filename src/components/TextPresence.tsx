@@ -72,7 +72,7 @@ export default function TextPresence() {
   return (
     <>
       {!open && (
-        <button className="tp-trigger" onClick={handleOpen} aria-label="Parler avec RENOVEC">
+        <button className="tp-trigger" onClick={handleOpen} aria-label="Parler avec Ali">
           <div className="tp-trigger-pulse" />
           <div className="tp-trigger-icon"><MessageSquare size={14} /></div>
           <span className="tp-trigger-label">Une question sur RENOVEC ?</span>
