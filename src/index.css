@@ -6321,9 +6321,15 @@ button, a, input, textarea, select {
 /* Container type for cqb units */
 .feed-rain-stage { container-type: size; }
 
+/* Page-level rain stage (full height) */
+.feed-rain-stage--page {
+  min-height: 420px; height: 60vh; max-height: 600px;
+}
+
 @media (max-width: 768px) {
   .feed-rain { min-height: 260px; }
   .feed-rain-stage { min-height: 220px; }
+  .feed-rain-stage--page { min-height: 320px; height: 50vh; max-height: 450px; }
   .feed-rain-drop--d0 { display: none; }
   .feed-rain-title { max-width: 130px; }
 }
