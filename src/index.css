@@ -5590,6 +5590,28 @@ button, a, input, textarea, select {
 .ai-ptt--disabled {
   opacity: 0.4; cursor: default;
 }
+.ai-ptt--blocked {
+  background: rgba(220,60,60,0.08); border-color: rgba(220,60,60,0.2);
+  color: rgba(220,60,60,0.8);
+}
+.ai-ptt--blocked:hover {
+  background: rgba(220,60,60,0.12); color: rgba(220,60,60,0.9);
+}
+.ai-ptt--activate {
+  background: rgba(242,101,34,0.1); border-color: rgba(242,101,34,0.3);
+  color: rgba(242,101,34,0.9); font-weight: 600;
+}
+.ai-ptt--activate:hover {
+  background: rgba(242,101,34,0.15); border-color: rgba(242,101,34,0.4);
+}
+.ai-mic-error {
+  display: flex; align-items: flex-start; gap: 6px;
+  padding: 6px 12px; margin: 0 12px 6px;
+  border-radius: 6px; font-size: 11px; line-height: 1.4;
+  background: rgba(220,60,60,0.08); border: 1px solid rgba(220,60,60,0.15);
+  color: rgba(220,60,60,0.85);
+}
+.ai-mic-error svg { flex-shrink: 0; margin-top: 1px; }
 
 /* ══════════════════════════════════════════════════════════════════════════
    AI BROWSER — Workspace layout (Rail + Browser Surface + Context Bar)

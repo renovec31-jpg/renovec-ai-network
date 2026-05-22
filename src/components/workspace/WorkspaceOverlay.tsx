@@ -173,6 +173,7 @@ export default function WorkspaceOverlay({ onClose, onJoinNetwork }: Props) {
   const [muted, setMuted] = useState(false);
   const [amplitude, setAmplitude] = useState(0);
   const [micBlocked, setMicBlocked] = useState(false);
+  const [micError, setMicError] = useState<string | null>(null);
   const [, setTick] = useState(0);
 
   const streamRef = useRef<MediaStream | null>(null);
@@ -198,8 +199,6 @@ export default function WorkspaceOverlay({ onClose, onJoinNetwork }: Props) {
     id = requestAnimationFrame(frame);
     return () => cancelAnimationFrame(id);
   }, []);
-
-  // Cleanup is handled in the voice init effect's return function
 
   // ── Voice helpers ───────────────────────────────────────────────────
   const addTurn = useCallback((role: 'user' | 'assistant', content: string) => {
@@ -375,74 +374,9 @@ export default function WorkspaceOverlay({ onClose, onJoinNetwork }: Props) {
     }
   }, [sendToAPI]);
 
-  // Keep ref in sync so recognition handler always uses latest
   sendTranscriptRef.current = sendTranscript;
 
-  const beginListening = useCallback(() => {
-    if (processingRef.current) return;
-    if (recognitionRef.current) {
-      try { recognitionRef.current.abort(); } catch {}
-      recognitionRef.current = null;
-    }
-    const Ctor = getSpeechRecognitionCtor();
-    if (!Ctor) { setVoiceState('paused'); return; }
-
-    const recognition = new Ctor();
-    recognition.lang = 'fr-FR';
-    recognition.continuous = true;
-    recognition.interimResults = true;
-    recognition.maxAlternatives = 1;
-
-    let handledFinal = false;
-
-    recognition.onresult = (e: any) => {
-      for (let i = e.resultIndex; i < e.results.length; i++) {
-        if (e.results[i].isFinal && !handledFinal) {
-          const transcript = e.results[i][0].transcript.trim();
-          if (transcript.length > 1) {
-            handledFinal = true;
-            isListening.current = false;
-            try { recognition.stop(); } catch {}
-            recognitionRef.current = null;
-            sendTranscriptRef.current(transcript).then(() => {
-              if (streamRef.current && !processingRef.current) beginListening();
-            });
-          }
-        }
-      }
-    };
-
-    recognition.onend = () => {
-      if (handledFinal) return;
-      if (isListening.current && !processingRef.current && streamRef.current) {
-        recognitionRef.current = null;
-        setTimeout(() => beginListening(), 100);
-      }
-    };
-
-    recognition.onerror = (e: any) => {
-      if (e.error === 'no-speech' || e.error === 'aborted') return;
-      isListening.current = false;
-      recognitionRef.current = null;
-      setVoiceState('paused');
-      setTimeout(() => inputRef.current?.focus(), 100);
-    };
-
-    recognitionRef.current = recognition;
-    isListening.current = true;
-    silenceStart.current = Date.now();
-    speechStart.current = 0;
-    setVoiceState('listening');
-    try {
-      recognition.start();
-    } catch {
-      isListening.current = false;
-      recognitionRef.current = null;
-      setVoiceState('paused');
-      setTimeout(() => inputRef.current?.focus(), 100);
-    }
-  }, []);
-
+  // Start audio level monitoring for waveform visualization
   const startMonitoring = useCallback(() => {
     if (!streamRef.current) return;
     if (monitorCtxRef.current?.state !== 'closed') {
@@ -466,7 +400,146 @@ export default function WorkspaceOverlay({ onClose, onJoinNetwork }: Props) {
     tick();
   }, []);
 
-  // Play greeting on mount (no mic yet — requires user gesture)
+  // Start SpeechRecognition — only call AFTER mic permission granted
+  const beginListening = useCallback(() => {
+    if (processingRef.current) return;
+    if (!streamRef.current) return;
+    if (recognitionRef.current) {
+      try { recognitionRef.current.abort(); } catch {}
+      recognitionRef.current = null;
+    }
+    const Ctor = getSpeechRecognitionCtor();
+    if (!Ctor) {
+      setMicError('Reconnaissance vocale non supportee par ce navigateur.');
+      setVoiceState('paused');
+      return;
+    }
+
+    const recognition = new Ctor();
+    recognition.lang = 'fr-FR';
+    recognition.continuous = false;
+    recognition.interimResults = true;
+    recognition.maxAlternatives = 1;
+
+    recognition.onresult = (e: any) => {
+      for (let i = e.resultIndex; i < e.results.length; i++) {
+        if (e.results[i].isFinal) {
+          const transcript = e.results[i][0].transcript.trim();
+          if (transcript.length > 1) {
+            isListening.current = false;
+            recognitionRef.current = null;
+            sendTranscriptRef.current(transcript).then(() => {
+              if (streamRef.current && !processingRef.current) beginListening();
+            });
+            return;
+          }
+        }
+      }
+    };
+
+    recognition.onend = () => {
+      if (isListening.current && !processingRef.current && streamRef.current) {
+        recognitionRef.current = null;
+        setTimeout(() => beginListening(), 150);
+      }
+    };
+
+    recognition.onerror = (e: any) => {
+      console.error('[VoiceEngine] SpeechRecognition error:', e.error, e.message);
+      isListening.current = false;
+      recognitionRef.current = null;
+
+      if (e.error === 'no-speech') {
+        if (streamRef.current && !processingRef.current) {
+          setTimeout(() => beginListening(), 200);
+        }
+        return;
+      }
+      if (e.error === 'aborted') return;
+
+      if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
+        setMicBlocked(true);
+        setMicError('Micro bloque. Clique sur l\'icone cadenas dans la barre d\'adresse pour l\'autoriser.');
+        setVoiceState('paused');
+      } else if (e.error === 'audio-capture') {
+        setMicBlocked(true);
+        setMicError('Aucun micro detecte. Connecte un micro puis reessaie.');
+        setVoiceState('paused');
+      } else if (e.error === 'network') {
+        setMicError('Erreur reseau pour la reconnaissance vocale. Verifie ta connexion.');
+        setVoiceState('paused');
+      } else {
+        setMicError(`Erreur micro : ${e.error}`);
+        setVoiceState('paused');
+      }
+    };
+
+    recognitionRef.current = recognition;
+    isListening.current = true;
+    silenceStart.current = Date.now();
+    speechStart.current = 0;
+    setMicError(null);
+    setVoiceState('listening');
+
+    try {
+      recognition.start();
+    } catch (err) {
+      console.error('[VoiceEngine] recognition.start() failed:', err);
+      isListening.current = false;
+      recognitionRef.current = null;
+      setMicError(`Impossible de demarrer la reconnaissance : ${(err as Error).message}`);
+      setVoiceState('paused');
+    }
+  }, []);
+
+  // Activate mic — MUST be called from a user gesture (click)
+  // Sequence: getUserMedia -> startMonitoring -> beginListening
+  const activateMic = useCallback(async () => {
+    setMicError(null);
+    setMicBlocked(false);
+
+    // 1. Ensure AudioContext exists (for TTS playback)
+    if (!audioCtxRef.current || audioCtxRef.current.state === 'closed') {
+      audioCtxRef.current = new AudioContext();
+    }
+    await audioCtxRef.current.resume().catch(() => {});
+
+    // 2. Request microphone permission — this is the critical step
+    let stream: MediaStream | null = null;
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({
+        audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
+      });
+    } catch (err) {
+      const error = err as DOMException;
+      console.error('[VoiceEngine] getUserMedia failed:', error.name, error.message);
+
+      if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
+        setMicBlocked(true);
+        setMicError('Micro bloque. Clique sur l\'icone cadenas dans la barre d\'adresse pour l\'autoriser.');
+      } else if (error.name === 'NotFoundError' || error.name === 'DevicesNotFoundError') {
+        setMicBlocked(true);
+        setMicError('Aucun micro detecte. Connecte un micro puis reessaie.');
+      } else if (error.name === 'NotReadableError' || error.name === 'TrackStartError') {
+        setMicBlocked(true);
+        setMicError('Le micro est utilise par une autre application. Ferme-la puis reessaie.');
+      } else {
+        setMicBlocked(true);
+        setMicError(`Erreur micro : ${error.name} - ${error.message}`);
+      }
+      setVoiceState('paused');
+      return;
+    }
+
+    // 3. Permission granted — store stream and start monitoring
+    streamRef.current = stream;
+    startMonitoring();
+
+    // 4. NOW start speech recognition (mic is confirmed active)
+    beginListening();
+  }, [startMonitoring, beginListening]);
+
+  // Play greeting on mount (no mic — requires explicit user gesture to activate)
   useEffect(() => {
     let cancelled = false;
 
@@ -511,42 +584,15 @@ export default function WorkspaceOverlay({ onClose, onJoinNetwork }: Props) {
     };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Activate mic (must be called from user gesture)
-  const activateMic = useCallback(async () => {
-    if (!audioCtxRef.current || audioCtxRef.current.state === 'closed') {
-      audioCtxRef.current = new AudioContext();
-    }
-    audioCtxRef.current.resume().catch(() => {});
-
-    let stream: MediaStream | null = null;
-    if (navigator.mediaDevices?.getUserMedia) {
-      try {
-        stream = await navigator.mediaDevices.getUserMedia({
-          audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
-        });
-      } catch {
-        try { stream = await navigator.mediaDevices.getUserMedia({ audio: true }); } catch { stream = null; }
-      }
-    }
-
-    if (stream) {
-      streamRef.current = stream;
-      startMonitoring();
-    }
-
-    setMicBlocked(false);
-    beginListening();
-  }, [startMonitoring, beginListening]);
-
   const interruptAndListen = useCallback(() => {
     try { audioRef.current?.stop(); } catch {}
     audioRef.current = null;
     processingRef.current = false;
-    beginListening();
+    if (streamRef.current) beginListening();
   }, [beginListening]);
 
   const togglePause = useCallback(() => {
-    if (voiceState === 'paused') {
+    if (voiceState === 'paused' && streamRef.current) {
       beginListening();
     } else if (voiceState === 'listening' || voiceState === 'user_speaking') {
       isListening.current = false;
@@ -695,20 +741,28 @@ export default function WorkspaceOverlay({ onClose, onJoinNetwork }: Props) {
           ))}
         </div>
 
+        {/* Mic error message */}
+        {micError && (
+          <div className="ai-mic-error">
+            <MicOff size={12} />
+            <span>{micError}</span>
+          </div>
+        )}
+
         {/* Voice controls */}
         <div className="ai-voice-controls">
           {micBlocked ? (
-            <div className="ai-ptt ai-ptt--disabled">
+            <button className="ai-ptt ai-ptt--blocked" onClick={activateMic}>
               <MicOff size={14} />
-              <span>Mode texte</span>
-            </div>
+              <span>Reessayer le micro</span>
+            </button>
           ) : isSpeaking ? (
             <button className="ai-ptt ai-ptt--playing" onClick={interruptAndListen}>
               <Mic size={14} />
               <span>Interrompre</span>
             </button>
-          ) : isPaused && !streamRef.current ? (
-            <button className="ai-ptt" onClick={activateMic}>
+          ) : !streamRef.current ? (
+            <button className="ai-ptt ai-ptt--activate" onClick={activateMic}>
               <Mic size={14} />
               <span>Activer le micro</span>
             </button>
@@ -720,7 +774,7 @@ export default function WorkspaceOverlay({ onClose, onJoinNetwork }: Props) {
             >
               {isProcessing ? <Loader size={14} className="ai-spin" /> : isPaused ? <MicOff size={14} /> : <Mic size={14} />}
               <span>
-                {isProcessing ? 'Traitement...' : isPaused ? 'Reprendre' : 'A l\'ecoute'}
+                {isProcessing ? 'Traitement...' : isPaused ? 'Reprendre' : 'A l\'ecoute · tap pour pause'}
               </span>
             </button>
           )}
