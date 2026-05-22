@@ -342,10 +342,11 @@ function HeroConnectome({ className }: { className?: string }) {
     let nextActivation = 90 + Math.random()*100;
 
     const triggerActivation = () => {
-      const n = graph.nodes[Math.floor(Math.random()*graph.nodes.length)];
+      const idx = Math.floor(Math.random()*graph.nodes.length);
+      const n = graph.nodes[idx];
       n.activated = true; n.activationTimer = 110;
       graph.links.forEach(l => {
-        if ((l.a===n.id||l.b===n.id) && l.weight>0.55 && l.signalPos===0) {
+        if ((l.a===idx||l.b===idx) && l.weight>0.55 && l.signalPos===0) {
           l.signalPos = 0.01;
         }
       });

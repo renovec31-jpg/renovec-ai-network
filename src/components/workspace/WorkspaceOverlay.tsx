@@ -713,9 +713,21 @@ export default function WorkspaceOverlay({ onClose, onJoinNetwork }: Props) {
       )}
 
       {/* Main workspace: Rail + Browser */}
-      <div className="ai-workspace">
+      <div className="ai-workspace" data-voice={voiceState}>
+        {/* Organic living background */}
+        <div className="ai-organic-bg" aria-hidden="true">
+          <div className="ai-organic-orb ai-organic-orb--1" />
+          <div className="ai-organic-orb ai-organic-orb--2" />
+          <div className="ai-organic-orb ai-organic-orb--3" />
+          <div className="ai-organic-flow" />
+        </div>
+
         {/* Conversation rail */}
-        <ConversationRail history={history} />
+        <ConversationRail
+          history={history}
+          context={browserState.contextSummary}
+          turnCount={browserState.turnCount}
+        />
 
         {/* AI Browser surface */}
         <AIBrowserSurface
