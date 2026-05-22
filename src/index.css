@@ -2930,73 +2930,122 @@ button, a, input, textarea, select {
    VOICE PRESENCE v6 — Push-to-Talk (MediaRecorder → Whisper → Claude → TTS)
    ══════════════════════════════════════════════════════════════════════════ */
 
-/* ── Trigger ─────────────────────────────────────────────────────────── */
+/* ── Floating Wrapper (organic drift) ─────────────────────────────── */
+.vp-float-wrapper {
+  position: fixed; z-index: 100; pointer-events: none;
+  bottom: 36px; right: 36px;
+  width: 200px; height: 200px;
+  display: flex; align-items: center; justify-content: center;
+  animation: vpDrift 10s ease-in-out infinite;
+}
+@keyframes vpDrift {
+  0%   { transform: translate(0, 0); }
+  25%  { transform: translate(-18px, -12px); }
+  50%  { transform: translate(-8px, 8px); }
+  75%  { transform: translate(10px, -6px); }
+  100% { transform: translate(0, 0); }
+}
+
+/* ── Connector line to network node ──────────────────────────────── */
+.vp-connector {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  overflow: visible; pointer-events: none;
+}
+.vp-connector-line {
+  stroke: #F26522; stroke-width: 1; stroke-opacity: 0.25;
+  stroke-dasharray: 4 6;
+  stroke-dashoffset: 0;
+  animation: vpLineDash 2s linear infinite;
+}
+@keyframes vpLineDash {
+  to { stroke-dashoffset: -20; }
+}
+
+/* ── Trigger Button ──────────────────────────────────────────────── */
 .vp-trigger {
-  position: fixed; bottom: 32px; right: 32px; z-index: 100;
+  position: relative; pointer-events: all;
   display: flex; align-items: center; gap: 10px;
-  background: rgba(14,12,10,0.96); border: 1px solid rgba(242,101,34,0.28);
-  border-radius: 40px; padding: 9px 18px 9px 10px; cursor: pointer;
-  backdrop-filter: blur(16px);
+  background: #F26522; border: none;
+  border-radius: 40px; padding: 11px 20px 11px 13px; cursor: pointer;
   box-shadow:
-    0 4px 28px rgba(0,0,0,0.52),
-    0 0 18px -4px rgba(242,101,34,0.12),
-    0 0 40px -8px rgba(242,101,34,0.06);
-  transition: border-color .25s, box-shadow .3s ease, transform .2s cubic-bezier(.22,1,.36,1);
+    0 4px 20px rgba(242,101,34,0.4),
+    0 8px 40px rgba(242,101,34,0.2),
+    0 0 60px -10px rgba(242,101,34,0.3);
+  transition: transform .25s cubic-bezier(.22,1,.36,1), box-shadow .3s;
 }
 .vp-trigger:hover {
-  border-color: rgba(242,101,34,0.55);
+  transform: scale(1.05);
   box-shadow:
-    0 4px 28px rgba(0,0,0,0.52),
-    0 0 24px -2px rgba(242,101,34,0.2),
-    0 0 52px -6px rgba(242,101,34,0.1);
-  transform: translateY(-1.5px);
+    0 4px 24px rgba(242,101,34,0.5),
+    0 8px 48px rgba(242,101,34,0.28),
+    0 0 70px -8px rgba(242,101,34,0.4);
 }
-.vp-trigger-ripple {
-  position: absolute; inset: -2px; border-radius: 42px;
-  border: 1.5px solid rgba(242,101,34,0.1);
-  box-shadow: 0 0 12px 2px rgba(242,101,34,0.04);
-  animation: vpRipple 4s cubic-bezier(.4,0,.2,1) infinite; pointer-events: none;
+
+/* ── Radiating rings ─────────────────────────────────────────────── */
+.vp-ring {
+  position: absolute; border-radius: 50%; pointer-events: none;
+  top: 50%; left: 50%;
+  border: 1.5px solid rgba(242,101,34,0.55);
+  animation: vpRingExpand 3s ease-out infinite;
 }
-.vp-trigger-ripple::after {
-  content: ''; position: absolute; inset: -4px; border-radius: 46px;
-  border: 1px solid rgba(242,101,34,0.05);
-  animation: vpRippleOuter 4s cubic-bezier(.4,0,.2,1) infinite;
-  animation-delay: 0.6s; opacity: 0;
+.vp-ring--1 {
+  width: 60px; height: 60px; margin: -30px 0 0 -30px;
+  animation-delay: 0s;
 }
-@keyframes vpRipple {
-  0%      { transform:scale(1);    opacity:0 }
-  25%     { opacity:0.8 }
-  50%     { transform:scale(1.06); opacity:1 }
-  75%     { opacity:0.6 }
-  100%    { transform:scale(1);    opacity:0 }
+.vp-ring--2 {
+  width: 60px; height: 60px; margin: -30px 0 0 -30px;
+  animation-delay: 1s;
+  border-color: rgba(242,101,34,0.35);
 }
-@keyframes vpRippleOuter {
-  0%      { transform:scale(1);    opacity:0 }
-  30%     { opacity:0.5 }
-  55%     { transform:scale(1.09); opacity:0.7 }
-  100%    { transform:scale(1.02); opacity:0 }
+.vp-ring--3 {
+  width: 60px; height: 60px; margin: -30px 0 0 -30px;
+  animation-delay: 2s;
+  border-color: rgba(242,101,34,0.2);
 }
-.vp-trigger-icon {
+@keyframes vpRingExpand {
+  0%   { transform: scale(1);   opacity: 0.8; }
+  100% { transform: scale(3.2); opacity: 0; }
+}
+.vp-trigger:hover .vp-ring {
+  animation-duration: 1.6s;
+}
+
+/* ── Core (icon circle) ──────────────────────────────────────────── */
+.vp-trigger-core {
   width: 34px; height: 34px; border-radius: 50%;
-  background: rgba(242,101,34,0.1); border: 1px solid rgba(242,101,34,0.28);
-  display: flex; align-items: center; justify-content: center; color: #F26522; flex-shrink: 0;
-  box-shadow: 0 0 10px -2px rgba(242,101,34,0.15);
-  transition: box-shadow .3s, background .3s;
-  animation: vpIconPulse 4s cubic-bezier(.4,0,.2,1) infinite;
+  background: rgba(255,255,255,0.18);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
 }
-@keyframes vpIconPulse {
-  0%,100% { box-shadow: 0 0 8px -2px rgba(242,101,34,0.12); }
-  50%     { box-shadow: 0 0 14px -1px rgba(242,101,34,0.28); }
+.vp-mic-icon {
+  color: #fff;
+  animation: vpMicPulse 2s ease-in-out infinite;
 }
-.vp-trigger:hover .vp-trigger-icon {
-  background: rgba(242,101,34,0.14);
-  box-shadow: 0 0 14px -1px rgba(242,101,34,0.25);
-  animation: none;
+@keyframes vpMicPulse {
+  0%,100% { transform: scale(1); }
+  50%     { transform: scale(1.1); }
 }
-.vp-trigger-label { font-size: 13px; font-weight: 500; color: rgba(255,255,255,0.65); letter-spacing:.01em; white-space:nowrap; }
+
+/* ── Labels ──────────────────────────────────────────────────────── */
+.vp-trigger-label {
+  font-size: 13px; font-weight: 700; color: #fff;
+  letter-spacing: .01em; white-space: nowrap;
+}
+.vp-trigger-hover-label {
+  position: absolute; bottom: -28px; left: 50%;
+  transform: translateX(-50%); white-space: nowrap;
+  font-size: 11px; font-weight: 500; color: rgba(242,101,34,0.85);
+  letter-spacing: .02em;
+  opacity: 0; transition: opacity .2s;
+  pointer-events: none;
+}
+.vp-trigger:hover .vp-trigger-hover-label { opacity: 1; }
+
 @media (max-width: 480px) {
-  .vp-trigger { bottom: 20px; right: 16px; padding: 9px 13px 9px 10px; }
+  .vp-float-wrapper { bottom: 20px; right: 12px; width: 160px; height: 160px; }
   .vp-trigger-label { display: none; }
+  .vp-trigger { padding: 11px 14px; }
+  .vp-trigger-hover-label { display: none; }
 }
 
 /* ── Panel ───────────────────────────────────────────────────────────── */

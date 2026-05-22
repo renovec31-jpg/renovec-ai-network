@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Mic, X, Send, Loader, Radio, Volume2, VolumeX, MicOff, Settings, RotateCcw, ChevronRight } from 'lucide-react';
+import { Mic, X, Send, Loader, Volume2, VolumeX, MicOff, Settings, RotateCcw, ChevronRight } from 'lucide-react';
 
 const SUPABASE_URL  = import.meta.env.VITE_SUPABASE_URL as string;
 const SUPABASE_ANON = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
@@ -561,11 +561,21 @@ export default function VoicePresence() {
       )}
 
       {!panelOpen && (
-        <button className="vp-trigger" onClick={handleOpen} aria-label="Parler avec RENOVEC">
-          <div className="vp-trigger-ripple" />
-          <div className="vp-trigger-icon"><Radio size={15} /></div>
-          <span className="vp-trigger-label">Parler à RENOVEC</span>
-        </button>
+        <div className="vp-float-wrapper" aria-hidden="true">
+          <svg className="vp-connector" viewBox="0 0 200 200" preserveAspectRatio="none">
+            <line className="vp-connector-line" x1="50%" y1="50%" x2="10%" y2="15%" />
+          </svg>
+          <button className="vp-trigger" onClick={handleOpen} aria-label="Parler avec RENOVEC">
+            <div className="vp-ring vp-ring--1" />
+            <div className="vp-ring vp-ring--2" />
+            <div className="vp-ring vp-ring--3" />
+            <div className="vp-trigger-core">
+              <Mic size={18} className="vp-mic-icon" />
+            </div>
+            <span className="vp-trigger-label">Parler à RENOVEC</span>
+            <span className="vp-trigger-hover-label">Le réseau vous écoute</span>
+          </button>
+        </div>
       )}
 
       {panelOpen && (
