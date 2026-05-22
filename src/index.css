@@ -6189,33 +6189,127 @@ button, a, input, textarea, select {
   margin-top: 6px; font-style: italic;
 }
 
-/* ── Feed View ─────────────────────────────────────────────────────── */
-.aib-feed { display: flex; flex-direction: column; gap: 16px; }
-.aib-feed-list { display: flex; flex-direction: column; gap: 0; }
-.aib-feed-row {
-  display: flex; align-items: flex-start; gap: 10px;
-  padding: 11px 6px; position: relative;
-  animation: capsuleIn .5s cubic-bezier(.16,1,.3,1) both;
-  transition: transform .4s cubic-bezier(.4,0,.2,1);
+/* ── Feed Gravity View ─────────────────────────────────────────────── */
+.feed-gravity {
+  display: flex; flex-direction: column; gap: 18px;
+  min-height: 160px;
 }
-.aib-feed-row::after {
-  content: ''; position: absolute; bottom: 0; left: 18px; right: 6px;
-  height: 1px; background: rgba(255,255,255,0.012);
+
+.feed-gravity-stage {
+  position: relative; min-height: 120px;
+  display: flex; flex-direction: column; justify-content: center;
 }
-.aib-feed-row:last-child::after { display: none; }
-.aib-feed-row:hover { transform: translateX(3px); }
-.aib-feed-dot {
-  width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; margin-top: 5px;
-  opacity: 0.7;
+
+/* Ghost preview — next item */
+.feed-gravity-ghost {
+  position: absolute; top: -8px; left: 0; right: 0;
+  display: flex; align-items: center; gap: 8px;
+  opacity: 0.15; transform: translateY(-4px) scale(0.94);
+  pointer-events: none;
+  filter: blur(1px);
+  transition: opacity .6s ease;
 }
-.aib-feed-content { flex: 1; min-width: 0; }
-.aib-feed-title {
-  display: block; font-size: 11.5px; font-weight: 450; color: rgba(255,255,255,0.4);
+.feed-gravity-ghost span {
+  font-size: 10px; color: rgba(255,255,255,0.3); font-weight: 400;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+/* Main item */
+.feed-gravity-item {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 4px 0;
+  will-change: transform, opacity;
+}
+
+/* Enter: fall from top with bounce */
+.feed-gravity-item--enter {
+  animation: feedGravityDrop .7s cubic-bezier(.22,.68,.36,1.12) both;
+}
+
+/* Visible: settled with subtle breathe */
+.feed-gravity-item--visible {
+  opacity: 1; transform: translateY(0);
+  animation: feedSettle .3s cubic-bezier(.16,1,.3,1) both;
+}
+
+/* Exit: slide out laterally */
+.feed-gravity-item--exit {
+  animation: feedSlideOut .55s cubic-bezier(.4,0,.6,1) both;
+}
+
+@keyframes feedGravityDrop {
+  0% {
+    opacity: 0;
+    transform: translateY(-40px) scale(0.96);
+    filter: blur(4px);
+  }
+  30% {
+    opacity: 1;
+    transform: translateY(var(--bounce-offset, 4px)) scale(1.01);
+    filter: blur(0);
+  }
+  50% {
+    transform: translateY(calc(var(--bounce-offset, 4px) * -0.4)) scale(0.995);
+  }
+  70% {
+    transform: translateY(calc(var(--bounce-offset, 4px) * 0.2)) scale(1.002);
+  }
+  85% {
+    transform: translateY(calc(var(--bounce-offset, 4px) * -0.08));
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+@keyframes feedSettle {
+  from { transform: translateY(0); }
+  to   { transform: translateY(0); }
+}
+
+@keyframes feedSlideOut {
+  0% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+  40% {
+    opacity: 0.7;
+    transform: translateX(calc(12px * var(--exit-dir, 1))) scale(0.98);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(calc(60px * var(--exit-dir, 1))) scale(0.94);
+    filter: blur(3px);
+  }
+}
+
+/* Avatar */
+.feed-gravity-avatar {
+  width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 600; color: #fff;
+  opacity: 0.8;
+  transition: opacity .4s;
+}
+.feed-gravity-ghost .feed-gravity-avatar {
+  width: 22px; height: 22px; font-size: 9px; opacity: 0.5;
+}
+
+/* Body */
+.feed-gravity-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.feed-gravity-body strong {
+  font-size: 11px; font-weight: 550; color: rgba(255,255,255,0.5);
   letter-spacing: -0.01em;
 }
-.aib-feed-meta {
-  display: block; font-size: 9px; color: rgba(255,255,255,0.14); margin-top: 2px; font-weight: 380;
+.feed-gravity-title {
+  font-size: 12.5px; font-weight: 450; color: rgba(255,255,255,0.42);
+  line-height: 1.45; letter-spacing: -0.01em;
+}
+.feed-gravity-meta {
+  font-size: 9.5px; font-weight: 400; color: rgba(255,255,255,0.18);
+  margin-top: 2px;
 }
 
 /* ── Memory Resume View ────────────────────────────────────────────── */
