@@ -1,10 +1,9 @@
-import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react';
+import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { ArrowRight, ShoppingBag, Box, Package, Search, Tag, MapPin } from 'lucide-react';
 import VoicePresence from '../components/VoicePresence';
 import TeaserMap from '../components/TeaserMap';
 import GuestMatchFlow from '../components/GuestMatchFlow';
 import LiveFeedSidebar from '../components/LiveFeedSidebar';
-import WorkspaceOverlay from '../components/workspace/WorkspaceOverlay';
 import { avatarBg as teaserAvatarBg } from '../lib/ui';
 import { supabase } from '../lib/supabase';
 import { NETWORK_STATS } from '../data/mockOccitanie';
@@ -961,10 +960,6 @@ function LandingFeedTeaser({ onEnter, onOpenFeed }: { onEnter: () => void; onOpe
 export default function LandingPage({ onEnter, onHowItWorks, onGoToPresence, onMentions }: Props) {
   const [scrolled, setScrolled] = useState(false);
   const [activeScenario, setActiveScenario] = useState(0);
-  const [aiOpen, setAiOpen] = useState(false);
-
-  const openAI = useCallback(() => setAiOpen(true), []);
-  const closeAI = useCallback(() => setAiOpen(false), []);
 
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 50);
@@ -1059,11 +1054,11 @@ export default function LandingPage({ onEnter, onHowItWorks, onGoToPresence, onM
               Pas de formulaire. Pas de case à cocher.
             </p>
             <div className="lp-hero-ctas">
-              <button onClick={() => openAI()} className="lp-btn-primary group">
+              <button onClick={() => onEnter?.()} className="lp-btn-primary group">
                 Exprimer une situation
                 <ArrowRight size={13} className="group-hover:translate-x-0.5 transition-transform" />
               </button>
-              <button onClick={() => openAI()} className="lp-btn-ghost group">
+              <button onClick={() => onEnter?.()} className="lp-btn-ghost group">
                 Partager ma présence
                 <ArrowRight size={11} className="lp-btn-ghost-arrow" />
               </button>
@@ -1339,7 +1334,7 @@ export default function LandingPage({ onEnter, onHowItWorks, onGoToPresence, onM
               <li>Interprétation IA du contexte réel</li>
               <li>Coordination adaptée à votre situation spécifique</li>
             </ul>
-            <button onClick={() => openAI()} className="lp-dual-cta group">
+            <button onClick={() => onEnter?.()} className="lp-dual-cta group">
               Exprimer une situation <ArrowRight size={11} className="group-hover:translate-x-0.5 transition-transform" />
             </button>
           </div>
@@ -1368,7 +1363,7 @@ export default function LandingPage({ onEnter, onHowItWorks, onGoToPresence, onM
               <li>Activation IA selon la situation réelle</li>
               <li>Chaque aide reconnue renforce votre profil</li>
             </ul>
-            <button onClick={() => openAI()} className="lp-dual-cta group">
+            <button onClick={() => onEnter?.()} className="lp-dual-cta group">
               Partager ma présence <ArrowRight size={11} className="group-hover:translate-x-0.5 transition-transform" />
             </button>
           </div>
@@ -1393,7 +1388,7 @@ export default function LandingPage({ onEnter, onHowItWorks, onGoToPresence, onM
       </section>
 
       {/* ════════════════ FIL D'ACTUALITÉ TEASER ════════════════════════ */}
-      <LandingFeedTeaser onEnter={onEnter} onOpenFeed={() => openAI()} />
+      <LandingFeedTeaser onEnter={onEnter} onOpenFeed={() => onEnter?.()} />
 
       {/* ════════════════ FINALE ══════════════════════════════════════════ */}
       <section className="lp-finale">
@@ -1407,11 +1402,11 @@ export default function LandingPage({ onEnter, onHowItWorks, onGoToPresence, onM
             "L'IA n'est pas l'interface.<br />Elle est l'intelligence qui coordonne."
           </blockquote>
           <div className="lp-finale-ctas">
-            <button onClick={() => openAI()} className="lp-btn-primary group">
+            <button onClick={() => onEnter?.()} className="lp-btn-primary group">
               Entrer dans le réseau
               <ArrowRight size={13} className="group-hover:translate-x-0.5 transition-transform" />
             </button>
-            <button onClick={() => openAI()} className="lp-btn-ghost group">
+            <button onClick={() => onEnter?.()} className="lp-btn-ghost group">
               Partager ma présence
               <ArrowRight size={11} className="lp-btn-ghost-arrow" />
             </button>
@@ -1427,14 +1422,7 @@ export default function LandingPage({ onEnter, onHowItWorks, onGoToPresence, onM
         </div>
       </footer>
 
-      {!aiOpen && <VoicePresence onOpenChat={openAI} />}
-
-      {aiOpen && (
-        <WorkspaceOverlay
-          onClose={closeAI}
-          onJoinNetwork={onEnter}
-        />
-      )}
+      <VoicePresence />
     </div>
   );
 }
