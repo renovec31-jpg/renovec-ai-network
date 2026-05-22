@@ -7,6 +7,7 @@ import LiveFeedSidebar from '../components/LiveFeedSidebar';
 import WorkspaceOverlay from '../components/workspace/WorkspaceOverlay';
 import { avatarBg as teaserAvatarBg } from '../lib/ui';
 import { supabase } from '../lib/supabase';
+import { NETWORK_STATS } from '../data/mockOccitanie';
 
 const RenovecMap = lazy(() => import('../components/RenovecMap'));
 
@@ -1128,6 +1129,32 @@ export default function LandingPage({ onEnter, onHowItWorks, onGoToPresence, onM
 
       {/* ════════════════ CARTE TERRITOIRE ══════════════════════════════ */}
       <GeoMapSection />
+
+      {/* ════════════════ RÉSEAU ACTIF — STATS ═══════════════════════════ */}
+      <section className="lp-network-stats">
+        <div className="lp-network-stats-inner">
+          <p className="lp-eyebrow lp-eyebrow--center">Réseau actif</p>
+          <h2 className="lp-section-h2 lp-section-h2--center">
+            Un réseau vivant,<br />pas un annuaire figé.
+          </h2>
+          <div className="lp-stats-row">
+            <div className="lp-stat">
+              <span className="lp-stat-number">{NETWORK_STATS.profiles.toLocaleString('fr-FR')}</span>
+              <span className="lp-stat-label">profils actifs</span>
+            </div>
+            <div className="lp-stat-sep" />
+            <div className="lp-stat">
+              <span className="lp-stat-number">{NETWORK_STATS.zones}</span>
+              <span className="lp-stat-label">zones couvertes</span>
+            </div>
+            <div className="lp-stat-sep" />
+            <div className="lp-stat">
+              <span className="lp-stat-number">{NETWORK_STATS.nearToulouse}</span>
+              <span className="lp-stat-label">autour de Toulouse</span>
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* ════════════════ CARTE TEASER PUBLIQUE ══════════════════════════ */}
       <TeaserMap onEnter={onEnter} />

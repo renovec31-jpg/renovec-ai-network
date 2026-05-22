@@ -1,11 +1,12 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import {
   ShoppingBag, Box, Package, Search, Layers,
-  Tag, MapPin, ArrowRight, RefreshCw, X, Sparkles, Newspaper,
+  Tag, MapPin, ArrowRight, RefreshCw, X, Newspaper,
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { avatarBg, initials, relTime } from '../lib/ui';
 import type { ProfileListing } from '../lib/supabase';
+import { FEED_PANEL_ITEMS, NETWORK_STATS } from '../data/mockOccitanie';
 
 type FeedEntry = ProfileListing & {
   _profile?: { title: string; avatar_url?: string | null; city?: string };
@@ -122,7 +123,7 @@ function FeedPanel({ entries, loading, total, newIds, onCta, onViewAll, onRefres
             <span className="text-[9px] text-emerald-400 font-medium">En direct</span>
           </div>
         </div>
-        {total > 0 && <p className="text-[10px] text-white/20">{total} annonces dans le réseau</p>}
+        <p className="text-[10px] text-white/20">{total > 0 ? total : NETWORK_STATS.feedCount} annonces dans le réseau</p>
       </div>
 
       <div className="flex-1 overflow-y-auto px-2.5 py-2 space-y-0.5 scrollbar-hide">
@@ -131,9 +132,30 @@ function FeedPanel({ entries, loading, total, newIds, onCta, onViewAll, onRefres
             <div className="w-5 h-5 border border-white/15 border-t-white/50 rounded-full animate-spin" />
           </div>
         ) : entries.length === 0 ? (
-          <div className="py-10 text-center px-4">
-            <Sparkles size={18} className="text-white/15 mx-auto mb-2" />
-            <p className="text-[11px] text-white/22">Le fil est vide pour l'instant.</p>
+          <div className="py-2 space-y-1">
+            {FEED_PANEL_ITEMS.map(fp => (
+              <button key={fp.id} onClick={onCta} className="w-full text-left p-2.5 rounded-xl border border-white/5 hover:bg-white/4 transition-all group">
+                <div className="flex items-center gap-2 mb-1.5">
+                  <div className="w-6 h-6 rounded-full flex items-center justify-center text-[9px] font-bold text-white flex-shrink-0"
+                    style={{ background: avatarBg(fp.author) }}>
+                    {fp.author[0]}
+                  </div>
+                  <span className="text-[11px] font-semibold text-white/60">{fp.author}</span>
+                  <span className="text-[9px] text-white/20 flex items-center gap-0.5 ml-auto flex-shrink-0">
+                    <MapPin size={7} />{fp.city}
+                  </span>
+                </div>
+                {fp.items.length > 0 && (
+                  <div className="flex flex-wrap gap-1 ml-8">
+                    {fp.items.map((item, i) => (
+                      <span key={i} className="text-[9.5px] text-white/35 px-1.5 py-0.5 rounded bg-white/3 border border-white/5">
+                        {item.label}{item.pricing ? ` · ${item.pricing}` : ''}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </button>
+            ))}
           </div>
         ) : (
           entries.map(e => <FeedItem key={e.id} entry={e} onCta={onCta} isNew={newIds.has(e.id)} />)
@@ -172,6 +194,7 @@ function FeedPanel({ entries, loading, total, newIds, onCta, onViewAll, onRefres
 type Props = {
   onCta: () => void;
   onViewAll?: () => void;
+  ctaLabel?: string;
   isAuthenticated?: boolean;
 };
 
@@ -274,11 +297,9 @@ export default function LiveFeedSidebar({ onCta, onViewAll, isAuthenticated = fa
           >
             <Newspaper size={14} className="text-white/60" />
             <span className="text-[11px] font-semibold text-white/60">Fil</span>
-            {total > 0 && (
-              <span className="text-[10px] font-bold text-emerald-400 bg-emerald-400/12 px-1.5 py-0.5 rounded-full">
-                {total}
-              </span>
-            )}
+            <span className="text-[10px] font-bold text-emerald-400 bg-emerald-400/12 px-1.5 py-0.5 rounded-full">
+              {total > 0 ? total : NETWORK_STATS.feedCount}
+            </span>
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
           </button>
         )}

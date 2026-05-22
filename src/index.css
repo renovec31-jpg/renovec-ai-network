@@ -4173,6 +4173,38 @@ button, a, input, textarea, select {
    GUEST MATCH FLOW — Landing page & DemanderPage instant matching
    ═══════════════════════════════════════════════════════════════════════════ */
 
+/* ── Network Stats Section ──────────────────────────────────────────────── */
+.lp-network-stats {
+  position: relative; z-index: 1;
+  padding: 80px 24px;
+}
+.lp-network-stats-inner {
+  max-width: 800px; margin: 0 auto; text-align: center;
+}
+.lp-stats-row {
+  display: flex; align-items: center; justify-content: center; gap: 32px;
+  margin-top: 40px; flex-wrap: wrap;
+}
+.lp-stat {
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+}
+.lp-stat-number {
+  font-size: 36px; font-weight: 800; letter-spacing: -0.02em;
+  color: rgba(255,255,255,0.7);
+  font-variant-numeric: tabular-nums;
+}
+.lp-stat-label {
+  font-size: 12px; color: rgba(255,255,255,0.28); font-weight: 500;
+}
+.lp-stat-sep {
+  width: 1px; height: 36px; background: rgba(255,255,255,0.06);
+}
+@media (max-width: 640px) {
+  .lp-stats-row { gap: 20px; }
+  .lp-stat-number { font-size: 28px; }
+  .lp-stat-sep { height: 28px; }
+}
+
 /* ── Landing wrapper ────────────────────────────────────────────────────── */
 .lp-guest-match {
   background: #0f0e0d;

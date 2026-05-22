@@ -34,6 +34,7 @@ export interface MockFeedItem {
   color: string;
 }
 
+// Real AI chat feed — Toulouse metro area
 export const MOCK_FEED: MockFeedItem[] = [
   { id: 'f1', type: 'service', title: 'Cours de piano pour débutant adulte', author: 'Claire M.', city: 'Toulouse', time: 'il y a 12 min', color: '#60a5fa' },
   { id: 'f2', type: 'demand', title: 'Recherche aide pour déménagement samedi', author: 'Youssef B.', city: 'Blagnac', time: 'il y a 28 min', color: '#fbbf24' },
@@ -48,3 +49,75 @@ export const MOCK_FEED: MockFeedItem[] = [
   { id: 'f11', type: 'object', title: 'Table de jardin teck — gratuit', author: 'Valérie M.', city: 'Castres', time: 'il y a 5h', color: '#22c55e' },
   { id: 'f12', type: 'demand', title: 'Recherche cours de français pour adulte', author: 'Amira S.', city: 'Toulouse', time: 'il y a 5h', color: '#fbbf24' },
 ];
+
+// Real feed panel items (from renovec.fr Fil 2649)
+export interface FeedPanelItem {
+  id: string;
+  author: string;
+  city: string;
+  items: Array<{ label: string; pricing: string }>;
+}
+
+export const FEED_PANEL_ITEMS: FeedPanelItem[] = [
+  {
+    id: 'fp1',
+    author: 'Florian Boyer',
+    city: 'Perpignan',
+    items: [
+      { label: 'Conseil comptabilité', pricing: 'Troc' },
+      { label: 'Dev web', pricing: 'Gratuit 1h' },
+      { label: 'Objet Offert', pricing: '' },
+      { label: 'Recherche Dev web', pricing: 'Échange' },
+    ],
+  },
+  {
+    id: 'fp2',
+    author: 'Sarah Bonnet',
+    city: 'Rennes',
+    items: [
+      { label: 'Lettres motivation', pricing: 'À négocier' },
+      { label: 'WordPress', pricing: 'Gratuit 1h' },
+    ],
+  },
+  {
+    id: 'fp3',
+    author: 'Laura Fontaine',
+    city: 'Amiens',
+    items: [
+      { label: 'Ateliers couture', pricing: 'Troc' },
+      { label: 'Comptabilité', pricing: 'Gratuit 1h' },
+      { label: 'Recherche dev web', pricing: '' },
+    ],
+  },
+  {
+    id: 'fp4',
+    author: 'Tom Durand',
+    city: 'Avignon',
+    items: [
+      { label: 'Transport', pricing: '20 SAV' },
+      { label: 'Juridique', pricing: 'Gratuit 1h' },
+    ],
+  },
+  {
+    id: 'fp5',
+    author: 'Tom Laurent',
+    city: 'Cherbourg',
+    items: [
+      { label: 'RH', pricing: 'Sur demande' },
+      { label: 'Programmation', pricing: 'Gratuit 1h' },
+    ],
+  },
+  { id: 'fp6', author: 'Coach professionnelle', city: 'Paris', items: [] },
+  { id: 'fp7', author: 'Formateur web no-code', city: 'Lyon', items: [] },
+  { id: 'fp8', author: 'Consultante RH', city: 'Bordeaux', items: [] },
+  { id: 'fp9', author: 'Développeur fullstack', city: 'Marseille', items: [] },
+  { id: 'fp10', author: 'Directrice artistique', city: 'Toulouse', items: [] },
+];
+
+// Network stats
+export const NETWORK_STATS = {
+  profiles: 9614,
+  zones: 300,
+  nearToulouse: 253,
+  feedCount: 2649,
+};
