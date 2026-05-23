@@ -6722,3 +6722,6 @@ section[class*="lp-"] + section[class*="lp-"] { margin-top: 0; }
 .lp-hero, section, main, .ai-page, .lp-final, .lp-stats, .lp-map, .lp-grid, .lp-need, .lp-diversity, .lp-instant, .lp-action, footer, nav { position: relative; z-index: 5; }
 .lp-hero { z-index: 2; } /* hero allows chat-rain to be visible above background */
 .chat-rain-bubble { opacity: 0.5 !important; }
+
+/* === Hard hide ChatRain entirely (avoid all overlap with section content) === */
+.chat-rain { display: none !important; }
