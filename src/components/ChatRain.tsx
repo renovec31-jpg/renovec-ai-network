@@ -1,119 +1,263 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { AVATAR_PHOTOS, PEOPLE } from '../data/people';
 
-interface Drop {
+type Bubble = {
   id: number;
-  lane: number;
-  depth: number;
-  delay: number;
-  avatarIdx: number;
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
   size: number;
+  stopY: number;
+  bounces: number;
+  maxBounces: number;
+  impacted: boolean;
+  exiting: boolean;
+  opacity: number;
+  avatar: string;
   name: string;
   caption: string;
+};
+
+type Ripple = {
+  id: number;
+  x: number;
+  y: number;
+  r: number;
+  maxR: number;
+  opacity: number;
+  lineWidth: number;
+  color: string;
+};
+
+type Splash = {
+  id: number;
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  life: number;
+  maxLife: number;
+};
+
+const MIN_SIZE = 48;
+const MAX_SIZE = 120;
+const GRAVITY = 0.26;
+const BOUNCE_DAMPING = 0.55;
+const FLOOR_PADDING = 28;
+const MAX_BUBBLES = typeof window !== 'undefined' && window.innerWidth < 768 ? 14 : 28;
+const SPAWN_MS = 480;
+
+function lerp(a: number, b: number, t: number) {
+  return a + (b - a) * t;
 }
 
-const LANES = 7;
-const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
-const MAX_DROPS = isMobile ? 4 : 7;
-const SPAWN_INTERVAL = isMobile ? 3000 : 2200;
+function mapStopY(size: number, vh: number) {
+  const t = (size - MIN_SIZE) / (MAX_SIZE - MIN_SIZE);
+  return lerp(vh * 0.55, vh - FLOOR_PADDING - size, Math.max(0, Math.min(1, t)));
+}
+
+let UID = 1;
 
 export default function ChatRain() {
-  const [drops, setDrops] = useState<Drop[]>([]);
-  const counterRef = useRef(0);
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const poolIdx = useRef(0);
-
-  const spawnDrop = useCallback(() => {
-    const id = counterRef.current++;
-    const person = PEOPLE[poolIdx.current % PEOPLE.length];
-    poolIdx.current++;
-    const r = Math.random();
-    const depth = r < 0.25 ? 0 : r < 0.5 ? 1 : r < 0.8 ? 2 : 3;
-    const lane = Math.floor(Math.random() * LANES);
-    const delay = Math.random() * 0.8;
-    const avatarIdx = id % AVATAR_PHOTOS.length;
-    const sizeVariation =
-      depth === 0 ? 10 + Math.random() * 4 :
-      depth === 1 ? 20 + Math.random() * 6 :
-      depth === 2 ? 38 + Math.random() * 10 :
-                    60 + Math.random() * 16;
-    setDrops(prev => {
-      const next = [...prev, { id, lane, depth, delay, avatarIdx, size: sizeVariation, name: person.name, caption: person.caption }];
-      if (next.length > MAX_DROPS) return next.slice(next.length - MAX_DROPS);
-      return next;
-    });
-  }, []);
-
-  const removeDrop = useCallback((id: number) => {
-    setDrops(prev => prev.filter(d => d.id !== id));
-  }, []);
+  const [, force] = useState(0);
+  const bubblesRef = useRef<Bubble[]>([]);
+  const ripplesRef = useRef<Ripple[]>([]);
+  const splashesRef = useRef<Splash[]>([]);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const rafRef = useRef<number | null>(null);
+  const lastSpawnRef = useRef<number>(0);
+  const poolIdxRef = useRef<number>(0);
 
   useEffect(() => {
-    spawnDrop();
-    const t = setTimeout(() => spawnDrop(), 1200);
-    intervalRef.current = setInterval(spawnDrop, SPAWN_INTERVAL);
-    return () => {
-      clearTimeout(t);
-      if (intervalRef.current) clearInterval(intervalRef.current);
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const resize = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
     };
-  }, [spawnDrop]);
+    resize();
+    window.addEventListener('resize', resize);
+
+    const spawn = () => {
+      if (bubblesRef.current.length >= MAX_BUBBLES) return;
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+      const size = lerp(MIN_SIZE, MAX_SIZE, Math.random());
+      const person: any = PEOPLE[poolIdxRef.current % PEOPLE.length];
+      poolIdxRef.current++;
+      const avatar = AVATAR_PHOTOS[poolIdxRef.current % AVATAR_PHOTOS.length];
+      bubblesRef.current.push({
+        id: UID++,
+        x: Math.random() * (vw - size),
+        y: -size - Math.random() * vh * 0.25,
+        vx: (Math.random() - 0.5) * 0.4,
+        vy: 0,
+        size,
+        stopY: mapStopY(size, vh),
+        bounces: 0,
+        maxBounces: 3,
+        impacted: false,
+        exiting: false,
+        opacity: lerp(0.78, 1, (size - MIN_SIZE) / (MAX_SIZE - MIN_SIZE)),
+        avatar,
+        name: person?.name || 'RENOVEC',
+        caption: person?.caption || person?.skill || '',
+      });
+    };
+
+    const emitImpact = (x: number, y: number, size: number) => {
+      const base = Math.max(36, size * 0.85);
+      ripplesRef.current.push({
+        id: UID++,
+        x, y, r: size * 0.45, maxR: base * 1.9,
+        opacity: 0.55, lineWidth: Math.max(1.5, size * 0.045),
+        color: 'rgba(255,255,255,1)',
+      });
+      ripplesRef.current.push({
+        id: UID++,
+        x, y, r: size * 0.4, maxR: base * 2.5,
+        opacity: 0.32, lineWidth: Math.max(1, size * 0.03),
+        color: 'rgba(255,140,40,1)',
+      });
+      const n = Math.round(lerp(5, 11, (size - MIN_SIZE) / (MAX_SIZE - MIN_SIZE)));
+      for (let i = 0; i < n; i++) {
+        const a = -Math.PI / 2 + (Math.random() - 0.5) * Math.PI * 0.9;
+        const sp = lerp(2, 5.5, Math.random()) * (size / MAX_SIZE);
+        splashesRef.current.push({
+          id: UID++,
+          x, y,
+          vx: Math.cos(a) * sp,
+          vy: Math.sin(a) * sp,
+          life: 0, maxLife: 38 + Math.random() * 22,
+        });
+      }
+    };
+
+    const step = (t: number) => {
+      if (t - lastSpawnRef.current > SPAWN_MS) {
+        spawn();
+        lastSpawnRef.current = t;
+      }
+      const vw = window.innerWidth;
+
+      const bubbles = bubblesRef.current;
+      for (let i = bubbles.length - 1; i >= 0; i--) {
+        const b = bubbles[i];
+        if (b.exiting) {
+          b.x += 2.4;
+          b.opacity -= 0.018;
+          if (b.opacity <= 0 || b.x > vw + 200) bubbles.splice(i, 1);
+          continue;
+        }
+        b.vy += GRAVITY;
+        b.x += b.vx;
+        b.y += b.vy;
+        if (b.y >= b.stopY) {
+          b.y = b.stopY;
+          if (!b.impacted) {
+            b.impacted = true;
+            emitImpact(b.x + b.size / 2, b.y + b.size, b.size);
+          } else {
+            emitImpact(b.x + b.size / 2, b.y + b.size, b.size * 0.65);
+          }
+          if (b.bounces < b.maxBounces && Math.abs(b.vy) > 1) {
+            b.vy = -Math.abs(b.vy) * BOUNCE_DAMPING;
+            b.vx *= 0.9;
+            b.bounces++;
+          } else {
+            b.exiting = true;
+          }
+        }
+      }
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      const ripples = ripplesRef.current;
+      for (let i = ripples.length - 1; i >= 0; i--) {
+        const r = ripples[i];
+        r.r += (r.maxR - r.r) * 0.08;
+        r.opacity -= 0.018;
+        if (r.opacity <= 0) { ripples.splice(i, 1); continue; }
+        ctx.beginPath();
+        ctx.arc(r.x, r.y, r.r, 0, Math.PI * 2);
+        ctx.strokeStyle = r.color.replace('1)', r.opacity.toFixed(3) + ')');
+        ctx.lineWidth = r.lineWidth;
+        ctx.stroke();
+      }
+
+      const splashes = splashesRef.current;
+      for (let i = splashes.length - 1; i >= 0; i--) {
+        const s = splashes[i];
+        s.vy += 0.18;
+        s.x += s.vx;
+        s.y += s.vy;
+        s.life++;
+        if (s.life >= s.maxLife) { splashes.splice(i, 1); continue; }
+        const a = 1 - s.life / s.maxLife;
+        ctx.beginPath();
+        ctx.moveTo(s.x, s.y);
+        ctx.lineTo(s.x - s.vx * 2.2, s.y - s.vy * 2.2);
+        ctx.strokeStyle = 'rgba(255,122,24,' + (0.85 * a).toFixed(3) + ')';
+        ctx.lineWidth = 1.6;
+        ctx.stroke();
+      }
+
+      force((v) => (v + 1) % 1000000);
+      rafRef.current = requestAnimationFrame(step);
+    };
+
+    rafRef.current = requestAnimationFrame(step);
+    return () => {
+      window.removeEventListener('resize', resize);
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    };
+  }, []);
 
   return (
-    <div className="relative w-full h-full overflow-hidden">
-      {drops.map(drop => (
-        <ChatRainBubble key={drop.id} drop={drop} onDone={() => removeDrop(drop.id)} />
-      ))}
-    </div>
-  );
-}
-
-function ChatRainBubble({ drop, onDone }: { drop: Drop; onDone: () => void }) {
-  useEffect(() => {
-    const dur =
-      drop.depth === 0 ? 12000 :
-      drop.depth === 1 ? 9000 :
-      drop.depth === 2 ? 6200 : 4000;
-    const t = setTimeout(onDone, dur + drop.delay * 1000 + 500);
-    return () => clearTimeout(t);
-  }, [drop, onDone]);
-
-  const laneOffset = 5 + (drop.lane / LANES) * 80;
-  const avatarSrc = AVATAR_PHOTOS[drop.avatarIdx];
-
-  const style: React.CSSProperties = {
-    '--cr-left': `${laneOffset}%`,
-    '--cr-delay': `${drop.delay}s`,
-    '--cr-dur':
-      drop.depth === 0 ? '12s' :
-      drop.depth === 1 ? '9s' :
-      drop.depth === 2 ? '6.2s' : '4s',
-    '--cr-size': `${drop.size}px`,
-    '--cr-opacity':
-      drop.depth === 0 ? '0.1' :
-      drop.depth === 1 ? '0.25' :
-      drop.depth === 2 ? '0.5' : '0.72',
-    '--cr-blur':
-      drop.depth === 0 ? '4px' :
-      drop.depth === 1 ? '2px' : '0px',
-  } as React.CSSProperties;
-
-  const showLabel = drop.depth >= 2;
-
-  return (
-    <div className={`chat-rain-bubble chat-rain-bubble--d${drop.depth}`} style={style}>
-      <img
-        src={avatarSrc}
-        alt={drop.name}
-        className="chat-rain-avatar"
-        style={{ width: 'var(--cr-size)', height: 'var(--cr-size)' }}
-        loading="lazy"
+    <div
+      aria-hidden
+      style={{
+        position: 'fixed',
+        inset: 0,
+        pointerEvents: 'none',
+        zIndex: 30,
+        overflow: 'hidden',
+      }}
+    >
+      <canvas
+        ref={canvasRef}
+        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}
       />
-      {showLabel && (
-        <div className="chat-rain-label">
-          <span className="chat-rain-name">{drop.name}</span>
-          <span className="chat-rain-caption">{drop.caption}</span>
+      {bubblesRef.current.map((b) => (
+        <div
+          key={b.id}
+          style={{
+            position: 'absolute',
+            left: 0,
+            top: 0,
+            width: b.size,
+            height: b.size,
+            transform: 'translate3d(' + b.x + 'px,' + b.y + 'px,0)',
+            opacity: b.opacity,
+            borderRadius: '50%',
+            overflow: 'hidden',
+            boxShadow: '0 8px 24px rgba(0,0,0,0.25), 0 0 0 2px rgba(255,255,255,0.6)',
+            background: '#0b1220',
+            willChange: 'transform, opacity',
+          }}
+        >
+          <img
+            src={b.avatar}
+            alt={b.name}
+            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+            loading="lazy"
+          />
         </div>
-      )}
+      ))}
     </div>
   );
 }
