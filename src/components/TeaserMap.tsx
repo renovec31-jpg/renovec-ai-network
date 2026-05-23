@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
-import { supabase } from '../lib/supabase';
+import { supabase } from '../lib/supabase'; import { NETWORK_STATS } from '../data/mockOccitanie';
 import { MapPin, Lock, Users } from 'lucide-react';
 
 interface Cluster {
@@ -25,8 +25,8 @@ export default function TeaserMap({ onEnter }: Props) {
   const markersRef = useRef<L.CircleMarker[]>([]);
 
   const [clusters, setClusters] = useState<Cluster[]>([]);
-  const [totalProfiles, setTotalProfiles] = useState(0);
-  const [nearbyCount, setNearbyCount] = useState<number | null>(null);
+  const [totalProfiles, setTotalProfiles] = useState(NETWORK_STATS.profiles);
+  const [nearbyCount, setNearbyCount] = useState<number | null>(NETWORK_STATS.nearToulouse);
   const [userCenter, setUserCenter] = useState<[number, number] | null>(null);
   const [geoState, setGeoState] = useState<'idle' | 'requesting' | 'granted' | 'denied'>('idle');
   const [loading, setLoading] = useState(true);
@@ -39,7 +39,7 @@ export default function TeaserMap({ onEnter }: Props) {
         .order('profile_count', { ascending: false })
         .limit(300);
 
-      if (data) {
+      if (data && data.length > 0) {
         setClusters(data as Cluster[]);
         const total = (data as Cluster[]).reduce((acc, c) => acc + c.profile_count, 0);
         setTotalProfiles(total);
@@ -151,7 +151,7 @@ export default function TeaserMap({ onEnter }: Props) {
         <p className="teaser-subheading">
           {loading
             ? 'Chargement du réseau…'
-            : `${totalProfiles.toLocaleString('fr-FR')} profils actifs dans ${clusters.length} zones — dont ${displayNearby} autour de ${displayCity}.`
+            : `${totalProfiles.toLocaleString('fr-FR')} profils actifs dans ${clusters.length || NETWORK_STATS.zones} zones — dont ${displayNearby} autour de ${displayCity}.`
           }
         </p>
       </div>
