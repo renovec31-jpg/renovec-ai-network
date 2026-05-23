@@ -6812,3 +6812,40 @@ html body .animate-rain-drop[style*="top: 6"],
 html body .animate-rain-drop[style*="top: 7"],
 html body .animate-rain-drop[style*="top: 8"],
 html body .animate-rain-drop[style*="top: 9"] { display: none !important; }
+
+
+/* === RESET TOTAL: annule tous les hacks anti-overlap précédents - ChatRain gère tout via canvas === */
+html body .lp-hero-humans,
+html body .lp-hero-humans > .lp-hero-human,
+html body .chat-rain,
+html body .chat-rain *,
+html body .chat-rain-bubble,
+html body [class*="chat-rain"],
+html body [class*="ChatRain"],
+html body [class*="chat-rain-bubble"],
+html body [class*="chat-rain-drop"],
+html body .animate-rain-drop,
+html body section:not(.lp-hero) .chat-rain,
+html body section:not(.lp-hero) .chat-rain-bubble,
+html body section:not(.lp-hero) [class*="chat-rain"],
+html body section:not(.lp-hero) [class*="ChatRain"],
+html body section:not(.lp-hero) [class*="chat-rain-drop"],
+html body section:not(.lp-hero) .animate-rain-drop {
+  display: revert !important;
+  height: revert !important;
+  max-height: revert !important;
+  bottom: revert !important;
+  top: revert !important;
+  opacity: revert !important;
+}
+/* ChatRain canvas: plein écran hero, derrière le contenu */
+html body .chat-rain-canvas {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  pointer-events: none !important;
+  z-index: 0 !important;
+}
+.lp-hero { position: relative; overflow: hidden; }
+.lp-hero > *:not(.chat-rain-canvas) { position: relative; z-index: 2; }
