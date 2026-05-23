@@ -6539,3 +6539,17 @@ button, a, input, textarea, select {
 .lp-finale-rain > div { width: 100%; height: 100%; }
 .lp-finale-content, .lp-finale-glow { position: relative; z-index: 1; }
 .lp-finale-ctas, .lp-finale-quote, .lp-eyebrow { position: relative; z-index: 2; }
+
+
+/* — Audit refonte home : breathing room & overlap fixes — */
+.lp-finale { padding-bottom: 140px; min-height: 90vh; }
+.lp-footer { padding-bottom: 100px; }
+
+/* Hide LiveFeedSidebar overlap inside hero finale only */
+.lp-finale .live-feed-card,
+.lp-finale [class*="live-feed"] {
+  display: none !important;
+}
+
+/* Hero finale CTAs always above floating UI */
+.lp-finale-ctas { position: relative; z-index: 50; }
