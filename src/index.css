@@ -6553,3 +6553,20 @@ button, a, input, textarea, select {
 
 /* Hero finale CTAs always above floating UI */
 .lp-finale-ctas { position: relative; z-index: 50; }
+
+
+/* — Hero principal: readability boost over animated map — */
+.lp-hero { position: relative; }
+.lp-hero::before {
+  content: "";
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 25% 50%, rgba(10,10,10,0.65) 0%, rgba(10,10,10,0.35) 35%, transparent 70%);
+  pointer-events: none;
+  z-index: 1;
+}
+.lp-hero > * { position: relative; z-index: 2; }
+
+/* Reduce hero map opacity on small screens for legibility */
+@media (max-width: 768px) {
+  .lp-hero-map, .renovec-map-hero { opacity: 0.5 !important; }
+}
