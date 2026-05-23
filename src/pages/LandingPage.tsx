@@ -6,6 +6,7 @@ import TeaserMap from '../components/TeaserMap';
 import GuestMatchFlow from '../components/GuestMatchFlow';
 import LiveFeedSidebar from '../components/LiveFeedSidebar';
 import GlobalRain from '../components/GlobalRain';
+import HorizontalScroll from '../components/HorizontalScroll';
 import ChatRain from '../components/ChatRain';
 import { avatarBg as teaserAvatarBg } from '../lib/ui';
 import { supabase } from '../lib/supabase';
