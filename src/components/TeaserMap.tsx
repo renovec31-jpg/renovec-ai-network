@@ -201,7 +201,7 @@ export default function TeaserMap({ onEnter }: Props) {
         <div className="teaser-stats-strip">
           {[
             { icon: Users, value: totalProfiles.toLocaleString('fr-FR'), label: 'profils actifs' },
-            { icon: MapPin, value: clusters.length.toString(), label: 'zones couvertes' },
+            { icon: MapPin, value: (clusters.length || NETWORK_STATS.zones).toString(), label: 'zones couvertes' },
             { icon: Lock, value: '100 %', label: 'positions approximatives' },
           ].map(({ icon: Icon, value, label }) => (
             <div key={label} className="teaser-stat">
