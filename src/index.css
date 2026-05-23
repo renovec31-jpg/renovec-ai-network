@@ -6628,3 +6628,31 @@ button:focus-visible, a:focus-visible {
   .chat-rain-bubble, .global-rain-bubble, .lp-hero-map { animation: none !important; }
   .lp-finale-rain, .lp-hero::before { opacity: 0.15; }
 }
+
+
+/* — RenovecMap hero personas: prevent label overlap — */
+.lp-hero [class*="persona"], .renovec-map [class*="persona"], .hero-connectome [class*="persona"] {
+  min-width: 120px;
+  text-align: center;
+}
+.lp-hero [class*="persona"] [class*="label"],
+.lp-hero [class*="persona"] [class*="caption"] {
+  background: rgba(10,10,10,0.6);
+  padding: 2px 6px;
+  border-radius: 4px;
+  white-space: nowrap;
+  backdrop-filter: blur(4px);
+}
+
+/* Final pass: ensure hero CTAs above any floating elements */
+.lp-hero-ctas, .lp-hero button, .lp-hero a[role="button"] {
+  position: relative;
+  z-index: 10;
+}
+
+/* Section spacing harmonization */
+section[class*="lp-"] + section[class*="lp-"] { margin-top: 0; }
+.lp-section { padding-top: 96px; padding-bottom: 96px; }
+@media (max-width: 640px) {
+  .lp-section { padding-top: 56px; padding-bottom: 56px; }
+}
