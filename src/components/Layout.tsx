@@ -5,6 +5,7 @@ import { useSituation, SituationPhase } from '../contexts/SituationContext';
 import LiveFeedSidebar from './LiveFeedSidebar';
 import ChatRain from './ChatRain';
 import MessageBubbles from './MessageBubbles';
+import AutoScroll from './AutoScroll';
 
 type Tab = 'demander' | 'capacites' | 'discussions' | 'contributions' | 'espace' | 'notifications' | 'admin' | 'carte' | 'feed';
 
@@ -64,6 +65,7 @@ export default function Layout({ children, activeTab, onTabChange, notifCount = 
       style={{ paddingRight: 'clamp(0px, calc(100vw - 1100px), 300px)' }}
     >
         <ChatRain />       <MessageBubbles />
+          <AutoScroll />
       <LiveFeedSidebar
         onCta={() => onTabChange('feed')}
         onViewAll={() => onTabChange('feed')}
