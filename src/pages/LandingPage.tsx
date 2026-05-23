@@ -6,6 +6,7 @@ import TeaserMap from '../components/TeaserMap';
 import GuestMatchFlow from '../components/GuestMatchFlow';
 import LiveFeedSidebar from '../components/LiveFeedSidebar';
 import GlobalRain from '../components/GlobalRain';
+import ChatRain from '../components/ChatRain';
 import { avatarBg as teaserAvatarBg } from '../lib/ui';
 import { supabase } from '../lib/supabase';
 import { NETWORK_STATS } from '../data/mockOccitanie';
@@ -1430,6 +1431,7 @@ export default function LandingPage({ onEnter, onHowItWorks, onGoToPresence, onM
       {/* ════════════════ FINALE ══════════════════════════════════════════ */}
       <section className="lp-finale">
         <div className="lp-finale-glow" aria-hidden />
+        <div className="lp-finale-rain" aria-hidden><ChatRain /></div>
         <div className="lp-finale-content">
           <div className="lp-finale-connectome">
             <HeroConnectome className="w-full h-full" />
