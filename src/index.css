@@ -6728,3 +6728,6 @@ section[class*="lp-"] + section[class*="lp-"] { margin-top: 0; }
 
 /* === Catch-all: hide any ChatRain variants === */
 [class*="chat-rain"], [class*="ChatRain"], [class*="chat-rain-bubble"], [class*="chat-rain-drop"] { display: none !important; }
+
+/* === Hide GlobalRain bubbles (animate-rain-drop) === */
+.animate-rain-drop { display: none !important; }
