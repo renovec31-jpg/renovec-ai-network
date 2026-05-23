@@ -6570,3 +6570,15 @@ button, a, input, textarea, select {
 @media (max-width: 768px) {
   .lp-hero-map, .renovec-map-hero { opacity: 0.5 !important; }
 }
+
+
+/* — Navbar protection: prevent floating avatars overlap with top nav — */
+.lp-nav, header[class*="nav"], .renovec-nav {
+  position: fixed; top: 0; left: 0; right: 0;
+  z-index: 100;
+  background: linear-gradient(to bottom, rgba(10,10,10,0.92) 0%, rgba(10,10,10,0.75) 70%, transparent 100%);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  padding-bottom: 24px;
+}
+.lp-nav-cta, .lp-nav a, .lp-nav button { position: relative; z-index: 101; }
