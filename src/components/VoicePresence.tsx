@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Mic, X, Send, Loader, Volume2, VolumeX, MicOff, Settings, RotateCcw, ChevronRight } from 'lucide-react';
 
 const SUPABASE_URL  = import.meta.env.VITE_SUPABASE_URL as string;
@@ -613,7 +614,7 @@ export default function VoicePresence({ onOpenChat }: { onOpenChat?: () => void 
         </div>
       )}
 
-      {panelOpen && (
+      {panelOpen && createPortal(
         <div className="vp-panel" role="dialog" aria-label="Conversation vocale RENOVEC">
 
           <div className="vp-header">
@@ -731,7 +732,7 @@ export default function VoicePresence({ onOpenChat }: { onOpenChat?: () => void 
 
           <div className="vp-footer">Conversation en direct · Réseau humain</div>
         </div>
-      )}
+            , document.body)}
     </>
   );
 }
