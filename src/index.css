@@ -6582,3 +6582,16 @@ button, a, input, textarea, select {
   padding-bottom: 24px;
 }
 .lp-nav-cta, .lp-nav a, .lp-nav button { position: relative; z-index: 101; }
+
+
+/* — Revert fixed navbar (regression); keep simple sticky transparent — */
+.lp-nav, header[class*="nav"], .renovec-nav {
+  position: sticky !important;
+  top: 0;
+  z-index: 100;
+  background: rgba(10,10,10,0.0);
+  padding-bottom: 0;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+.lp-nav-cta, .lp-nav a, .lp-nav button { position: relative; z-index: 101; background-clip: padding-box; }
