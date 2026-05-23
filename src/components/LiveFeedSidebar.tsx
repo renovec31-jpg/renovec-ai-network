@@ -203,7 +203,7 @@ export default function LiveFeedSidebar({ onCta, onViewAll, isAuthenticated = fa
   const [loading, setLoading]     = useState(true);
   const [newIds, setNewIds]       = useState<Set<string>>(new Set());
   const [total, setTotal]         = useState(0);
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(true);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [isMobile, setIsMobile]   = useState(() => typeof window !== 'undefined' && window.innerWidth < 1100);
   const knownIds                  = useRef<Set<string>>(new Set());
