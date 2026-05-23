@@ -13,10 +13,11 @@ type Bubble = {
   maxBounces: number;
   impacted: boolean;
   exiting: boolean;
-  opacity: number;
   avatar: string;
   name: string;
   caption: string;
+  impactX: number;
+  impactY: number;
   radarRings: RadarRing[];
 };
 
@@ -45,8 +46,8 @@ const BOUNCE_DAMPING = 0.45;
 const FLOOR_PADDING = 28;
 const MAX_BUBBLES = typeof window !== 'undefined' && window.innerWidth < 768 ? 12 : 24;
 const SPAWN_MS = 900;
-const RADAR_INTERVAL = 420;
-const RADAR_SPEED = 1.8;
+const RADAR_INTERVAL = 380;
+const RADAR_SPEED = 1.6;
 const RADAR_MAX_RINGS = 6;
 const RADAR_COLOR = '#F26522';
 
@@ -103,10 +104,11 @@ export default function ChatRain() {
         maxBounces: 3,
         impacted: false,
         exiting: false,
-        opacity: lerp(0.78, 1, (size - MIN_SIZE) / (MAX_SIZE - MIN_SIZE)),
         avatar,
         name: person?.name || 'RENOVEC',
         caption: person?.caption || person?.skill || '',
+        impactX: 0,
+        impactY: 0,
         radarRings: [],
       });
     };
@@ -135,8 +137,7 @@ export default function ChatRain() {
         const b = bubbles[i];
         if (b.exiting) {
           b.x += 1.6;
-          b.opacity -= 0.012;
-          if (b.opacity <= 0 || b.x > vw + 200) bubbles.splice(i, 1);
+          if (b.x > vw + 200) bubbles.splice(i, 1);
           continue;
         }
         b.vy += GRAVITY;
@@ -146,7 +147,9 @@ export default function ChatRain() {
           b.y = b.stopY;
           if (!b.impacted) {
             b.impacted = true;
-            emitSplash(b.x + b.size / 2, b.y + b.size, b.size);
+            b.impactX = b.x + b.size / 2;
+            b.impactY = b.y + b.size;
+            emitSplash(b.impactX, b.impactY, b.size);
           }
           if (b.bounces < b.maxBounces && Math.abs(b.vy) > 0.6) {
             b.vy = -Math.abs(b.vy) * BOUNCE_DAMPING;
@@ -158,23 +161,21 @@ export default function ChatRain() {
           }
         }
         if (b.impacted && !b.exiting) {
-          const cx = b.x + b.size / 2;
-          const cy = b.y + b.size / 2;
-          const maxR = b.size * 2.5;
+          const maxR = b.size * 3;
           if (b.radarRings.length === 0 || (t - b.radarRings[b.radarRings.length - 1].born > RADAR_INTERVAL)) {
             if (b.radarRings.length < RADAR_MAX_RINGS) {
-              b.radarRings.push({ id: UID++, born: t, x: cx, y: cy, maxR });
+              b.radarRings.push({ id: UID++, born: t, x: b.impactX, y: b.impactY, maxR });
             } else {
               b.radarRings[0].born = t;
               b.radarRings[0].id = UID++;
+              b.radarRings[0].x = b.impactX;
+              b.radarRings[0].y = b.impactY;
               b.radarRings.push(b.radarRings.shift()!);
             }
           }
           let allDone = true;
           for (const ring of b.radarRings) {
-            const age = t - ring.born;
-            const r = age * RADAR_SPEED;
-            if (r < ring.maxR) { allDone = false; }
+            if ((t - ring.born) * RADAR_SPEED < ring.maxR) allDone = false;
           }
           if (allDone && b.radarRings.length >= RADAR_MAX_RINGS) {
             b.exiting = true;
@@ -189,12 +190,13 @@ export default function ChatRain() {
           const age = t - ring.born;
           const r = age * RADAR_SPEED;
           if (r <= 0 || r > ring.maxR * 1.2) continue;
-          const alpha = Math.max(0, 1 - r / ring.maxR) * 0.45;
+          const progress = r / ring.maxR;
+          const alpha = Math.max(0, 1 - progress);
           ctx.beginPath();
           ctx.arc(ring.x, ring.y, r, 0, Math.PI * 2);
           ctx.strokeStyle = RADAR_COLOR;
           ctx.globalAlpha = alpha;
-          ctx.lineWidth = Math.max(1, 2.5 - r / ring.maxR * 2);
+          ctx.lineWidth = Math.max(1.2, 3 - progress * 2.5);
           ctx.stroke();
         }
       }
@@ -213,7 +215,7 @@ export default function ChatRain() {
         ctx.moveTo(s.x, s.y);
         ctx.lineTo(s.x - s.vx * 2.2, s.y - s.vy * 2.2);
         ctx.strokeStyle = RADAR_COLOR;
-        ctx.globalAlpha = 0.85 * a;
+        ctx.globalAlpha = a;
         ctx.lineWidth = 1.6;
         ctx.stroke();
       }
@@ -253,8 +255,8 @@ export default function ChatRain() {
             left: 0,
             top: 0,
             transform: 'translate3d(' + b.x + 'px,' + b.y + 'px,0)',
-            opacity: b.opacity,
-            willChange: 'transform, opacity',
+            opacity: 1,
+            willChange: 'transform',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
@@ -267,7 +269,7 @@ export default function ChatRain() {
               height: b.size,
               borderRadius: '50%',
               overflow: 'hidden',
-              boxShadow: '0 8px 24px rgba(0,0,0,0.25), 0 0 0 2px rgba(242,101,34,0.5)',
+              boxShadow: '0 8px 24px rgba(0,0,0,0.3), 0 0 0 2.5px #F26522',
               background: '#0b1220',
             }}
           >
@@ -281,7 +283,7 @@ export default function ChatRain() {
           {b.size > 60 && (
             <div
               style={{
-                background: 'rgba(0,0,0,0.7)',
+                background: 'rgba(0,0,0,0.75)',
                 borderRadius: 8,
                 padding: '3px 10px',
                 maxWidth: b.size + 40,
