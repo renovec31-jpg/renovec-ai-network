@@ -6670,3 +6670,14 @@ section[class*="lp-"] + section[class*="lp-"] { margin-top: 0; }
   .lp-hero-human--2 { top: 32% !important; right: 6%  !important; }
 }
 .lp-hero-human-info { background: rgba(10,10,10,0.55); padding: 4px 8px; border-radius: 6px; backdrop-filter: blur(4px); }
+
+
+/* — Force .lp-hero-humans to be a non-flex absolute canvas — */
+.lp-hero-humans {
+  position: absolute !important;
+  inset: 0 !important;
+  display: block !important;
+  pointer-events: none !important;
+  z-index: 3 !important;
+}
+.lp-hero-humans > .lp-hero-human { position: absolute !important; }
