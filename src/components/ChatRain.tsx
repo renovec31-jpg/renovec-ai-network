@@ -112,14 +112,12 @@ export default function ChatRain() {
     const emitImpact = (x: number, y: number, size: number) => {
       const base = Math.max(36, size * 0.85);
       ripplesRef.current.push({
-        id: UID++,
-        x, y, r: size * 0.45, maxR: base * 1.9,
+        id: UID++, x, y, r: size * 0.45, maxR: base * 1.9,
         opacity: 0.55, lineWidth: Math.max(1.5, size * 0.045),
         color: 'rgba(255,255,255,1)',
       });
       ripplesRef.current.push({
-        id: UID++,
-        x, y, r: size * 0.4, maxR: base * 2.5,
+        id: UID++, x, y, r: size * 0.4, maxR: base * 2.5,
         opacity: 0.32, lineWidth: Math.max(1, size * 0.03),
         color: 'rgba(255,140,40,1)',
       });
@@ -128,10 +126,8 @@ export default function ChatRain() {
         const a = -Math.PI / 2 + (Math.random() - 0.5) * Math.PI * 0.9;
         const sp = lerp(2, 5.5, Math.random()) * (size / MAX_SIZE);
         splashesRef.current.push({
-          id: UID++,
-          x, y,
-          vx: Math.cos(a) * sp,
-          vy: Math.sin(a) * sp,
+          id: UID++, x, y,
+          vx: Math.cos(a) * sp, vy: Math.sin(a) * sp,
           life: 0, maxLife: 38 + Math.random() * 22,
         });
       }
@@ -143,7 +139,6 @@ export default function ChatRain() {
         lastSpawnRef.current = t;
       }
       const vw = window.innerWidth;
-
       const bubbles = bubblesRef.current;
       for (let i = bubbles.length - 1; i >= 0; i--) {
         const b = bubbles[i];
@@ -173,9 +168,7 @@ export default function ChatRain() {
           }
         }
       }
-
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-
       const ripples = ripplesRef.current;
       for (let i = ripples.length - 1; i >= 0; i--) {
         const r = ripples[i];
@@ -188,7 +181,6 @@ export default function ChatRain() {
         ctx.lineWidth = r.lineWidth;
         ctx.stroke();
       }
-
       const splashes = splashesRef.current;
       for (let i = splashes.length - 1; i >= 0; i--) {
         const s = splashes[i];
@@ -205,7 +197,6 @@ export default function ChatRain() {
         ctx.lineWidth = 1.6;
         ctx.stroke();
       }
-
       force((v) => (v + 1) % 1000000);
       rafRef.current = requestAnimationFrame(step);
     };
@@ -239,23 +230,53 @@ export default function ChatRain() {
             position: 'absolute',
             left: 0,
             top: 0,
-            width: b.size,
-            height: b.size,
             transform: 'translate3d(' + b.x + 'px,' + b.y + 'px,0)',
             opacity: b.opacity,
-            borderRadius: '50%',
-            overflow: 'hidden',
-            boxShadow: '0 8px 24px rgba(0,0,0,0.25), 0 0 0 2px rgba(255,255,255,0.6)',
-            background: '#0b1220',
             willChange: 'transform, opacity',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: 4,
           }}
         >
-          <img
-            src={b.avatar}
-            alt={b.name}
-            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-            loading="lazy"
-          />
+          <div
+            style={{
+              width: b.size,
+              height: b.size,
+              borderRadius: '50%',
+              overflow: 'hidden',
+              boxShadow: '0 8px 24px rgba(0,0,0,0.25), 0 0 0 2px rgba(255,255,255,0.6)',
+              background: '#0b1220',
+            }}
+          >
+            <img
+              src={b.avatar}
+              alt={b.name}
+              style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+              loading="lazy"
+            />
+          </div>
+          {b.size > 64 && (
+            <div
+              style={{
+                background: 'rgba(0,0,0,0.65)',
+                borderRadius: 8,
+                padding: '2px 8px',
+                maxWidth: b.size + 24,
+                textAlign: 'center',
+                backdropFilter: 'blur(6px)',
+              }}
+            >
+              <div style={{ color: '#fff', fontSize: 11, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                {b.name}
+              </div>
+              {b.caption && (
+                <div style={{ color: 'rgba(255,180,80,0.9)', fontSize: 9, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  {b.caption}
+                </div>
+              )}
+            </div>
+          )}
         </div>
       ))}
     </div>
