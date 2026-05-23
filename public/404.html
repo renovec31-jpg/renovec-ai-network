@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>RENOVEC - Redirection</title>
+  <script>
+    // GitHub Pages SPA redirect
+    // Redirige toute URL inconnue vers index.html en conservant le chemin
+    (function() {
+      var pathSegmentsToKeep = 1; // /renovec-ai-network/
+      var l = window.location;
+      l.replace(
+        l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '') +
+        l.pathname.split('/').slice(0, 1 + pathSegmentsToKeep).join('/') + '/?/' +
+        l.pathname.slice(1).split('/').slice(pathSegmentsToKeep).join('/').replace(/&/g, '~and~') +
+        (l.search ? '&' + l.search.slice(1).replace(/&/g, '~and~') : '') +
+        l.hash
+      );
+    })();
+  </script>
+</head>
+<body>
+  Redirection vers RENOVEC...
+</body>
+</html>
