@@ -6692,3 +6692,13 @@ section[class*="lp-"] + section[class*="lp-"] { margin-top: 0; }
   .lp-hero-human { max-width: 110px !important; }
   .lp-hero-human-info { max-width: 110px !important; }
 }
+
+/* — Final anti-overlap pass: only 3 personas exist (--1 Thomas, --2 Fatima, --3 Marc) — */
+.lp-hero-human--1 { top: 18% !important; left: 6% !important; right: auto !important; }
+.lp-hero-human--2 { top: 18% !important; right: 6% !important; left: auto !important; }
+.lp-hero-human--3 { top: 58% !important; left: 8% !important; right: auto !important; }
+@media (max-width: 768px) {
+  .lp-hero-human--1 { top: 12% !important; left: 4% !important; right: auto !important; }
+  .lp-hero-human--2 { top: 12% !important; right: 4% !important; left: auto !important; }
+  .lp-hero-human--3 { display: none !important; }
+}
