@@ -6681,3 +6681,14 @@ section[class*="lp-"] + section[class*="lp-"] { margin-top: 0; }
   z-index: 3 !important;
 }
 .lp-hero-humans > .lp-hero-human { position: absolute !important; }
+
+/* — Anti-overlap final: clamp persona cards + spread Thomas/Fatima — */
+.lp-hero-human { max-width: 130px !important; }
+.lp-hero-human-info { max-width: 130px !important; text-align: center !important; word-wrap: break-word; }
+.lp-hero-human-cap, .lp-hero-human-loc { white-space: normal !important; overflow-wrap: anywhere; }
+.lp-hero-human--3 { top: 52% !important; right: 4% !important; }
+.lp-hero-human--4 { top: 70% !important; right: 46% !important; }
+@media (max-width: 768px) {
+  .lp-hero-human { max-width: 110px !important; }
+  .lp-hero-human-info { max-width: 110px !important; }
+}
