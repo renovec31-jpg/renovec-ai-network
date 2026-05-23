@@ -6705,3 +6705,20 @@ section[class*="lp-"] + section[class*="lp-"] { margin-top: 0; }
 /* Pragmatic anti-overlap: hide static hero personas (ChatRain shows live presence) */
 .lp-hero-humans, .lp-hero-humans > .lp-hero-human { display: none !important; }
 
+
+/* === FINAL DELIVERY: confine ChatRain to viewport top, push behind content === */
+.chat-rain {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  height: 100vh !important;
+  pointer-events: none !important;
+  z-index: 1 !important;
+  overflow: hidden !important;
+}
+.chat-rain-bubble { z-index: 1 !important; }
+/* Ensure every content section paints above ChatRain */
+.lp-hero, section, main, .ai-page, .lp-final, .lp-stats, .lp-map, .lp-grid, .lp-need, .lp-diversity, .lp-instant, .lp-action, footer, nav { position: relative; z-index: 5; }
+.lp-hero { z-index: 2; } /* hero allows chat-rain to be visible above background */
+.chat-rain-bubble { opacity: 0.5 !important; }
