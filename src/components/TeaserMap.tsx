@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
-import { supabase } from '../lib/supabase'; import { NETWORK_STATS } from '../data/mockOccitanie';
+import { supabase } from '../lib/supabase';
+import { NETWORK_STATS } from '../data/mockOccitanie';
 import { MapPin, Lock, Users } from 'lucide-react';
 
 interface Cluster {
