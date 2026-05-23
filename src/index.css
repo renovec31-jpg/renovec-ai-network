@@ -6527,3 +6527,15 @@ button, a, input, textarea, select {
   .aib-match-capsule { padding: 12px 6px; }
   .aib-und { gap: 18px; }
 }
+
+
+/* — Final hero ChatRain integration — */
+.lp-finale { position: relative; overflow: hidden; }
+.lp-finale-rain {
+  position: absolute; inset: 0;
+  z-index: 0; opacity: 0.45;
+  pointer-events: none;
+}
+.lp-finale-rain > div { width: 100%; height: 100%; }
+.lp-finale-content, .lp-finale-glow { position: relative; z-index: 1; }
+.lp-finale-ctas, .lp-finale-quote, .lp-eyebrow { position: relative; z-index: 2; }
