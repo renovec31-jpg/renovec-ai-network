@@ -100,7 +100,7 @@ function ChatRainBubble({ drop, onDone }: { drop: Drop; onDone: () => void }) {
   const showLabel = drop.depth >= 2;
 
   return (
-    <div className={`chat-rain-drop chat-rain-drop--d${drop.depth}`} style={style}>
+    <div className={`chat-rain-bubble chat-rain-bubble--d${drop.depth}`} style={style}>
       <img
         src={avatarSrc}
         alt={drop.name}
