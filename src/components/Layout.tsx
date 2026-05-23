@@ -4,6 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useSituation, SituationPhase } from '../contexts/SituationContext';
 import LiveFeedSidebar from './LiveFeedSidebar';
 import ChatRain from './ChatRain';
+import MessageBubbles from './MessageBubbles';
 
 type Tab = 'demander' | 'capacites' | 'discussions' | 'contributions' | 'espace' | 'notifications' | 'admin' | 'carte' | 'feed';
 
@@ -62,7 +63,7 @@ export default function Layout({ children, activeTab, onTabChange, notifCount = 
       className="min-h-screen bg-stone-950 flex flex-col"
       style={{ paddingRight: 'clamp(0px, calc(100vw - 1100px), 300px)' }}
     >
-        <ChatRain />
+        <ChatRain />       <MessageBubbles />
       <LiveFeedSidebar
         onCta={() => onTabChange('feed')}
         onViewAll={() => onTabChange('feed')}
