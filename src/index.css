@@ -6702,3 +6702,6 @@ section[class*="lp-"] + section[class*="lp-"] { margin-top: 0; }
   .lp-hero-human--2 { top: 12% !important; right: 4% !important; left: auto !important; }
   .lp-hero-human--3 { display: none !important; }
 }
+/* Pragmatic anti-overlap: hide static hero personas (ChatRain shows live presence) */
+.lp-hero-humans, .lp-hero-humans > .lp-hero-human { display: none !important; }
+
