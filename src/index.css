@@ -6731,3 +6731,6 @@ section[class*="lp-"] + section[class*="lp-"] { margin-top: 0; }
 
 /* === Hide GlobalRain bubbles (animate-rain-drop) === */
 .animate-rain-drop { display: none !important; }
+
+/* === FINAL DELIVERY: hide GlobalRain Tailwind container === */
+div.fixed.inset-0.pointer-events-none.overflow-hidden { display: none !important; }
