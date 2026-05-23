@@ -6734,3 +6734,37 @@ section[class*="lp-"] + section[class*="lp-"] { margin-top: 0; }
 
 /* === FINAL DELIVERY: hide GlobalRain Tailwind container === */
 div.fixed.inset-0.pointer-events-none.overflow-hidden { display: none !important; }
+
+
+/* === ROLLBACK: restore hidden UI elements with surgical layering === */
+/* Restore hero personas (avatars) */
+html body .lp-hero-humans,
+html body .lp-hero-humans > .lp-hero-human { display: block !important; }
+
+/* Restore ChatRain as a non-blocking ambient layer behind content */
+html body .chat-rain {
+  display: block !important;
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100vh !important;
+  pointer-events: none !important;
+  z-index: 0 !important;
+  overflow: hidden !important;
+}
+html body .chat-rain-bubble { opacity: 0.35 !important; z-index: 0 !important; }
+
+/* Restore catch-all ChatRain variants */
+html body [class*="chat-rain"],
+html body [class*="ChatRain"],
+html body [class*="chat-rain-bubble"],
+html body [class*="chat-rain-drop"] { display: block !important; }
+
+/* Restore GlobalRain bubbles */
+html body .animate-rain-drop { display: block !important; }
+
+/* Restore GlobalRain Tailwind container */
+html body div.fixed.inset-0.pointer-events-none.overflow-hidden { display: block !important; }
+
+/* Ensure content sections paint above ambient rain layer */
+.lp-hero, section, main, .ai-page, .lp-final, .lp-stats, .lp-map, .lp-grid, .lp-need, .lp-diversity, .lp-instant, .lp-action, footer, nav { position: relative; z-index: 2; }
