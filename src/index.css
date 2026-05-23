@@ -6595,3 +6595,36 @@ button, a, input, textarea, select {
   -webkit-backdrop-filter: none;
 }
 .lp-nav-cta, .lp-nav a, .lp-nav button { position: relative; z-index: 101; background-clip: padding-box; }
+
+
+/* — Global polish & mobile responsiveness — */
+html, body { overflow-x: hidden; }
+body { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+
+/* Prevent any floating fixed/absolute element from triggering horizontal scroll */
+.lp-hero, .lp-finale, section[class*="lp-"] { overflow-x: clip; }
+
+/* Mobile typography scale */
+@media (max-width: 640px) {
+  .lp-hero-title, h1.lp-hero-title { font-size: clamp(2.2rem, 9vw, 3.2rem) !important; line-height: 1.05 !important; }
+  .lp-finale h2, .lp-finale-title { font-size: clamp(1.6rem, 6vw, 2.4rem) !important; }
+  .lp-finale { padding-bottom: 180px; }
+  .lp-hero-ctas { flex-direction: column; gap: 12px; }
+  .lp-hero-ctas > button, .lp-hero-ctas > a { width: 100%; }
+}
+
+/* Smooth focus rings, accessible */
+button:focus-visible, a:focus-visible {
+  outline: 2px solid #f97316;
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+/* Ensure FAB 'Parler à Ali' never covers final CTAs */
+.lp-finale-ctas { padding-bottom: 80px; }
+
+/* Reduce motion respects */
+@media (prefers-reduced-motion: reduce) {
+  .chat-rain-bubble, .global-rain-bubble, .lp-hero-map { animation: none !important; }
+  .lp-finale-rain, .lp-hero::before { opacity: 0.15; }
+}
