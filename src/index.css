@@ -6768,3 +6768,47 @@ html body div.fixed.inset-0.pointer-events-none.overflow-hidden { display: block
 
 /* Ensure content sections paint above ambient rain layer */
 .lp-hero, section, main, .ai-page, .lp-final, .lp-stats, .lp-map, .lp-grid, .lp-need, .lp-diversity, .lp-instant, .lp-action, footer, nav { position: relative; z-index: 2; }
+
+
+/* === FIX BULLES AVATARS PLUIE: confiner ChatRain/GlobalRain au hero, masquer ailleurs === */
+/* Cacher toutes les bulles avatars hors du hero pour éviter chevauchement avec CTA/sections */
+html body section:not(.lp-hero) .chat-rain,
+html body section:not(.lp-hero) .chat-rain-bubble,
+html body section:not(.lp-hero) [class*="chat-rain"],
+html body section:not(.lp-hero) [class*="ChatRain"],
+html body section:not(.lp-hero) [class*="chat-rain-drop"],
+html body section:not(.lp-hero) .animate-rain-drop { display: none !important; }
+
+/* Confiner les conteneurs fixed des bulles à la moitié haute du viewport */
+html body .chat-rain,
+html body div.fixed.inset-0.pointer-events-none.overflow-hidden {
+  height: 60vh !important;
+  max-height: 60vh !important;
+  bottom: auto !important;
+  overflow: hidden !important;
+  pointer-events: none !important;
+  z-index: 0 !important;
+}
+
+/* Les CTA et sections finales TOUJOURS au-dessus des bulles */
+html body .lp-final,
+html body .lp-action,
+html body footer,
+html body .lp-final *,
+html body .lp-action * { position: relative; z-index: 5 !important; }
+
+/* Masquer toute bulle qui s'échappe sous le hero */
+html body .chat-rain-bubble,
+html body .animate-rain-drop {
+  top: auto !important;
+}
+html body .chat-rain-bubble[style*="top: 5"],
+html body .chat-rain-bubble[style*="top: 6"],
+html body .chat-rain-bubble[style*="top: 7"],
+html body .chat-rain-bubble[style*="top: 8"],
+html body .chat-rain-bubble[style*="top: 9"],
+html body .animate-rain-drop[style*="top: 5"],
+html body .animate-rain-drop[style*="top: 6"],
+html body .animate-rain-drop[style*="top: 7"],
+html body .animate-rain-drop[style*="top: 8"],
+html body .animate-rain-drop[style*="top: 9"] { display: none !important; }
