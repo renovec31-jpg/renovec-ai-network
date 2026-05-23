@@ -6656,3 +6656,17 @@ section[class*="lp-"] + section[class*="lp-"] { margin-top: 0; }
 @media (max-width: 640px) {
   .lp-section { padding-top: 56px; padding-bottom: 56px; }
 }
+
+
+/* — Override hero humans positions (anti-overlap) — */
+.lp-hero-human { min-width: 130px; }
+.lp-hero-human--1 { top: 14% !important; right: 14% !important; }
+.lp-hero-human--2 { top: 30% !important; right: 32% !important; }
+.lp-hero-human--3 { top: 56% !important; right: 8%  !important; }
+.lp-hero-human--4 { top: 72% !important; right: 38% !important; }
+@media (max-width: 768px) {
+  .lp-hero-human--3, .lp-hero-human--4 { display: none !important; }
+  .lp-hero-human--1 { top: 12% !important; right: 6%  !important; }
+  .lp-hero-human--2 { top: 32% !important; right: 6%  !important; }
+}
+.lp-hero-human-info { background: rgba(10,10,10,0.55); padding: 4px 8px; border-radius: 6px; backdrop-filter: blur(4px); }
