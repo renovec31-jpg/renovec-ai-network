@@ -496,7 +496,7 @@ const AVATARS = {
 
 const DEMO_ZONES = [
   { zone: 'A', short: 'Situation' },
-  { zone: 'B', short: 'Lecture IA' },
+  { zone: 'B', short: 'Analyse' },
   { zone: 'C', short: 'Profils' },
   { zone: 'D', short: 'Échange' },
   { zone: 'E', short: 'Reconnu' },
@@ -994,7 +994,7 @@ export default function LandingPage({ onEnter, onHowItWorks, onGoToPresence: _on
                 Comment ça marche
               </a>
               <a href="/entrer" onClick={(e) => { e.preventDefault(); onEnter(); }} className="lp-btn-nav-cta">
-                Entrer <ArrowRight size={9} aria-hidden="true" />
+                Entrer <ArrowRight size={13} aria-hidden="true" />
               </a>
             </div>
           </div>
@@ -1096,8 +1096,6 @@ export default function LandingPage({ onEnter, onHowItWorks, onGoToPresence: _on
                 <ArrowRight size={14} />
               </button>
             </div>
-            <p className="lp-hero-microcopy">Pas d'inscription pour voir les premiers profils · L'IA comprend en langage libre · Position approximative, non stockée</p>
-
             {/* ── CTAs hiérarchisés ── */}
             <div className="lp-hero-ctas">
               <a href="/entrer" onClick={(e) => { e.preventDefault(); openAI(); }} className="lp-btn-primary group">
@@ -1197,11 +1195,12 @@ export default function LandingPage({ onEnter, onHowItWorks, onGoToPresence: _on
             <div className="lp-profile-contexts">
               <p className="lp-profile-contexts-label">Contextes reconnus</p>
               <div className="lp-profile-tags">
-                {['Orientation professionnelle','Droit du travail','Soutien administratif'].map(t => (
+                {['Orientation professionnelle', 'Droit du travail', 'Soutien administratif'].map(t => (
                   <span key={t} className="lp-profile-tag">{t}</span>
                 ))}
               </div>
             </div>
+
             <div className="lp-profile-links-row">
               <span className="lp-profile-link-badge">7 liens consolidés</span>
               <span className="lp-profile-link-badge">3 clusters actifs</span>
@@ -1211,10 +1210,6 @@ export default function LandingPage({ onEnter, onHowItWorks, onGoToPresence: _on
 
         <div className="lp-memory-canvas-wrap">
           <HeroConnectome className="w-full h-full" />
-          <div className="lp-memory-overlay-tag lp-memory-tag-tl">réseau local vivant</div>
-          <div className="lp-memory-overlay-tag lp-memory-tag-br">
-            <span className="lp-dot-amber-sm" />liaisons consolidées en mémoire
-          </div>
         </div>
       </section>
 
@@ -1288,14 +1283,21 @@ export default function LandingPage({ onEnter, onHowItWorks, onGoToPresence: _on
           </div>
           <p className="lp-eyebrow lp-eyebrow--center">Rejoindre le réseau</p>
           <p className="lp-finale-intro">
-            Des présences actives aujourd'hui — des gens réels, dans des contextes réels, prêts à aider ou à partager ce qu'ils savent faire.
+            Des présences actives aujourd'hui — des gens réels, dans des contextes réels, qui aident ou qui savent faire. Le réseau existe. Il attend de comprendre votre situation.
           </p>
           <blockquote className="lp-finale-quote">
             "L'IA n'est pas l'interface.<br />Elle est l'intelligence qui coordonne."
           </blockquote>
+          <div className="lp-finale-proof-row" aria-hidden="true">
+            <span className="lp-finale-proof-item">Pas d'inscription pour commencer</span>
+            <span className="lp-finale-proof-sep">·</span>
+            <span className="lp-finale-proof-item">Langage libre</span>
+            <span className="lp-finale-proof-sep">·</span>
+            <span className="lp-finale-proof-item">Position jamais stockée</span>
+          </div>
           <div className="lp-finale-ctas">
             <a href="/entrer" onClick={(e) => { e.preventDefault(); openAI(); }} className="lp-btn-primary group">
-              Entrer dans le réseau
+              Exprimer une situation
               <ArrowRight size={13} className="group-hover:translate-x-0.5 transition-transform" aria-hidden="true" />
             </a>
             <a href="/entrer" onClick={(e) => { e.preventDefault(); openAI(); }} className="lp-btn-ghost group">

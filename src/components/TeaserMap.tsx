@@ -260,10 +260,14 @@ export default function TeaserMap({ onEnter }: Props) {
         {/* Géolocalisation */}
         {geoState === 'idle' && !loading && (
           <div className="tv-geo-nudge">
-            <MapPin size={11} />
-            <span>Voir les présences autour de vous ?</span>
-            <button onClick={requestGeo}>Autoriser</button>
-            <span className="tv-geo-hint">~10 km · Jamais stockée</span>
+            <div className="tv-geo-nudge-main">
+              <MapPin size={12} className="tv-geo-nudge-icon" aria-hidden />
+              <div className="tv-geo-nudge-text">
+                <p className="tv-geo-nudge-title">Présences autour de vous ?</p>
+                <p className="tv-geo-nudge-sub">Rayon ~10 km · Position jamais stockée</p>
+              </div>
+            </div>
+            <button onClick={requestGeo} className="tv-geo-nudge-btn">Autoriser</button>
           </div>
         )}
         {geoState === 'requesting' && (
