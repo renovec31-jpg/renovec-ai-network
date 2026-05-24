@@ -994,7 +994,7 @@ export default function LandingPage({ onEnter, onHowItWorks, onGoToPresence: _on
                 Comment ça marche
               </a>
               <a href="/entrer" onClick={(e) => { e.preventDefault(); onEnter(); }} className="lp-btn-nav-cta">
-                Entrer <ArrowRight size={13} aria-hidden="true" />
+                Commencer <ArrowRight size={13} aria-hidden="true" />
               </a>
             </div>
           </div>
@@ -1108,9 +1108,6 @@ export default function LandingPage({ onEnter, onHowItWorks, onGoToPresence: _on
               </a>
             </div>
           </div>
-          <p className="lp-hero-guarantee" role="note">
-            Pas d'inscription · Langage libre · Position jamais stockée
-          </p>
         </div>
         <div className="lp-hero-fade-bottom" aria-hidden />
       </section>

@@ -106,32 +106,8 @@ function PageContent({ onEnter, onGoToPresence, onClose }: Props) {
           De la situation exprimée<br />à la coordination réelle.
         </h1>
         <p className="ccm-hero-body">
-          Là où les plateformes imposent des formulaires et des cases, RENOVEC utilise l'IA pour comprendre ce que vous vivez, interpréter l'ambiguïté, et activer les bonnes présences — sans parcours figé.
+          Vous n'avez pas à trouver les bons mots. Décrivez ce que vous vivez — flou, émotionnel, incomplet si besoin. L'IA lit le contexte, identifie ce qui est vraiment en jeu, et active les présences dont la façon d'aider correspond à votre situation précise.
         </p>
-      </section>
-
-      <div className="ccm-sep" />
-
-      {/* Ce que RENOVEC fait / ne fait pas */}
-      <section className="ccm-duality">
-        <div className="ccm-duality-col">
-          <p className="ccm-duality-head ccm-duality-head--does">Ce que RENOVEC fait</p>
-          <ul className="ccm-duality-list">
-            <li>Comprend les situations exprimées librement, sans case imposée</li>
-            <li>Identifie les présences pertinentes selon le contexte réel</li>
-            <li>Coordonne sans imposer de tunnel ni de formulaire</li>
-            <li>Apprend de chaque aide reconnue pour mieux orienter ensuite</li>
-          </ul>
-        </div>
-        <div className="ccm-duality-col">
-          <p className="ccm-duality-head ccm-duality-head--doesnt">Ce que RENOVEC n'est pas</p>
-          <ul className="ccm-duality-list">
-            <li>Pas un annuaire de services à la demande</li>
-            <li>Pas une plateforme de mise en relation généraliste</li>
-            <li>Pas un chatbot sans mémoire ni contexte</li>
-            <li>Pas un algorithme de recommandation par popularité</li>
-          </ul>
-        </div>
       </section>
 
       <div className="ccm-sep" />
@@ -142,22 +118,6 @@ function PageContent({ onEnter, onGoToPresence, onClose }: Props) {
         <div className="ccm-steps-list">
           {STEPS.map((step, i) => <StepCard key={i} step={step} index={i} />)}
         </div>
-      </section>
-
-      <div className="ccm-sep" />
-
-      {/* Domaines */}
-      <section className="ccm-domains-section">
-        <p className="ccm-section-label">Domaines couverts</p>
-        <div className="ccm-domains-grid">
-          {DOMAINS.map(d => (
-            <div key={d} className="ccm-domain-item">
-              <span className="ccm-domain-dot" />
-              <span>{d}</span>
-            </div>
-          ))}
-        </div>
-        <p className="ccm-domains-note">Aucune situation n'est hors périmètre.</p>
       </section>
 
       <div className="ccm-sep" />
