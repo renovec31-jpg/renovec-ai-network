@@ -4171,6 +4171,352 @@ button, a, input, textarea, select {
   color: rgba(255,255,255,0.22);
 }
 
+/* ══════════════════════════════════════════════════════════════════════════
+   TERRITOIRE VIVANT (T06) — grille 2 colonnes, carte secondaire
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.tv-root {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 56px;
+  max-width: 1060px;
+  margin: 0 auto;
+  padding: 96px 48px;
+  align-items: start;
+}
+@media (max-width: 900px) {
+  .tv-root { grid-template-columns: 1fr; gap: 40px; padding: 72px 24px; }
+}
+
+/* ── Zone A — Titre et thèse ──────────────────────────────────────────────── */
+.tv-eyebrow {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(242,101,34,0.7);
+  margin-bottom: 10px;
+}
+.tv-heading {
+  font-size: clamp(24px, 4vw, 34px);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+  color: rgba(255,255,255,0.90);
+  margin-bottom: 16px;
+}
+.tv-thesis {
+  font-size: 14px;
+  color: rgba(255,255,255,0.45);
+  line-height: 1.7;
+  margin-bottom: 0;
+}
+
+/* ── Zone B — Trois états ─────────────────────────────────────────────────── */
+.tv-states {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 28px;
+}
+.tv-state {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+.tv-state-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 5px;
+}
+.tv-state-dot--active {
+  background: #F26522;
+  box-shadow: 0 0 8px rgba(242,101,34,0.40);
+}
+.tv-state-line {
+  width: 28px;
+  flex-shrink: 0;
+  margin-top: 9px;
+}
+.tv-state-line--consolidated {
+  height: 2px;
+  background: linear-gradient(90deg, rgba(255,185,70,0.7), rgba(242,101,34,0.4));
+  border-radius: 1px;
+}
+.tv-state-line--potential {
+  height: 0;
+  border-top: 1.5px dashed rgba(180,155,120,0.38);
+}
+.tv-state-text { flex: 1; }
+.tv-state-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.72);
+  margin-bottom: 2px;
+}
+.tv-state-desc {
+  font-size: 11.5px;
+  color: rgba(255,255,255,0.32);
+  line-height: 1.5;
+}
+
+/* ── Zone C — Présences exemples ─────────────────────────────────────────── */
+.tv-presences {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin-top: 24px;
+}
+.tv-presence {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  background: rgba(255,255,255,0.022);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 6px;
+  transition: background 0.15s ease;
+}
+.tv-presence--live {
+  border-color: rgba(242,101,34,0.12);
+  background: rgba(242,101,34,0.025);
+}
+.tv-presence-indicator {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.tv-presence-indicator--active {
+  background: #F26522;
+  box-shadow: 0 0 6px rgba(242,101,34,0.35);
+}
+.tv-presence-indicator--consolidated { background: rgba(255,185,70,0.70); border-radius: 50%; }
+.tv-presence-indicator--potential    { background: rgba(180,155,120,0.38); border-radius: 50%; }
+
+.tv-presence-info { flex: 1; min-width: 0; }
+.tv-presence-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.70);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.tv-presence-zone  { font-weight: 400; color: rgba(255,255,255,0.30); }
+.tv-presence-context {
+  font-size: 11px;
+  color: rgba(255,255,255,0.32);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 1px;
+}
+.tv-presence-badge {
+  font-size: 9px;
+  padding: 2px 7px;
+  border-radius: 10px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  letter-spacing: 0.03em;
+}
+.tv-presence-badge--active {
+  background: rgba(242,101,34,0.12);
+  color: rgba(242,101,34,0.85);
+  border: 1px solid rgba(242,101,34,0.18);
+}
+.tv-presence-badge--consolidated {
+  background: rgba(255,185,70,0.09);
+  color: rgba(255,185,70,0.80);
+  border: 1px solid rgba(255,185,70,0.16);
+}
+.tv-presence-badge--potential {
+  background: rgba(180,155,120,0.06);
+  color: rgba(180,155,120,0.55);
+  border: 1px solid rgba(180,155,120,0.12);
+}
+
+/* ── Zone E — Phrase de liaison ──────────────────────────────────────────── */
+.tv-bridge {
+  margin-top: 24px;
+  font-size: 13px;
+  color: rgba(255,255,255,0.34);
+  line-height: 1.65;
+  font-style: italic;
+  border-top: 1px solid rgba(255,255,255,0.05);
+  padding-top: 18px;
+}
+
+/* ── Colonne carte ────────────────────────────────────────────────────────── */
+.tv-map-col {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  position: sticky;
+  top: 80px;
+}
+@media (max-width: 900px) {
+  .tv-map-col { position: static; }
+}
+
+/* Stats compactes */
+.tv-stats-compact {
+  display: flex;
+  background: rgba(255,255,255,0.025);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.tv-stat-compact {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px 8px;
+  gap: 2px;
+}
+.tv-stat-compact-num {
+  font-size: 18px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.84);
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+.tv-stat-compact-label {
+  font-size: 10px;
+  color: rgba(255,255,255,0.26);
+  text-align: center;
+  line-height: 1.3;
+}
+.tv-stat-compact-sep {
+  width: 1px;
+  background: rgba(255,255,255,0.06);
+  align-self: stretch;
+}
+
+/* Géolocalisation */
+.tv-geo-nudge {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex-wrap: wrap;
+  padding: 8px 12px;
+  background: rgba(242,101,34,0.05);
+  border: 1px solid rgba(242,101,34,0.14);
+  border-radius: 6px;
+  font-size: 12px;
+  color: rgba(255,255,255,0.48);
+}
+.tv-geo-nudge button {
+  background: rgba(242,101,34,0.16);
+  border: 1px solid rgba(242,101,34,0.24);
+  border-radius: 4px;
+  color: rgba(242,101,34,0.88);
+  font-size: 11px;
+  padding: 3px 9px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.15s ease;
+}
+.tv-geo-nudge button:hover { background: rgba(242,101,34,0.26); }
+.tv-geo-nudge--waiting {
+  background: rgba(255,255,255,0.025);
+  border-color: rgba(255,255,255,0.06);
+  color: rgba(255,255,255,0.30);
+}
+.tv-geo-nudge--success {
+  background: rgba(34,197,94,0.05);
+  border-color: rgba(34,197,94,0.14);
+}
+.tv-geo-nudge--success strong { color: rgba(34,197,94,0.85); }
+.tv-geo-hint { font-size: 10px; color: rgba(255,255,255,0.18); }
+.tv-geo-spinner {
+  display: inline-block;
+  width: 11px; height: 11px;
+  border: 1.5px solid rgba(255,255,255,0.08);
+  border-top-color: rgba(242,101,34,0.6);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+/* Carte */
+.tv-map-wrap {
+  position: relative;
+  height: 300px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.08);
+}
+.tv-map-canvas {
+  width: 100%;
+  height: 100%;
+}
+.tv-map-vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center, transparent 40%, rgba(10,8,6,0.45) 100%);
+  pointer-events: none;
+}
+.tv-map-privacy {
+  position: absolute;
+  bottom: 7px; right: 7px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 9px;
+  color: rgba(255,255,255,0.28);
+  background: rgba(0,0,0,0.42);
+  padding: 3px 7px;
+  border-radius: 4px;
+  pointer-events: none;
+}
+.tv-map-loading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  z-index: 2;
+}
+.tv-map-loading span {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: rgba(242,101,34,0.4);
+  animation: teaserPulse 1.2s ease-in-out infinite;
+}
+.tv-map-loading span:nth-child(2) { animation-delay: 0.2s; }
+.tv-map-loading span:nth-child(3) { animation-delay: 0.4s; }
+
+/* CTA */
+.tv-cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 11px 20px;
+  background: rgba(242,101,34,0.11);
+  border: 1px solid rgba(242,101,34,0.20);
+  border-radius: 6px;
+  color: rgba(255,255,255,0.68);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.18s ease, color 0.18s ease;
+}
+.tv-cta:hover { background: rgba(242,101,34,0.19); color: rgba(255,255,255,0.86); }
+.tv-cta-arrow { color: rgba(242,101,34,0.65); font-size: 15px; }
+.tv-cta-sub {
+  font-size: 10.5px;
+  color: rgba(255,255,255,0.18);
+  text-align: center;
+  margin: 0;
+}
+
 /* ── MapLibre popup override ───────────────────────────────────────────────── */
 .teaser-popup .maplibregl-popup-content {
   background: rgba(16,14,12,0.95);

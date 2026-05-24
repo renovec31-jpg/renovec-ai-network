@@ -20,6 +20,22 @@ interface Props {
 const DEFAULT_CENTER: [number, number] = [43.6047, 1.4442];
 const DEFAULT_ZOOM = 9;
 
+// Curated static presences — illustrate the human tissue, not a catalogue
+const TV_PRESENCES = [
+  { name: 'Karim',  zone: 'Toulouse 3e', context: 'Droit du travail, lecture de contrats',      state: 'active'       },
+  { name: 'Nadia',  zone: 'Toulouse 7e', context: 'Accompagnement démarches CAF et RSA',        state: 'consolidated' },
+  { name: 'Théo',   zone: 'Balma',       context: 'Soutien scolaire lycée — maths et physique', state: 'active'       },
+  { name: 'Léa',    zone: 'Muret',       context: 'Orientation professionnelle, reconversion',   state: 'potential'    },
+] as const;
+
+type PresenceState = 'active' | 'consolidated' | 'potential';
+
+const STATE_LABELS: Record<PresenceState, string> = {
+  active:       'actif',
+  consolidated: 'consolidé',
+  potential:    'possible',
+};
+
 export default function TeaserMap({ onEnter }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
@@ -142,120 +158,150 @@ export default function TeaserMap({ onEnter }: Props) {
   const displayCity = geoState === 'granted' ? 'votre zone' : 'Toulouse et alentours';
 
   return (
-    <div className="teaser-map-root">
+    <div className="tv-root">
 
-      <div className="teaser-map-header">
-        <p className="teaser-eyebrow">Preuve territoriale</p>
-        <h2 className="teaser-heading">
-          Des humains réels,<br className="teaser-heading-br" /> dans des lieux réels.
+      {/* ══ LEFT — narrative + états + présences ═══════════════════════════════ */}
+      <div className="tv-content">
+
+        {/* Zone A — Titre et thèse */}
+        <p className="tv-eyebrow">Territoire vivant</p>
+        <h2 className="tv-heading">
+          Des humains réels,<br /> dans des lieux réels.
         </h2>
-        <p className="teaser-narrative">
-          Le réseau n'existe pas dans un cloud. Il existe dans les quartiers, dans les communes, là où les situations se vivent réellement. L'orientation part de présences territorialement plausibles — pas d'une base de données nationale.
+        <p className="tv-thesis">
+          La coordination devient plus juste quand les présences sont ancrées dans un territoire réel. Le réseau n'existe pas dans un cloud — il existe dans les quartiers, dans les rues, là où les situations se vivent. La proximité seule ne suffit pas, mais elle compte dans le contexte.
         </p>
 
-        {/* Legend — states visible on the map */}
-        <div className="teaser-legend">
-          <div className="teaser-legend-item">
-            <span className="teaser-legend-dot" />
-            <span>Présence active</span>
+        {/* Zone B — Trois états avec micro-explications */}
+        <div className="tv-states">
+          <div className="tv-state">
+            <span className="tv-state-dot tv-state-dot--active" />
+            <div className="tv-state-text">
+              <p className="tv-state-name">Présence active</p>
+              <p className="tv-state-desc">Quelqu'un disponible, activable dans ce contexte précis.</p>
+            </div>
           </div>
-          <div className="teaser-legend-item">
-            <span className="teaser-legend-line teaser-legend-line--solid" />
-            <span>Lien consolidé</span>
+          <div className="tv-state">
+            <span className="tv-state-line tv-state-line--consolidated" />
+            <div className="tv-state-text">
+              <p className="tv-state-name">Lien consolidé</p>
+              <p className="tv-state-desc">Une relation éprouvée — une aide déjà reconnue dans ce territoire.</p>
+            </div>
           </div>
-          <div className="teaser-legend-item">
-            <span className="teaser-legend-line teaser-legend-line--dashed" />
-            <span>Connexion possible</span>
+          <div className="tv-state">
+            <span className="tv-state-line tv-state-line--potential" />
+            <div className="tv-state-text">
+              <p className="tv-state-name">Connexion possible</p>
+              <p className="tv-state-desc">Une piste d'orientation crédible, non encore consolidée.</p>
+            </div>
           </div>
         </div>
 
-        {/* Qualitative proof — sample presence chips from live data */}
-        {!loading && clusters.filter(c => c.sample_capability).length > 0 && (
-          <div className="teaser-presence-samples">
-            {clusters
-              .filter(c => c.sample_capability)
-              .slice(0, 3)
-              .map((c, i) => (
-                <div key={i} className="teaser-presence-chip">
-                  <span className="teaser-presence-dot" />
-                  <span className="teaser-presence-cap">{c.sample_capability}</span>
-                  <span className="teaser-presence-city">· {c.city}</span>
+        {/* Zone C — Présences exemples */}
+        <div className="tv-presences">
+          {TV_PRESENCES.map((p, i) => (
+            <div key={i} className="tv-presence">
+              <div className={`tv-presence-indicator tv-presence-indicator--${p.state}`} />
+              <div className="tv-presence-info">
+                <p className="tv-presence-name">{p.name} <span className="tv-presence-zone">· {p.zone}</span></p>
+                <p className="tv-presence-context">{p.context}</p>
+              </div>
+              <span className={`tv-presence-badge tv-presence-badge--${p.state}`}>
+                {STATE_LABELS[p.state as PresenceState]}
+              </span>
+            </div>
+          ))}
+          {/* Chip live depuis la DB si disponible */}
+          {!loading && (() => {
+            const c = clusters.find(cc => cc.sample_capability);
+            if (!c) return null;
+            return (
+              <div className="tv-presence tv-presence--live">
+                <div className="tv-presence-indicator tv-presence-indicator--active" />
+                <div className="tv-presence-info">
+                  <p className="tv-presence-name">Réseau <span className="tv-presence-zone">· {c.city}</span></p>
+                  <p className="tv-presence-context">{c.sample_capability}</p>
                 </div>
-              ))}
-          </div>
-        )}
-
-        {/* 3-level proof stats: macro → meso → local */}
-        {!loading && (
-          <div className="teaser-proof-stats">
-            <div className="teaser-proof-stat">
-              <span className="teaser-proof-stat-num">{totalProfiles.toLocaleString('fr-FR')}</span>
-              <span className="teaser-proof-stat-label">profils actifs</span>
-            </div>
-            <div className="teaser-proof-stat-sep" />
-            <div className="teaser-proof-stat">
-              <span className="teaser-proof-stat-num">{clusters.length || NETWORK_STATS.zones}</span>
-              <span className="teaser-proof-stat-label">zones couvertes</span>
-            </div>
-            <div className="teaser-proof-stat-sep" />
-            <div className="teaser-proof-stat">
-              <span className="teaser-proof-stat-num">{displayNearby}</span>
-              <span className="teaser-proof-stat-label">autour de {displayCity}</span>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {geoState === 'idle' && !loading && (
-        <div className="teaser-geo-banner">
-          <MapPin size={13} className="teaser-geo-icon" />
-          <span className="teaser-geo-text">Voir les personnes autour de vous ?</span>
-          <button className="teaser-geo-btn" onClick={requestGeo}>
-            Autoriser ma position approximative
-          </button>
-          <span className="teaser-geo-hint">Position arrondie à ~10 km · Jamais stockée</span>
+                <span className="tv-presence-badge tv-presence-badge--active">actif</span>
+              </div>
+            );
+          })()}
         </div>
-      )}
-      {geoState === 'requesting' && (
-        <div className="teaser-geo-banner teaser-geo-banner--waiting">
-          <span className="teaser-geo-spinner" />
-          <span className="teaser-geo-text">En attente de votre autorisation…</span>
-        </div>
-      )}
-      {geoState === 'granted' && nearbyCount !== null && (
-        <div className="teaser-geo-banner teaser-geo-banner--success">
-          <MapPin size={13} className="teaser-geo-icon teaser-geo-icon--success" />
-          <span className="teaser-geo-text">
-            <strong>{nearbyCount} personnes</strong> dans votre zone — inscrivez-vous pour les voir
-          </span>
-        </div>
-      )}
 
-      <div className="teaser-map-wrap">
-        {loading && (
-          <div className="teaser-map-loader">
-            <span className="teaser-map-loader-dot" />
-            <span className="teaser-map-loader-dot teaser-map-loader-dot--2" />
-            <span className="teaser-map-loader-dot teaser-map-loader-dot--3" />
-          </div>
-        )}
-        <div ref={containerRef} className="teaser-map-canvas" />
-        <div className="teaser-map-vignette" aria-hidden />
-        <div className="teaser-map-privacy-badge" aria-label="Données anonymisées">
-          <Lock size={9} />
-          <span>Données agrégées · Positions approximatives · Jamais stockées</span>
-        </div>
-      </div>
-
-      <div className="teaser-cta-row">
-        <button className="teaser-cta-primary" onClick={onEnter}>
-          Voir les présences autour de moi — créer mon profil
-        </button>
-        <p className="teaser-cta-sub">
-          Gratuit · Aucune carte bancaire · Position arrondie à ~10 km, jamais stockée
+        {/* Zone E — Phrase de liaison vers l'intelligence cumulative */}
+        <p className="tv-bridge">
+          RENOVEC n'oriente pas seulement vers quelqu'un de proche — mais vers une présence plausible dans un contexte réel. Le territoire est une couche parmi d'autres ; la mémoire fait le reste.
         </p>
       </div>
 
+      {/* ══ RIGHT — carte + stats + geo + CTA ══════════════════════════════════ */}
+      <div className="tv-map-col">
+
+        {/* Stats compactes */}
+        {!loading && (
+          <div className="tv-stats-compact">
+            <div className="tv-stat-compact">
+              <span className="tv-stat-compact-num">{totalProfiles.toLocaleString('fr-FR')}</span>
+              <span className="tv-stat-compact-label">profils actifs</span>
+            </div>
+            <div className="tv-stat-compact-sep" />
+            <div className="tv-stat-compact">
+              <span className="tv-stat-compact-num">{clusters.length || NETWORK_STATS.zones}</span>
+              <span className="tv-stat-compact-label">zones</span>
+            </div>
+            <div className="tv-stat-compact-sep" />
+            <div className="tv-stat-compact">
+              <span className="tv-stat-compact-num">{displayNearby}</span>
+              <span className="tv-stat-compact-label">autour de {displayCity}</span>
+            </div>
+          </div>
+        )}
+
+        {/* Géolocalisation */}
+        {geoState === 'idle' && !loading && (
+          <div className="tv-geo-nudge">
+            <MapPin size={11} />
+            <span>Voir les présences autour de vous ?</span>
+            <button onClick={requestGeo}>Autoriser</button>
+            <span className="tv-geo-hint">~10 km · Jamais stockée</span>
+          </div>
+        )}
+        {geoState === 'requesting' && (
+          <div className="tv-geo-nudge tv-geo-nudge--waiting">
+            <span className="tv-geo-spinner" />
+            <span>En attente de votre autorisation…</span>
+          </div>
+        )}
+        {geoState === 'granted' && nearbyCount !== null && (
+          <div className="tv-geo-nudge tv-geo-nudge--success">
+            <MapPin size={11} />
+            <span><strong>{nearbyCount} personnes</strong> dans votre zone</span>
+          </div>
+        )}
+
+        {/* Carte — preuve d'ancrage spatial, pas interface principale */}
+        <div className="tv-map-wrap">
+          {loading && (
+            <div className="tv-map-loading">
+              <span /><span /><span />
+            </div>
+          )}
+          <div ref={containerRef} className="tv-map-canvas" />
+          <div className="tv-map-vignette" aria-hidden />
+          <div className="tv-map-privacy">
+            <Lock size={9} />
+            <span>Agrégé · Approx. · Jamais stocké</span>
+          </div>
+        </div>
+
+        {/* CTA */}
+        <button className="tv-cta" onClick={onEnter}>
+          Voir les présences autour de moi
+          <span className="tv-cta-arrow">→</span>
+        </button>
+        <p className="tv-cta-sub">Gratuit · Position arrondie, jamais stockée</p>
+
+      </div>
     </div>
   );
 }
