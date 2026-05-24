@@ -24,6 +24,27 @@ function PageContent({ onEnter, onGoToPresence, onClose }: Props) {
 
       <div className="ccm-sep" />
 
+      {/* Ce que RENOVEC fait — bloc pédagogique distinct de la homepage */}
+      <section>
+        <p className="ccm-section-label">Ce que RENOVEC fait</p>
+        <div className="ccm-what-grid">
+          <div className="ccm-what-item">
+            <p className="ccm-what-not">Pas un annuaire</p>
+            <p className="ccm-what-desc">Les profils ne s'affichent pas en liste à filtrer. L'IA sélectionne selon votre contexte réel, pas selon des mots-clés.</p>
+          </div>
+          <div className="ccm-what-item">
+            <p className="ccm-what-not">Pas un formulaire</p>
+            <p className="ccm-what-desc">Aucune case à remplir, aucune catégorie à choisir. L'expression libre — floue, émotionnelle, incomplète — suffit.</p>
+          </div>
+          <div className="ccm-what-item">
+            <p className="ccm-what-not">Pas un algorithme figé</p>
+            <p className="ccm-what-desc">Chaque aide reconnue instruit le réseau. Les orientations futures s'en trouvent mieux calibrées — mémoire active, pas règles statiques.</p>
+          </div>
+        </div>
+      </section>
+
+      <div className="ccm-sep" />
+
       {/* 4 étapes numérotées — texte lisible, sans icônes animées */}
       <section>
         <p className="ccm-section-label">En 4 étapes</p>
