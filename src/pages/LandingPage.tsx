@@ -1004,9 +1004,8 @@ function LandingFeedTeaser({ onEnter, onOpenFeed }: { onEnter: () => void; onOpe
 // MAIN
 // ─────────────────────────────────────────────────────────────────────────────
 
-export default function LandingPage({ onEnter, onHowItWorks, onGoToPresence, onMentions }: Props) {
+export default function LandingPage({ onEnter, onHowItWorks, onGoToPresence: _onGoToPresence, onMentions }: Props) {
   const [scrolled, setScrolled] = useState(false);
-  const [activeScenario, setActiveScenario] = useState(0);
   const [aiOpen, setAiOpen] = useState(false);
 
   const openAI = useCallback(() => setAiOpen(true), []);
@@ -1016,11 +1015,6 @@ export default function LandingPage({ onEnter, onHowItWorks, onGoToPresence, onM
     const fn = () => setScrolled(window.scrollY > 50);
     window.addEventListener('scroll', fn, { passive: true });
     return () => window.removeEventListener('scroll', fn);
-  }, []);
-
-  useEffect(() => {
-    const id = setInterval(() => setActiveScenario(v => (v+1) % SCENARIOS.length), 4000);
-    return () => clearInterval(id);
   }, []);
 
   return (
@@ -1060,14 +1054,13 @@ export default function LandingPage({ onEnter, onHowItWorks, onGoToPresence, onM
         </nav>
       </header>
 
-      {/* ════════════════ HERO ════════════════════════════════════════════ */}
+      {/* ════════════════ 1. HERO ════════════════════════════════════════ */}
       <section className="lp-hero">
         <div className="lp-hero-canvas">
           <HeroConnectome className="w-full h-full" />
         </div>
         <div className="lp-hero-vignette" aria-hidden />
 
-        {/* Human presence nodes — activatable presences in the network */}
         <div className="lp-hero-humans" aria-hidden="true">
           <div className="lp-hero-human lp-hero-human--1">
             <div className="lp-hero-human-halo" />
@@ -1128,43 +1121,44 @@ export default function LandingPage({ onEnter, onHowItWorks, onGoToPresence, onM
         <div className="lp-hero-fade-bottom" aria-hidden />
       </section>
 
-      {/* ════════════════ MANIFESTE ═══════════════════════════════════════ */}
-      <section className="lp-manifesto">
-        <div className="lp-manifesto-inner">
-          <p className="lp-manifesto-text">
-            RENOVEC n'est pas un logiciel à cases et à tunnels.<br />
-            C'est une infrastructure stable,<br />
-            augmentée par une IA d'orchestration<br />
-            capable d'absorber la diversité réelle des situations humaines.
+      {/* ════════════════ 2. ENTRÉE CONVERSATIONNELLE ═══════════════════ */}
+      <section className="lp-guest-match">
+        <div className="lp-guest-match-header">
+          <p className="lp-eyebrow lp-eyebrow--center">Résultats instantanés</p>
+          <h2 className="lp-section-h2 lp-section-h2--center">
+            Testez maintenant —<br />sans inscription
+          </h2>
+          <p className="lp-body lp-body--center" style={{ marginBottom: 0 }}>
+            Décrivez votre besoin. L'IA trouve les profils les plus compatibles en quelques secondes.
           </p>
-          <div className="lp-manifesto-line" />
         </div>
+        <GuestMatchFlow onEnter={(needText) => {
+          if (needText) sessionStorage.setItem('renovec_guest_need', needText);
+          onEnter();
+        }} isGuest={true} />
       </section>
 
-      {/* ════════════════ PIPELINE ════════════════════════════════════════ */}
-      <section className="lp-pipeline">
-        <div className="lp-pipeline-inner">
-          {[
-            { n:'01', label:'Situation ouverte', body:'Vous exprimez ce que vous vivez en langage libre. L\'IA lit, interprète, clarifie — sans formulaire, sans catégorie imposée.' },
-            { n:'02', label:'Orchestration IA', body:'L\'IA identifie les ressources pertinentes, construit le contexte, active les présences. Aucun mécanisme figé ne dicte la réponse.' },
-            { n:'03', label:'Coordination vivante', body:'Un échange commence. L\'IA retient ce qui a fonctionné. Le réseau devient plus intelligent à chaque situation résolue.' },
-          ].map((step, i) => (
-            <div key={step.n} className="lp-pipeline-step">
-              <div className="lp-pipeline-step-inner">
-                <span className="lp-pipeline-num">{step.n}</span>
-                <div className="lp-pipeline-line" />
-                <h3 className="lp-pipeline-label">{step.label}</h3>
-                <p className="lp-pipeline-body">{step.body}</p>
-              </div>
-              {i < 2 && <div className="lp-pipeline-arrow" />}
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ════════════════ DEMO PRODUIT ════════════════════════════════════ */}
+      {/* ════════════════ 3. DÉMONSTRATION PRODUIT ══════════════════════ */}
+      {/* Pipeline steps fused as lead-in, then animated demo below      */}
       <section className="lp-demo-section">
         <div className="lp-demo-section-inner">
+          <div className="lp-pipeline-inner" style={{ marginBottom: 56 }}>
+            {[
+              { n:'01', label:'Situation ouverte', body:'Vous exprimez ce que vous vivez en langage libre. L\'IA lit, interprète, clarifie — sans formulaire, sans catégorie imposée.' },
+              { n:'02', label:'Orchestration IA',  body:'L\'IA identifie les ressources pertinentes, construit le contexte, active les présences. Aucun mécanisme figé ne dicte la réponse.' },
+              { n:'03', label:'Coordination vivante', body:'Un échange commence. L\'IA retient ce qui a fonctionné. Le réseau devient plus intelligent à chaque situation résolue.' },
+            ].map((step, i) => (
+              <div key={step.n} className="lp-pipeline-step">
+                <div className="lp-pipeline-step-inner">
+                  <span className="lp-pipeline-num">{step.n}</span>
+                  <div className="lp-pipeline-line" />
+                  <h3 className="lp-pipeline-label">{step.label}</h3>
+                  <p className="lp-pipeline-body">{step.body}</p>
+                </div>
+                {i < 2 && <div className="lp-pipeline-arrow" />}
+              </div>
+            ))}
+          </div>
           <div className="lp-demo-header">
             <p className="lp-eyebrow">L'IA en action</p>
             <h2 className="lp-section-h2">
@@ -1178,10 +1172,10 @@ export default function LandingPage({ onEnter, onHowItWorks, onGoToPresence, onM
         </div>
       </section>
 
-      {/* ════════════════ CARTE TERRITOIRE ══════════════════════════════ */}
+      {/* ════════════════ 4. RÉSEAU VIVANT LOCAL ════════════════════════ */}
+      {/* GeoMapSection + fused stats + TeaserMap                        */}
       <GeoMapSection />
 
-      {/* ════════════════ RÉSEAU ACTIF — STATS ═══════════════════════════ */}
       <section className="lp-network-stats">
         <div className="lp-network-stats-inner">
           <p className="lp-eyebrow lp-eyebrow--center">Réseau actif</p>
@@ -1207,63 +1201,10 @@ export default function LandingPage({ onEnter, onHowItWorks, onGoToPresence, onM
         </div>
       </section>
 
-      {/* ════════════════ CARTE TEASER PUBLIQUE ══════════════════════════ */}
       <TeaserMap onEnter={onEnter} />
 
-      {/* ════════════════ MATCHING INSTANTANÉ VISITEUR ═══════════════════ */}
-      <section className="lp-guest-match">
-        <div className="lp-guest-match-header">
-          <p className="lp-eyebrow lp-eyebrow--center">Résultats instantanés</p>
-          <h2 className="lp-section-h2 lp-section-h2--center">
-            Testez maintenant —<br />sans inscription
-          </h2>
-          <p className="lp-body lp-body--center" style={{ marginBottom: 0 }}>
-            Décrivez votre besoin. L'IA trouve les profils les plus compatibles en quelques secondes.
-          </p>
-        </div>
-        <GuestMatchFlow onEnter={(needText) => {
-          if (needText) sessionStorage.setItem('renovec_guest_need', needText);
-          onEnter();
-        }} isGuest={true} />
-      </section>
-
-      {/* ════════════════ SCENARIOS ═══════════════════════════════════════ */}
-      <section className="lp-scenarios">
-        <div className="lp-scenarios-narrative">
-          <p className="lp-eyebrow">Diversité réelle absorbée par l'IA</p>
-          <h2 className="lp-section-h2">
-            Objets, compétences,<br />urgences, disponibilités —<br />l'IA comprend tout.
-          </h2>
-          <p className="lp-body">
-            Pas de catégorie imposée. L'IA interprète chaque situation comme elle est exprimée et trouve la coordination adaptée.
-          </p>
-          <div className="lp-scenarios-legend">
-            <span className="lp-scenario-badge lp-badge-cherche">cherche</span>
-            <span className="lp-scenario-badge lp-badge-offre">offre</span>
-          </div>
-        </div>
-        <div className="lp-scenarios-stream">
-          {SCENARIOS.map((s, i) => (
-            <button
-              key={i}
-              onClick={onEnter}
-              className={`lp-scenario-card ${i === activeScenario ? 'lp-scenario-card--active' : ''}`}
-            >
-              <div className="lp-scenario-card-inner">
-                <div style={{ display:'flex', alignItems:'flex-start', gap:10 }}>
-                  <span className={`lp-scenario-badge flex-shrink-0 ${s.kind==='cherche' ? 'lp-badge-cherche' : 'lp-badge-offre'}`} style={{ marginTop:1 }}>
-                    {s.kind}
-                  </span>
-                  <p className="lp-scenario-text">{s.text}</p>
-                </div>
-                <p className="lp-scenario-meta">{s.meta}</p>
-              </div>
-            </button>
-          ))}
-        </div>
-      </section>
-
-      {/* ════════════════ MÉMOIRE / CONNECTOME ═══════════════════════════ */}
+      {/* ════════════════ 5. INTELLIGENCE CUMULATIVE ════════════════════ */}
+      {/* Memory → Consolidation → Capital as one logical sequence        */}
       <section className="lp-memory-section">
         <div className="lp-memory-label-left">
           <p className="lp-eyebrow">Mémoire de l'IA</p>
@@ -1289,7 +1230,6 @@ export default function LandingPage({ onEnter, onHowItWorks, onGoToPresence, onM
         </div>
       </section>
 
-      {/* ════════════════ CONSOLIDATION ══════════════════════════════════ */}
       <section className="lp-consolidation">
         <div className="lp-consolidation-header">
           <p className="lp-eyebrow">Reconnaissance réelle</p>
@@ -1302,10 +1242,10 @@ export default function LandingPage({ onEnter, onHowItWorks, onGoToPresence, onM
         </div>
         <div className="lp-consolidation-steps">
           {[
-            { n:'01', phase:'Situation', detail:'Un membre exprime un besoin réel.' },
-            { n:'02', phase:'Échange',   detail:'Une présence répond. L\'aide se produit.' },
-            { n:'03', phase:'Reconnaissance', detail:'L\'aide est reconnue librement.' },
-            { n:'04', phase:'Consolidation',  detail:'Le lien entre dans la mémoire collective.', highlight:true },
+            { n:'01', phase:'Situation',     detail:'Un membre exprime un besoin réel.' },
+            { n:'02', phase:'Échange',       detail:'Une présence répond. L\'aide se produit.' },
+            { n:'03', phase:'Reconnaissance',detail:'L\'aide est reconnue librement.' },
+            { n:'04', phase:'Consolidation', detail:'Le lien entre dans la mémoire collective.', highlight:true },
           ].map((s, i) => (
             <div key={s.n} className="lp-consol-step">
               <div className={`lp-consol-num ${s.highlight ? 'lp-consol-num--active' : ''}`}>
@@ -1319,7 +1259,6 @@ export default function LandingPage({ onEnter, onHowItWorks, onGoToPresence, onM
         </div>
       </section>
 
-      {/* ════════════════ CAPITAL HUMAIN ═════════════════════════════════ */}
       <section className="lp-capital">
         <div className="lp-capital-left">
           <p className="lp-eyebrow">Richesse du réseau</p>
@@ -1337,12 +1276,7 @@ export default function LandingPage({ onEnter, onHowItWorks, onGoToPresence, onM
           <div className="lp-profile-card">
             <div className="lp-profile-header">
               <div className="lp-profile-avatar-photo">
-                <img
-                  src={AVATARS.Marie}
-                  alt="Marie"
-                  className="lp-profile-avatar-img"
-                  loading="lazy"
-                />
+                <img src={AVATARS.Marie} alt="Marie" className="lp-profile-avatar-img" loading="lazy" />
               </div>
               <div>
                 <p className="lp-profile-name">Marie · Lyon 7e</p>
@@ -1368,7 +1302,7 @@ export default function LandingPage({ onEnter, onHowItWorks, onGoToPresence, onM
         </div>
       </section>
 
-      {/* ════════════════ DOUBLE ENTRÉE ══════════════════════════════════ */}
+      {/* ════════════════ 6. DEUX PORTES D'ENTRÉE ═══════════════════════ */}
       <section className="lp-dual">
         <div className="lp-dual-header">
           <p className="lp-eyebrow">Deux façons d'être dans le réseau</p>
@@ -1395,7 +1329,6 @@ export default function LandingPage({ onEnter, onHowItWorks, onGoToPresence, onM
             </a>
           </div>
 
-          {/* Bridge */}
           <div className="lp-dual-bridge" aria-hidden>
             <div className="lp-bridge-inner">
               <div className="lp-bridge-node lp-bridge-node--seeker" />
@@ -1426,27 +1359,10 @@ export default function LandingPage({ onEnter, onHowItWorks, onGoToPresence, onM
         </div>
       </section>
 
-      {/* ════════════════ ÉCONOMIE ════════════════════════════════════════ */}
-      <section className="lp-economy">
-        <p className="lp-eyebrow lp-eyebrow--center">Économie de proximité</p>
-        <h2 className="lp-section-h2 lp-section-h2--center">
-          Tout ce qui peut circuler<br />entre humains proches.
-        </h2>
-        <p className="lp-body lp-body--center" style={{ marginBottom:40 }}>
-          Pas un catalogue. L'IA coordonne ce qui circule selon ce qui est réellement en jeu.
-        </p>
-        <div className="lp-economy-tags">
-          {['Objets & matériel','Services & compétences','Savoir-faire transmissibles',
-            'Présence & disponibilité','Aide concrète','Échanges de proximité'].map(t => (
-            <div key={t} className="lp-economy-tag">{t}</div>
-          ))}
-        </div>
-      </section>
-
-      {/* ════════════════ FIL D'ACTUALITÉ TEASER ════════════════════════ */}
+      {/* ════════════════ 7. FIL D'ACTUALITÉ ════════════════════════════ */}
       <LandingFeedTeaser onEnter={onEnter} onOpenFeed={() => openAI()} />
 
-      {/* ════════════════ FINALE ══════════════════════════════════════════ */}
+      {/* ════════════════ 8. FINALE ══════════════════════════════════════ */}
       <section className="lp-finale">
         <div className="lp-finale-glow" aria-hidden />
         <div className="lp-finale-rain" aria-hidden><ChatRain /></div>
