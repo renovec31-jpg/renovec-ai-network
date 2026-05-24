@@ -254,7 +254,7 @@ export default function ChatRain() {
             left: 0,
             top: 0,
             transform: 'translate3d(' + b.x + 'px,' + b.y + 'px,0)',
-            opacity: 0.45,
+            opacity: 1,
             willChange: 'transform',
             display: 'flex',
             flexDirection: 'column',
