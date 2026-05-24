@@ -489,76 +489,42 @@ const AVATARS = {
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
-// PRODUCT DEMO — animated sequence
+// PRODUCT DEMO v2 — scénario vivant en 6 zones
 // ─────────────────────────────────────────────────────────────────────────────
 
-const DEMO_STEPS = [
-  {
-    phase: 'Situation libre',
-    text: '"J\'ai besoin d\'un coup de main pour comprendre ma fiche de paie."',
-    nodes: ['L', 'M', 'A'],
-    active: ['L'],
-    detail: 'L\'IA reçoit la situation en langage naturel.',
-  },
-  {
-    phase: 'Interprétation IA',
-    text: 'L\'IA lit le contexte, identifie l\'enjeu — sans case, sans formulaire.',
-    nodes: ['L', 'M', 'A'],
-    active: ['L', 'M', 'A'],
-    detail: 'Deux présences pertinentes activées. Contexte transmis.',
-  },
-  {
-    phase: 'Échange',
-    text: 'Marc répond. 30 minutes d\'accompagnement.',
-    nodes: ['L', 'M'],
-    active: ['L', 'M'],
-    detail: 'Le lien entre L et M est actif.',
-    link: ['L', 'M'],
-  },
-  {
-    phase: 'Reconnaissance',
-    text: 'Lucie reconnaît l\'aide de Marc.',
-    nodes: ['L', 'M'],
-    active: ['L', 'M'],
-    detail: 'L\'IA enregistre : ce type d\'aide a fonctionné dans ce contexte.',
-    link: ['L', 'M'],
-    consolidating: true,
-  },
-  {
-    phase: 'Mémoire IA',
-    text: 'Le lien est consolidé. Le réseau devient plus intelligent.',
-    nodes: ['L', 'M'],
-    active: ['L', 'M'],
-    detail: 'L\'IA s\'en souvient — pour toutes les situations similaires à venir.',
-    link: ['L', 'M'],
-    consolidated: true,
-  },
+const DEMO_ZONES = [
+  { zone: 'A', short: 'Situation' },
+  { zone: 'B', short: 'Lecture IA' },
+  { zone: 'C', short: 'Profils' },
+  { zone: 'D', short: 'Échange' },
+  { zone: 'E', short: 'Reconna.' },
+  { zone: 'F', short: 'Mémoire' },
 ];
 
-// Demo persons — seeker vs helper distinction baked in
-const DEMO_PERSONS = {
-  L: {
-    name: 'Lucie',
-    city: 'Lyon 3e',
-    micro: 'comprend son dossier seule, mais là c\'est bloqué',
-    src: AVATARS.Lucie,
-    kind: 'seeker' as const,
-  },
-  M: {
+const DEMO_ZONE_DURATIONS = [3400, 3200, 4400, 3800, 3200, 5200];
+
+const DEMO_MATCH_PROFILES = [
+  {
+    id: 'M',
     name: 'Marc',
     city: 'Lyon 6e',
-    micro: 'comprend le droit du travail',
+    capacite: 'Droit du travail · fiches de paie',
+    raison: 'A déjà résolu 4 situations similaires à proximité',
+    score: 91,
     src: AVATARS.Marc,
-    kind: 'helper' as const,
+    avail: 'Disponible ce soir',
   },
-  A: {
+  {
+    id: 'A',
     name: 'Anne',
     city: 'Lyon 7e',
-    micro: 'peut accompagner sur les démarches',
+    capacite: 'Accompagnement démarches administratives',
+    raison: 'Connaît le contexte CAF et blocages courants',
+    score: 74,
     src: AVATARS.Anne,
-    kind: 'helper' as const,
+    avail: 'Disponible cette semaine',
   },
-};
+];
 
 function ProductDemo({ onEnter }: { onEnter: () => void }) {
   const [step, setStep] = useState(0);
@@ -566,173 +532,188 @@ function ProductDemo({ onEnter }: { onEnter: () => void }) {
 
   useEffect(() => {
     if (!auto) return;
-    const id = setInterval(() => setStep(s => (s + 1) % DEMO_STEPS.length), 3400);
-    return () => clearInterval(id);
-  }, [auto]);
+    const dur = DEMO_ZONE_DURATIONS[step] ?? 3400;
+    const id = setTimeout(() => setStep(s => (s + 1) % 6), dur);
+    return () => clearTimeout(id);
+  }, [auto, step]);
 
-  const s = DEMO_STEPS[step];
-  const isActive = (id: string) => s.active.includes(id);
-  const isLinked = (a: string, b: string) => !!s.link?.includes(a) && !!s.link?.includes(b);
-
-  // Nodes laid out left (seeker) → right (helpers)
-  const nodePos: Record<string, { x: string; y: string }> = {
-    L: { x: '22%', y: '50%' },
-    M: { x: '65%', y: '30%' },
-    A: { x: '68%', y: '70%' },
-  };
-
-  // SVG coords matching %: L→(22,50) M→(65,30) A→(68,70)
-  const lx=22, ly=50, mx=65, my=30, ax=68, ay=70;
+  const go = (i: number) => { setStep(i); setAuto(false); };
 
   return (
-    <div className="lp-demo">
-      {/* Step nav */}
-      <div className="lp-demo-steps" role="tablist" aria-label="Étapes du processus IA">
-        {DEMO_STEPS.map((ds, i) => (
+    <div className="lp-demo2">
+
+      {/* ── Step nav ─────────────────────────────────────────────── */}
+      <nav className="lp-demo2-nav" aria-label="Étapes de la démo produit">
+        {DEMO_ZONES.map((dz, i) => (
           <button
-            key={ds.phase}
-            role="tab"
-            id={`demo-tab-${i}`}
-            aria-selected={i === step}
-            aria-controls={`demo-panel-${i}`}
-            tabIndex={i === step ? 0 : -1}
-            className={`lp-demo-step-btn ${i === step ? 'lp-demo-step-btn--active' : ''}`}
-            onClick={() => { setStep(i); setAuto(false); }}
-            onKeyDown={(e) => {
-              if (e.key === 'ArrowRight') { setStep(s => (s + 1) % DEMO_STEPS.length); setAuto(false); }
-              if (e.key === 'ArrowLeft') { setStep(s => (s - 1 + DEMO_STEPS.length) % DEMO_STEPS.length); setAuto(false); }
-            }}
+            key={dz.zone}
+            className={`lp-demo2-step ${i === step ? 'lp-demo2-step--active' : ''} ${i < step ? 'lp-demo2-step--done' : ''}`}
+            onClick={() => go(i)}
+            aria-current={i === step ? 'step' : undefined}
           >
-            <span className="lp-demo-step-num">0{i+1}</span>
-            <span className="lp-demo-step-label">{ds.phase}</span>
+            <span className="lp-demo2-step-dot">
+              {i < step
+                ? <span className="lp-demo2-step-check">✓</span>
+                : <span className="lp-demo2-step-z">{dz.zone}</span>}
+            </span>
+            <span className="lp-demo2-step-label">{dz.short}</span>
           </button>
         ))}
-      </div>
+      </nav>
 
-      {/* Main visualization */}
-      <div className="lp-demo-viz">
-        {/* SVG links */}
-        <svg className="lp-demo-svg" viewBox="0 0 100 100" preserveAspectRatio="none">
-          {/* Background topology nodes — abstract secondary network */}
-          <circle cx="42" cy="18" r="1.2" fill="rgba(180,152,115,0.15)" />
-          <circle cx="85" cy="48" r="0.9" fill="rgba(180,152,115,0.12)" />
-          <circle cx="10" cy="28" r="0.8" fill="rgba(180,152,115,0.1)" />
-          <circle cx="48" cy="82" r="1.0" fill="rgba(180,152,115,0.1)" />
-          <line x1="42" y1="18" x2={lx} y2={ly} stroke="rgba(180,152,115,0.07)" strokeWidth="0.4" strokeDasharray="2 8" />
-          <line x1="85" y1="48" x2={mx} y2={my} stroke="rgba(180,152,115,0.06)" strokeWidth="0.4" strokeDasharray="2 8" />
-          <line x1="48" y1="82" x2={ax} y2={ay} stroke="rgba(180,152,115,0.06)" strokeWidth="0.4" strokeDasharray="2 8" />
+      {/* ── Content panel ────────────────────────────────────────── */}
+      <div className="lp-demo2-panel" aria-live="polite">
 
-          {/* L–M link */}
-          <line
-            x1={lx} y1={ly} x2={mx} y2={my}
-            strokeWidth={s.consolidated && isLinked('L','M') ? 1.8 : 0.9}
-            stroke={
-              s.consolidated && isLinked('L','M') ? 'rgba(255,185,70,0.9)' :
-              s.consolidating && isLinked('L','M') ? 'rgba(242,101,34,0.65)' :
-              isLinked('L','M') ? 'rgba(200,170,130,0.5)' : 'rgba(180,155,120,0.1)'
-            }
-            strokeDasharray={isLinked('L','M') ? 'none' : '2 6'}
-          />
-          {/* Signal on L–M when consolidating */}
-          {s.consolidating && isLinked('L','M') && (
-            <circle r="1.5" fill="rgba(255,200,120,0.9)">
-              <animateMotion dur="1.2s" repeatCount="indefinite">
-                <mpath href="#lm-path" />
-              </animateMotion>
-            </circle>
-          )}
-          <path id="lm-path" d={`M ${lx} ${ly} L ${mx} ${my}`} fill="none" />
-
-          {/* L–A link */}
-          <line
-            x1={lx} y1={ly} x2={ax} y2={ay}
-            strokeWidth={0.7}
-            stroke={s.active.includes('A') ? 'rgba(200,165,115,0.35)' : 'rgba(170,145,110,0.08)'}
-            strokeDasharray="2 7"
-          />
-          {/* M–A link (weak topology) */}
-          <line x1={mx} y1={my} x2={ax} y2={ay}
-            strokeWidth={0.4}
-            stroke="rgba(170,145,110,0.07)"
-            strokeDasharray="2 10"
-          />
-
-          {/* Consolidated glow line on top */}
-          {s.consolidated && (
-            <line x1={lx} y1={ly} x2={mx} y2={my}
-              strokeWidth={3}
-              stroke="rgba(255,185,70,0.12)"
-              strokeLinecap="round"
-            />
-          )}
-        </svg>
-
-        {/* Human nodes */}
-        {(['L', 'M', 'A'] as const).map(id => {
-          const pos = nodePos[id];
-          const active = isActive(id);
-          const person = DEMO_PERSONS[id];
-          const isConsolidatedNode = s.consolidated && isLinked('L','M') && (id === 'L' || id === 'M');
-          const isSeeker = person.kind === 'seeker';
-
-          return (
-            <div
-              key={id}
-              className={[
-                'lp-demo-node',
-                active ? 'lp-demo-node--active' : '',
-                isConsolidatedNode ? 'lp-demo-node--consolidated' : '',
-                isSeeker ? 'lp-demo-node--seeker' : 'lp-demo-node--helper',
-              ].filter(Boolean).join(' ')}
-              style={{ left: pos.x, top: pos.y }}
-            >
-              {active && <div className="lp-demo-node-halo" />}
-              {isConsolidatedNode && <div className="lp-demo-node-ring" />}
-
-              {/* Role badge — visible when active */}
-              {active && (
-                <div className={`lp-demo-role-badge lp-demo-role-badge--${person.kind}`}>
-                  {isSeeker ? 'cherche' : 'peut aider'}
-                </div>
-              )}
-
-              <div className="lp-demo-avatar-wrap">
-                <img src={person.src} alt={person.name} className="lp-demo-avatar-img" loading="lazy" />
-                <div className={`lp-demo-avatar-tint ${active ? 'lp-demo-avatar-tint--active' : ''} ${isConsolidatedNode ? 'lp-demo-avatar-tint--consolidated' : ''}`} />
+        {/* Zone A — Situation libre */}
+        {step === 0 && (
+          <div className="lp-demo2-content" key="a">
+            <p className="lp-demo2-zone-label">A — Situation exprimée en langage libre</p>
+            <div className="lp-demo2-message-wrap">
+              <div className="lp-demo2-user-avatar">
+                <img src={AVATARS.Lucie} alt="Lucie" className="lp-demo2-avatar-img" loading="lazy" />
               </div>
-
-              <div className="lp-demo-node-label">
-                <span className="lp-demo-node-name">{person.name}</span>
-                <span className="lp-demo-node-city">{person.city}</span>
-                {active && <span className="lp-demo-node-micro" key={`${id}-${step}`}>{person.micro}</span>}
+              <div className="lp-demo2-message-bubble">
+                <span className="lp-demo2-message-name">Lucie · Lyon 3e</span>
+                <p className="lp-demo2-message-text">
+                  "Je comprends mes documents seule d'habitude, mais là ma fiche de paie du mois dernier ne correspond pas à ce que j'aurais dû toucher et je ne sais plus quoi faire."
+                </p>
+                <span className="lp-demo2-message-meta">langage libre · aucun formulaire · aucune catégorie imposée</span>
               </div>
             </div>
-          );
-        })}
+            <p className="lp-demo2-detail">L'IA reçoit la situation telle qu'elle est vécue — sans traduction préalable en cases ou en mots-clés.</p>
+          </div>
+        )}
 
-        {/* Consolidated badge */}
-        {s.consolidated && (
-          <div className="lp-demo-consolidated-badge">lien consolidé · en mémoire</div>
+        {/* Zone B — Lecture IA */}
+        {step === 1 && (
+          <div className="lp-demo2-content" key="b">
+            <p className="lp-demo2-zone-label">B — Ce que l'IA comprend</p>
+            <div className="lp-demo2-ai-reading">
+              {[
+                { k: 'Type de besoin',   v: 'Compréhension et vérification fiche de paie' },
+                { k: 'Contexte',         v: 'Écart constaté, incertitude légale, isolement' },
+                { k: 'Urgence',          v: 'Modérée — pas de délai immédiat mais situation bloquante' },
+                { k: 'Profil recherché', v: 'Connaissance droit du travail + capacité à expliquer' },
+              ].map(({ k, v }) => (
+                <div className="lp-demo2-ai-item" key={k}>
+                  <span className="lp-demo2-ai-key">{k}</span>
+                  <span className="lp-demo2-ai-val">{v}</span>
+                </div>
+              ))}
+            </div>
+            <p className="lp-demo2-detail">Sans case, sans workflow — l'IA construit un contexte complet avant de chercher des présences dans le réseau.</p>
+          </div>
+        )}
+
+        {/* Zone C — Profils compatibles */}
+        {step === 2 && (
+          <div className="lp-demo2-content" key="c">
+            <p className="lp-demo2-zone-label">C — Profils sélectionnés par l'IA</p>
+            <div className="lp-demo2-profiles-row">
+              {DEMO_MATCH_PROFILES.map((p, i) => (
+                <div className={`lp-demo2-profile-card ${i === 0 ? 'lp-demo2-profile-card--top' : ''}`} key={p.id}>
+                  {i === 0 && <span className="lp-demo2-profile-top-badge">Meilleure correspondance</span>}
+                  <div className="lp-demo2-profile-header">
+                    <img src={p.src} alt={p.name} className="lp-demo2-profile-avatar" loading="lazy" />
+                    <div className="lp-demo2-profile-identity">
+                      <p className="lp-demo2-profile-name">{p.name} <span className="lp-demo2-profile-city">· {p.city}</span></p>
+                      <p className="lp-demo2-profile-cap">{p.capacite}</p>
+                    </div>
+                    <div className="lp-demo2-profile-score">{p.score}%</div>
+                  </div>
+                  <div className="lp-demo2-profile-raison">
+                    <span className="lp-demo2-raison-dot" />
+                    {p.raison}
+                  </div>
+                  <p className="lp-demo2-profile-avail">{p.avail}</p>
+                </div>
+              ))}
+            </div>
+            <p className="lp-demo2-detail">L'IA ne diffuse pas à tout le réseau — elle sélectionne selon le contexte réel, pas selon des tags génériques.</p>
+          </div>
+        )}
+
+        {/* Zone D — Échange */}
+        {step === 3 && (
+          <div className="lp-demo2-content" key="d">
+            <p className="lp-demo2-zone-label">D — L'échange commence</p>
+            <div className="lp-demo2-chat">
+              <div className="lp-demo2-chat-msg lp-demo2-chat-msg--ai">
+                <span className="lp-demo2-chat-who">IA RENOVEC</span>
+                <p>Marc peut vous aider à comprendre votre fiche. Il a résolu des situations similaires à quelques rues d'ici.</p>
+              </div>
+              <div className="lp-demo2-chat-msg lp-demo2-chat-msg--helper">
+                <span className="lp-demo2-chat-who">Marc · Lyon 6e</span>
+                <p>Bonjour Lucie. Envoyez-moi la fiche, je regarde ça ce soir — j'ai déjà vu ce type d'écart.</p>
+              </div>
+              <div className="lp-demo2-chat-msg lp-demo2-chat-msg--seeker">
+                <span className="lp-demo2-chat-who">Lucie</span>
+                <p>Merci. Je vous envoie ça maintenant.</p>
+              </div>
+            </div>
+            <p className="lp-demo2-detail">L'IA transmet le contexte à Marc — pas un copié-collé brut, une mise en relation avec la compréhension de la situation.</p>
+          </div>
+        )}
+
+        {/* Zone E — Reconnaissance */}
+        {step === 4 && (
+          <div className="lp-demo2-content" key="e">
+            <p className="lp-demo2-zone-label">E — L'aide est reconnue</p>
+            <div className="lp-demo2-recog">
+              <div className="lp-demo2-recog-event">
+                <div className="lp-demo2-recog-avatars">
+                  <img src={AVATARS.Lucie} alt="Lucie" className="lp-demo2-recog-avatar" loading="lazy" />
+                  <span className="lp-demo2-recog-arrow">→</span>
+                  <img src={AVATARS.Marc} alt="Marc" className="lp-demo2-recog-avatar lp-demo2-recog-avatar--helper" loading="lazy" />
+                </div>
+                <p className="lp-demo2-recog-label">Lucie reconnaît l'aide de Marc</p>
+              </div>
+              <div className="lp-demo2-recog-effects">
+                <span className="lp-demo2-recog-badge">+8 pts capital</span>
+                <span className="lp-demo2-recog-badge">lien renforcé</span>
+                <span className="lp-demo2-recog-badge">contexte enregistré</span>
+              </div>
+            </div>
+            <p className="lp-demo2-detail">Une aide reconnue n'est pas un "like" — c'est une inscription dans la mémoire collective qui renforce le profil de Marc pour toutes les situations similaires à venir.</p>
+          </div>
+        )}
+
+        {/* Zone F — Mémoire active */}
+        {step === 5 && (
+          <div className="lp-demo2-content" key="f">
+            <p className="lp-demo2-zone-label">F — Le réseau apprend</p>
+            <div className="lp-demo2-memory">
+              <div className="lp-demo2-memory-statement">
+                <span className="lp-demo2-memory-icon">◈</span>
+                <p>Ce type d'aide a fonctionné dans ce contexte précis.</p>
+              </div>
+              <div className="lp-demo2-memory-tags">
+                {['Droit du travail', 'Lyon 3e–6e', 'Fiche de paie', 'Marc · soir disponible'].map(t => (
+                  <span key={t} className="lp-demo2-memory-tag">{t}</span>
+                ))}
+              </div>
+              <p className="lp-demo2-memory-consequence">
+                La prochaine situation similaire sera mieux orientée — pas à cause d'un algorithme figé, mais d'une mémoire active qui s'enrichit à chaque aide reconnue dans le réseau.
+              </p>
+            </div>
+            <button className="lp-demo2-cta" onClick={onEnter}>
+              Exprimer une situation
+              <ArrowRight size={12} />
+            </button>
+          </div>
         )}
       </div>
 
-      {/* Text */}
-      <div
-        className="lp-demo-text"
-        role="tabpanel"
-        id={`demo-panel-${step}`}
-        aria-labelledby={`demo-tab-${step}`}
-        aria-live="polite"
-      >
-        <p className="lp-demo-phase-label">{s.phase}</p>
-        <p className="lp-demo-main-text" key={step}>{s.text}</p>
-        <p className="lp-demo-detail">{s.detail}</p>
+      {/* ── Progress bar ─────────────────────────────────────────── */}
+      <div className="lp-demo2-progress" role="progressbar" aria-valuenow={step + 1} aria-valuemax={6}>
+        {DEMO_ZONES.map((_, i) => (
+          <div
+            key={i}
+            className={`lp-demo2-progress-seg ${i < step ? 'lp-demo2-progress-seg--done' : ''} ${i === step ? 'lp-demo2-progress-seg--active' : ''}`}
+            onClick={() => go(i)}
+          />
+        ))}
       </div>
-
-      <button onClick={onEnter} className="lp-demo-cta group">
-        Voir comment ça marche pour vous
-        <ArrowRight size={12} className="group-hover:translate-x-0.5 transition-transform" />
-      </button>
     </div>
   );
 }
@@ -1201,33 +1182,15 @@ export default function LandingPage({ onEnter, onHowItWorks, onGoToPresence: _on
       </section>
 
       {/* ════════════════ 3. DÉMONSTRATION PRODUIT ══════════════════════ */}
-      {/* Pipeline steps fused as lead-in, then animated demo below      */}
       <section className="lp-demo-section">
         <div className="lp-demo-section-inner">
-          <div className="lp-pipeline-inner" style={{ marginBottom: 56 }}>
-            {[
-              { n:'01', label:'Situation ouverte', body:'Vous exprimez ce que vous vivez en langage libre. L\'IA lit, interprète, clarifie — sans formulaire, sans catégorie imposée.' },
-              { n:'02', label:'Orchestration IA',  body:'L\'IA identifie les ressources pertinentes, construit le contexte, active les présences. Aucun mécanisme figé ne dicte la réponse.' },
-              { n:'03', label:'Coordination vivante', body:'Un échange commence. L\'IA retient ce qui a fonctionné. Le réseau devient plus intelligent à chaque situation résolue.' },
-            ].map((step, i) => (
-              <div key={step.n} className="lp-pipeline-step">
-                <div className="lp-pipeline-step-inner">
-                  <span className="lp-pipeline-num">{step.n}</span>
-                  <div className="lp-pipeline-line" />
-                  <h3 className="lp-pipeline-label">{step.label}</h3>
-                  <p className="lp-pipeline-body">{step.body}</p>
-                </div>
-                {i < 2 && <div className="lp-pipeline-arrow" />}
-              </div>
-            ))}
-          </div>
           <div className="lp-demo-header">
-            <p className="lp-eyebrow">L'IA en action</p>
+            <p className="lp-eyebrow">De la situation à la coordination</p>
             <h2 className="lp-section-h2">
-              De la situation à la coordination —<br />sans case, sans workflow.
+              La boucle complète —<br />en 6 étapes réelles.
             </h2>
             <p className="lp-body">
-              L'IA comprend la situation, identifie les présences, orchestre la mise en relation. Aucun chemin prévisible ne s'impose.
+              Situation exprimée, IA qui comprend, profils sélectionnés, échange, reconnaissance, mémoire. Sans formulaire. Sans workflow figé.
             </p>
           </div>
           <ProductDemo onEnter={onEnter} />
