@@ -267,7 +267,7 @@ export default function TeaserMap({ onEnter }: Props) {
             <button onClick={requestGeo} className="tv-geo-nudge-btn">
               Voir ma zone (~10&nbsp;km)
             </button>
-            <p className="tv-geo-nudge-privacy">Position arrondie · jamais stockée</p>
+            <p className="tv-geo-nudge-privacy">Position agrégée · approximative · jamais stockée</p>
           </div>
         )}
         {geoState === 'requesting' && (
@@ -303,7 +303,7 @@ export default function TeaserMap({ onEnter }: Props) {
           Voir les présences autour de moi
           <span className="tv-cta-arrow">→</span>
         </button>
-        <p className="tv-cta-sub">Gratuit · Position arrondie, jamais stockée</p>
+        <p className="tv-cta-sub">Gratuit · Position agrégée, jamais stockée</p>
 
       </div>
     </div>

@@ -612,24 +612,44 @@ function ProductDemo({ onEnter }: { onEnter: () => void }) {
           <div className="lp-demo2-content" key="c">
             <p className="lp-demo2-zone-label">C — Profils sélectionnés par l'IA</p>
             <div className="lp-demo2-profiles-row">
-              {DEMO_MATCH_PROFILES.map((p, i) => (
-                <div className={`lp-demo2-profile-card ${i === 0 ? 'lp-demo2-profile-card--top' : ''}`} key={p.id}>
-                  {i === 0 && <span className="lp-demo2-profile-top-badge">Meilleure correspondance</span>}
-                  <div className="lp-demo2-profile-header">
-                    <img src={p.src} alt={p.name} className="lp-demo2-profile-avatar" loading="lazy" onError={(e) => { (e.currentTarget as HTMLImageElement).src = avatarFallback(p.name); }} />
-                    <div className="lp-demo2-profile-identity">
-                      <p className="lp-demo2-profile-name">{p.name} <span className="lp-demo2-profile-city">· {p.city}</span></p>
-                      <p className="lp-demo2-profile-cap">{p.capacite}</p>
+              {DEMO_MATCH_PROFILES.map((p, i) => {
+                const availNow  = p.avail.includes('soir') || p.avail.includes('maintenant');
+                const availSoon = p.avail.includes('semaine') || p.avail.includes('bientôt');
+                const availCls  = availNow ? 'lp-demo2-avail--now' : availSoon ? 'lp-demo2-avail--soon' : 'lp-demo2-avail--later';
+                return (
+                  <div className={`lp-demo2-profile-card ${i === 0 ? 'lp-demo2-profile-card--top' : ''}`} key={p.id}>
+                    {i === 0 && <span className="lp-demo2-profile-top-badge">Meilleure correspondance</span>}
+
+                    {/* Header: avatar · nom · score — city retiré ici */}
+                    <div className="lp-demo2-profile-header">
+                      <img src={p.src} alt={p.name} className="lp-demo2-profile-avatar" loading="lazy" onError={(e) => { (e.currentTarget as HTMLImageElement).src = avatarFallback(p.name); }} />
+                      <div className="lp-demo2-profile-identity">
+                        <p className="lp-demo2-profile-name">{p.name}</p>
+                        <p className="lp-demo2-profile-cap">{p.capacite}</p>
+                      </div>
+                      <div className="lp-demo2-profile-score">{p.score}%</div>
                     </div>
-                    <div className="lp-demo2-profile-score">{p.score}%</div>
+
+                    {/* Meta row: ville + dispo sur ligne séparée */}
+                    <div className="lp-demo2-profile-meta">
+                      <span className="lp-demo2-profile-city-tag">
+                        <MapPin size={9} aria-hidden />
+                        {p.city}
+                      </span>
+                      <span className={`lp-demo2-profile-avail ${availCls}`}>
+                        <span className="lp-demo2-avail-dot" aria-hidden />
+                        {p.avail}
+                      </span>
+                    </div>
+
+                    {/* Raison — en dessous du bloc meta */}
+                    <div className="lp-demo2-profile-raison">
+                      <span className="lp-demo2-raison-dot" aria-hidden />
+                      {p.raison}
+                    </div>
                   </div>
-                  <div className="lp-demo2-profile-raison">
-                    <span className="lp-demo2-raison-dot" />
-                    {p.raison}
-                  </div>
-                  <p className="lp-demo2-profile-avail">{p.avail}</p>
-                </div>
-              ))}
+                );
+              })}
             </div>
             <p className="lp-demo2-detail">Sélection par contexte réel, pas par tags génériques.</p>
           </div>
