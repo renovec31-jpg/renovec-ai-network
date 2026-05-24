@@ -1,4 +1,4 @@
-import { X, ArrowRight, MessageSquare, Brain, Users, Zap, Lock, Star, Eye } from 'lucide-react';
+import { X, ArrowRight } from 'lucide-react';
 
 type Props = {
   onClose: () => void;
@@ -7,137 +7,74 @@ type Props = {
   standalone?: boolean;
 };
 
-// ─── Steps ────────────────────────────────────────────────────────────────────
-
-const STEPS = [
-  {
-    icon: MessageSquare,
-    color: '#F26522',
-    title: 'Exprimez votre situation',
-    description:
-      'Pas de formulaire, pas de case. Décrivez librement ce que vous vivez — flou, imprécis, émotionnel si besoin. L\'IA est conçue pour absorber l\'ambiguïté.',
-  },
-  {
-    icon: Brain,
-    color: '#0ea5e9',
-    title: 'L\'IA clarifie et interprète',
-    description:
-      'Le coordinateur IA lit ce que vous avez écrit, identifie ce qui est en jeu, et engage un court dialogue pour préciser le contexte. Pas un interrogatoire — une lecture intelligente.',
-  },
-  {
-    icon: Users,
-    color: '#10b981',
-    title: 'Le réseau s\'active',
-    description:
-      'L\'IA identifie les présences dont la façon d\'aider correspond à votre situation spécifique. Une sélection vivante construite à partir de votre contexte réel, pas une liste générique.',
-  },
-  {
-    icon: Zap,
-    color: '#f59e0b',
-    title: 'La coordination se fait',
-    description:
-      'La présence reçoit déjà le contexte transmis par l\'IA. Pas besoin de tout réexpliquer. L\'IA a construit le pont entre votre situation et la bonne réponse.',
-  },
-] as const;
-
-// ─── Domains ──────────────────────────────────────────────────────────────────
-
-const DOMAINS = [
-  'Habitat & logement', 'Éducation & formation', 'Administratif & droits',
-  'Aide humaine & dépendance', 'Santé & orientation', 'Mobilité & transport',
-  'Voisinage & médiation', 'Réparation & technique', 'Accompagnement personnel',
-  'Soutien émotionnel', 'Transitions de vie', 'Isolement & lien social',
-  'Coordination familiale', 'Besoins locaux',
-] as const;
-
-// ─── Trust items ──────────────────────────────────────────────────────────────
-
-const TRUST_ITEMS = [
-  {
-    icon: Eye,
-    title: 'Pas d\'inscription requise',
-    body: 'Les premiers profils sont visibles sans créer de compte. Vous pouvez explorer avant de vous engager.',
-  },
-  {
-    icon: Lock,
-    title: 'Position approximative',
-    body: 'Votre position est arrondie à ~10 km. Elle n\'est jamais stockée, ni transmise telle quelle.',
-  },
-  {
-    icon: Star,
-    title: 'Mémoire utile, pas surveillance',
-    body: 'RENOVEC retient ce qui a fonctionné pour mieux orienter ensuite. Pas de profil publicitaire, pas de traçage.',
-  },
-] as const;
-
-// ─── StepCard ─────────────────────────────────────────────────────────────────
-
-function StepCard({ step, index }: { step: typeof STEPS[0]; index: number }) {
-  const Icon = step.icon;
-  return (
-    <div className="ccm-step">
-      {index < STEPS.length - 1 && (
-        <div className="ccm-step-connector" style={{ background: `linear-gradient(to bottom, ${step.color}40, transparent)` }} />
-      )}
-      <div className="ccm-step-icon" style={{ background: step.color + '18', border: `1px solid ${step.color}30` }}>
-        <Icon size={16} style={{ color: step.color }} />
-      </div>
-      <div className="ccm-step-body">
-        <div className="ccm-step-meta">
-          <span className="ccm-step-num" style={{ color: step.color + 'aa' }}>0{index + 1}</span>
-          <h3 className="ccm-step-title">{step.title}</h3>
-        </div>
-        <p className="ccm-step-desc">{step.description}</p>
-      </div>
-    </div>
-  );
-}
-
 // ─── PageContent ──────────────────────────────────────────────────────────────
 
 function PageContent({ onEnter, onGoToPresence, onClose }: Props) {
   return (
     <div className="ccm-content">
 
-      {/* Hero éditorial court */}
-      <section className="ccm-hero">
-        <p className="ccm-eyebrow">Comment ça marche</p>
-        <h1 className="ccm-h1">
-          De la situation exprimée<br />à la coordination réelle.
-        </h1>
-        <p className="ccm-hero-body">
-          Vous n'avez pas à trouver les bons mots. Décrivez ce que vous vivez — flou, émotionnel, incomplet si besoin. L'IA lit le contexte, identifie ce qui est vraiment en jeu, et active les présences dont la façon d'aider correspond à votre situation précise.
+      {/* Titre factuel — pas de copie homepage */}
+      <div className="ccm-hero">
+        <p className="ccm-eyebrow">Fonctionnement</p>
+        <h1 className="ccm-h1">Comment RENOVEC coordonne.</h1>
+        <p className="ccm-intro-sub">
+          Pas un annuaire. Pas un formulaire à cases. Un réseau orchestré par IA — de la situation telle qu'elle est vécue à la coordination réelle.
         </p>
-      </section>
+      </div>
 
       <div className="ccm-sep" />
 
-      {/* 4 étapes */}
-      <section className="ccm-steps-section">
-        <p className="ccm-section-label">Les 4 étapes</p>
-        <div className="ccm-steps-list">
-          {STEPS.map((step, i) => <StepCard key={i} step={step} index={i} />)}
-        </div>
-      </section>
-
-      <div className="ccm-sep" />
-
-      {/* Confiance & transparence */}
-      <section className="ccm-trust-section">
-        <p className="ccm-section-label">Confiance & transparence</p>
-        <div className="ccm-trust-grid">
-          {TRUST_ITEMS.map(({ icon: Icon, title, body }) => (
-            <div key={title} className="ccm-trust-item">
-              <div className="ccm-trust-icon">
-                <Icon size={14} />
-              </div>
-              <div>
-                <p className="ccm-trust-title">{title}</p>
-                <p className="ccm-trust-body">{body}</p>
-              </div>
+      {/* 4 étapes numérotées — texte lisible, sans icônes animées */}
+      <section>
+        <p className="ccm-section-label">En 4 étapes</p>
+        <ol className="ccm-items">
+          <li className="ccm-item">
+            <span className="ccm-item-num">1</span>
+            <div className="ccm-item-body">
+              <strong className="ccm-item-title">Vous décrivez votre situation</strong>
+              <p className="ccm-item-desc">En langage libre — flou, émotionnel, incomplet si besoin. Pas de catégorie à choisir, pas de formulaire à remplir. L'IA absorbe l'ambiguïté.</p>
             </div>
-          ))}
-        </div>
+          </li>
+          <li className="ccm-item">
+            <span className="ccm-item-num">2</span>
+            <div className="ccm-item-body">
+              <strong className="ccm-item-title">L'IA comprend ce qui est vraiment en jeu</strong>
+              <p className="ccm-item-desc">Elle identifie le contexte réel, l'urgence, le type d'aide nécessaire — et engage un court dialogue si des points restent flous. Pas un interrogatoire, une lecture intelligente.</p>
+            </div>
+          </li>
+          <li className="ccm-item">
+            <span className="ccm-item-num">3</span>
+            <div className="ccm-item-body">
+              <strong className="ccm-item-title">Les présences pertinentes sont activées</strong>
+              <p className="ccm-item-desc">Pas une liste générique — une sélection construite sur votre contexte précis, la géographie réelle, et l'historique des aides reconnues dans le réseau.</p>
+            </div>
+          </li>
+          <li className="ccm-item">
+            <span className="ccm-item-num">4</span>
+            <div className="ccm-item-body">
+              <strong className="ccm-item-title">La coordination se fait sans friction</strong>
+              <p className="ccm-item-desc">La présence reçoit déjà le contexte. Vous n'avez pas à tout réexpliquer. L'aide reconnue alimente la mémoire du réseau — orientations futures mieux calibrées.</p>
+            </div>
+          </li>
+        </ol>
+      </section>
+
+      <div className="ccm-sep" />
+
+      {/* Ce qu'il faut savoir — faits, pas marketing */}
+      <section>
+        <p className="ccm-section-label">Ce qu'il faut savoir</p>
+        <ul className="ccm-facts">
+          <li className="ccm-fact">
+            <strong>Pas d'inscription pour commencer</strong> — les premiers profils sont visibles sans compte. Explorez avant de vous engager.
+          </li>
+          <li className="ccm-fact">
+            <strong>Position approximative</strong> — arrondie à ~10 km, jamais stockée ni transmise telle quelle.
+          </li>
+          <li className="ccm-fact">
+            <strong>Mémoire utile, pas surveillance</strong> — RENOVEC retient ce qui a fonctionné dans quels contextes. Pas de profil publicitaire, pas de traçage.
+          </li>
+        </ul>
       </section>
 
       <div className="ccm-sep" />

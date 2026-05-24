@@ -1731,7 +1731,7 @@ button, a, input, textarea, select {
 .lp-finale-ctas {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: 20px;
   justify-content: center;
 }
 
@@ -2108,11 +2108,15 @@ button, a, input, textarea, select {
   margin: 0 auto;
 }
 
-/* Step nav — horizontal pills */
+/* Step nav — horizontal bar (T25 rebuild — no column stacking, no gap collision) */
 .lp-demo2-nav {
   display: flex;
-  gap: 6px;
+  gap: 0;
   margin-bottom: 20px;
+  background: rgba(255,255,255,0.025);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 8px;
+  overflow: hidden;
   overflow-x: auto;
   scrollbar-width: none;
   -ms-overflow-style: none;
@@ -2121,26 +2125,28 @@ button, a, input, textarea, select {
 
 .lp-demo2-step {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
-  gap: 5px;
+  justify-content: center;
+  gap: 7px;
   flex: 1;
-  min-width: 68px;
-  padding: 10px 6px 8px;
-  background: rgba(255,255,255,0.025);
-  border: 1px solid rgba(255,255,255,0.06);
-  border-radius: 6px;
+  min-width: fit-content;
+  padding: 11px 12px;
+  background: transparent;
+  border: none;
+  border-right: 1px solid rgba(255,255,255,0.06);
+  border-radius: 0;
   cursor: pointer;
-  transition: background 0.2s ease, border-color 0.2s ease;
+  transition: background 0.2s ease;
   font-family: inherit;
+  white-space: nowrap;
 }
-.lp-demo2-step:hover { background: rgba(255,255,255,0.045); }
+.lp-demo2-step:last-child { border-right: none; }
+.lp-demo2-step:hover { background: rgba(255,255,255,0.04); }
 .lp-demo2-step--active {
-  border-color: rgba(242,101,34,0.30);
-  background: rgba(242,101,34,0.06);
+  background: rgba(242,101,34,0.08);
 }
 .lp-demo2-step--done {
-  border-color: rgba(255,185,70,0.18);
   background: rgba(255,185,70,0.03);
 }
 
@@ -2182,7 +2188,7 @@ button, a, input, textarea, select {
 }
 @media (max-width: 640px) {
   .lp-demo2-step-label { display: none; }
-  .lp-demo2-step { min-width: 36px; padding: 8px 4px; }
+  .lp-demo2-step { min-width: 40px; padding: 10px 8px; }
 }
 .lp-demo2-step--active .lp-demo2-step-label { color: rgba(242,101,34,0.85); }
 .lp-demo2-step--done  .lp-demo2-step-label  { color: rgba(255,185,70,0.55); }
@@ -4433,7 +4439,7 @@ button, a, input, textarea, select {
 .tv-map-col {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 16px;
   position: sticky;
   top: 80px;
 }
@@ -6095,7 +6101,7 @@ button, a, input, textarea, select {
 .gmf-showcase-profiles {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 16px;
 }
 
 .gmf-showcase-card {
@@ -6103,10 +6109,10 @@ button, a, input, textarea, select {
   background: rgba(255,255,255,0.03);
   border: 1px solid rgba(255,255,255,0.07);
   border-radius: 12px;
-  padding: 14px 16px 12px;
+  padding: 16px 16px 14px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 12px;
   transition: border-color .15s;
 }
 
@@ -7701,6 +7707,92 @@ button, a, input, textarea, select {
   max-width: 600px;
 }
 
+/* ── Intro subtitle (remplace hero body marketing) ───────────────────────── */
+.ccm-intro-sub {
+  font-size: 14px;
+  line-height: 1.6;
+  color: rgba(255,255,255,0.42);
+  margin: 0;
+}
+
+/* ── Étapes numérotées (remplace StepCard iconique) ──────────────────────── */
+.ccm-items {
+  list-style: none;
+  margin: 16px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+.ccm-item {
+  display: flex;
+  gap: 18px;
+  padding: 22px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+.ccm-item:first-child { padding-top: 0; }
+.ccm-item:last-child  { border-bottom: none; padding-bottom: 0; }
+.ccm-item-num {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(242,101,34,0.08);
+  border: 1px solid rgba(242,101,34,0.22);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: rgba(242,101,34,0.8);
+  margin-top: 2px;
+  font-family: monospace;
+}
+.ccm-item-body { flex: 1; min-width: 0; }
+.ccm-item-title {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.82);
+  margin-bottom: 6px;
+}
+.ccm-item-desc {
+  font-size: 13px;
+  line-height: 1.62;
+  color: rgba(255,255,255,0.40);
+  margin: 0;
+}
+
+/* ── Ce qu'il faut savoir (faits simples) ─────────────────────────────────── */
+.ccm-facts {
+  list-style: none;
+  margin: 16px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.ccm-fact {
+  font-size: 13px;
+  line-height: 1.6;
+  color: rgba(255,255,255,0.40);
+  padding-left: 14px;
+  position: relative;
+}
+.ccm-fact::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 7px;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: rgba(242,101,34,0.45);
+}
+.ccm-fact strong {
+  color: rgba(255,255,255,0.65);
+  font-weight: 600;
+}
+
 /* ── Does / doesn't duality ───────────────────────────────────────────────── */
 .ccm-duality {
   display: grid;
@@ -7899,7 +7991,7 @@ button, a, input, textarea, select {
 }
 .ccm-cta-row {
   display: flex;
-  gap: 12px;
+  gap: 16px;
   justify-content: center;
   flex-wrap: wrap;
 }
