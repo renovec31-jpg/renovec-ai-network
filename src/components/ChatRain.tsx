@@ -49,7 +49,7 @@ const SPAWN_MS = 900;
 const RADAR_INTERVAL = 380;
 const RADAR_SPEED = 1.6;
 const RADAR_MAX_RINGS = 6;
-const RADAR_COLOR = '#F26522';
+const RADAR_COLOR = 'rgba(242, 101, 34, 0.22)';
 
 function lerp(a: number, b: number, t: number) {
   return a + (b - a) * t;
@@ -295,7 +295,7 @@ export default function ChatRain() {
                 {b.name}
               </div>
               {b.caption && (
-                <div style={{ color: '#F26522', fontSize: 10, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                <div style={{ color: 'rgba(242, 101, 34, 0.22)', fontSize: 10, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                   {b.caption}
                 </div>
               )}
