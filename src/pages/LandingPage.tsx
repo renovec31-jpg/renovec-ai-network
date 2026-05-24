@@ -1011,7 +1011,7 @@ export default function LandingPage({ onEnter, onHowItWorks, onGoToPresence: _on
         <div className="lp-hero-humans" aria-hidden="true">
           <div className="lp-hero-human lp-hero-human--1">
             <div className="lp-hero-human-halo" />
-            <img src={AVATARS.H1} alt="" className="lp-hero-human-img" loading="lazy" onError={(e) => { (e.currentTarget as HTMLImageElement).src = avatarFallback('T'); }} />
+            <img src={AVATARS.H1} alt="Portrait de Thomas, membre RENOVEC à Bordeaux" className="lp-hero-human-img" loading="lazy" onError={(e) => { (e.currentTarget as HTMLImageElement).src = avatarFallback('T'); }} />
             <div className="lp-hero-human-info">
               <span className="lp-hero-human-name">Thomas</span>
               <span className="lp-hero-human-cap">comprend le droit locatif</span>
@@ -1020,7 +1020,7 @@ export default function LandingPage({ onEnter, onHowItWorks, onGoToPresence: _on
           </div>
           <div className="lp-hero-human lp-hero-human--2">
             <div className="lp-hero-human-halo" />
-            <img src={AVATARS.H2} alt="" className="lp-hero-human-img" loading="lazy" onError={(e) => { (e.currentTarget as HTMLImageElement).src = avatarFallback('F'); }} />
+            <img src={AVATARS.H2} alt="Portrait de Fatima, membre RENOVEC à Lyon" className="lp-hero-human-img" loading="lazy" onError={(e) => { (e.currentTarget as HTMLImageElement).src = avatarFallback('F'); }} />
             <div className="lp-hero-human-info">
               <span className="lp-hero-human-name">Fatima</span>
               <span className="lp-hero-human-cap">utile sur les dossiers sociaux</span>
@@ -1029,7 +1029,7 @@ export default function LandingPage({ onEnter, onHowItWorks, onGoToPresence: _on
           </div>
           <div className="lp-hero-human lp-hero-human--3">
             <div className="lp-hero-human-halo" />
-            <img src={AVATARS.Marc} alt="" className="lp-hero-human-img" loading="lazy" onError={(e) => { (e.currentTarget as HTMLImageElement).src = avatarFallback('M'); }} />
+            <img src={AVATARS.Marc} alt="Portrait de Marc, membre RENOVEC à Paris" className="lp-hero-human-img" loading="lazy" onError={(e) => { (e.currentTarget as HTMLImageElement).src = avatarFallback('M'); }} />
             <div className="lp-hero-human-info">
               <span className="lp-hero-human-name">Marc</span>
               <span className="lp-hero-human-cap">accompagne les transitions pro</span>
