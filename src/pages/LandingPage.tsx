@@ -12,7 +12,7 @@ import { avatarBg as teaserAvatarBg } from '../lib/ui';
 import { supabase } from '../lib/supabase';
 import { NETWORK_STATS } from '../data/mockOccitanie';
 
-const RenovecMap = lazy(() => import('../components/RenovecMap'));
+// RenovecMap removed — TeaserMap is the single map authority (T05)
 
 type Props = {
   onEnter: () => void;
@@ -772,47 +772,7 @@ const PROFILE_BARS = [
   { label:'Contributions',     value:0.59, color:'#c4956a' },
 ];
 
-// ─────────────────────────────────────────────────────────────────────────────
-// GEO MAP SECTION — wraps the real MapLibre component
-// ─────────────────────────────────────────────────────────────────────────────
-
-function GeoMapSection() {
-  return (
-    <section className="lp-geo">
-      <div className="lp-geo-inner">
-        {/* Left narrative */}
-        <div className="lp-geo-text">
-          <p className="lp-eyebrow">Territoire vivant</p>
-          <h2 className="lp-section-h2">
-            Des humains réels,<br />dans des lieux réels.
-          </h2>
-          <p className="lp-body">
-            Le réseau n'existe pas dans un cloud. Il existe dans les quartiers, dans les rues, dans les immeubles. Chaque présence est ancrée dans un territoire.
-          </p>
-          <div className="lp-geo-legend">
-            <div className="lp-geo-legend-item">
-              <div className="lp-geo-legend-dot lp-geo-dot-active" />
-              <span>Présence active</span>
-            </div>
-            <div className="lp-geo-legend-item">
-              <div className="lp-geo-legend-line lp-geo-line-consolidated" />
-              <span>Lien consolidé</span>
-            </div>
-            <div className="lp-geo-legend-item">
-              <div className="lp-geo-legend-line lp-geo-line-potential" />
-              <span>Connexion possible</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Real MapLibre map — lazy loaded */}
-        <Suspense fallback={<div className="renovec-map-wrap renovec-map-loading" />}>
-          <RenovecMap className="lp-geo-map-container" />
-        </Suspense>
-      </div>
-    </section>
-  );
-}
+// GeoMapSection removed — merged into TeaserMap (T05)
 
 // ─────────────────────────────────────────────────────────────────────────────
 // LANDING FEED TEASER
@@ -1197,35 +1157,8 @@ export default function LandingPage({ onEnter, onHowItWorks, onGoToPresence: _on
         </div>
       </section>
 
-      {/* ════════════════ 4. RÉSEAU VIVANT LOCAL ════════════════════════ */}
-      {/* GeoMapSection + fused stats + TeaserMap                        */}
-      <GeoMapSection />
-
-      <section className="lp-network-stats">
-        <div className="lp-network-stats-inner">
-          <p className="lp-eyebrow lp-eyebrow--center">Réseau actif</p>
-          <h2 className="lp-section-h2 lp-section-h2--center">
-            Un réseau vivant,<br />pas un annuaire figé.
-          </h2>
-          <div className="lp-stats-row">
-            <div className="lp-stat">
-              <span className="lp-stat-number">{NETWORK_STATS.profiles.toLocaleString('fr-FR')}</span>
-              <span className="lp-stat-label">profils actifs</span>
-            </div>
-            <div className="lp-stat-sep" />
-            <div className="lp-stat">
-              <span className="lp-stat-number">{NETWORK_STATS.zones}</span>
-              <span className="lp-stat-label">zones couvertes</span>
-            </div>
-            <div className="lp-stat-sep" />
-            <div className="lp-stat">
-              <span className="lp-stat-number">{NETWORK_STATS.nearToulouse}</span>
-              <span className="lp-stat-label">autour de Toulouse</span>
-            </div>
-          </div>
-        </div>
-      </section>
-
+      {/* ════════════════ 4. PREUVE SOCIALE & TERRITORIALE ══════════════ */}
+      {/* Single unified block — narrative + legend + samples + map      */}
       <TeaserMap onEnter={onEnter} />
 
       {/* ════════════════ 5. INTELLIGENCE CUMULATIVE ════════════════════ */}

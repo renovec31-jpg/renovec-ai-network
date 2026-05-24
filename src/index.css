@@ -3784,7 +3784,7 @@ button, a, input, textarea, select {
 /* ── Header ────────────────────────────────────────────────────────────────── */
 .teaser-map-header {
   text-align: center;
-  max-width: 560px;
+  max-width: 640px;
   padding: 0 24px;
   margin-bottom: 28px;
 }
@@ -3805,6 +3805,91 @@ button, a, input, textarea, select {
   margin-bottom: 14px;
 }
 .teaser-heading-br { display: block; }
+
+/* Narrative paragraph below heading */
+.teaser-narrative {
+  font-size: 14px;
+  color: rgba(255,255,255,0.42);
+  line-height: 1.7;
+  margin-bottom: 20px;
+}
+
+/* Presence legend — 3 states */
+.teaser-legend {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+.teaser-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 11px;
+  color: rgba(255,255,255,0.35);
+}
+.teaser-legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(242,101,34,0.70);
+  flex-shrink: 0;
+}
+.teaser-legend-line {
+  width: 28px;
+  height: 2px;
+  flex-shrink: 0;
+}
+.teaser-legend-line--solid {
+  background: linear-gradient(90deg, rgba(242,101,34,0.5), rgba(255,185,70,0.7), rgba(242,101,34,0.5));
+}
+.teaser-legend-line--dashed {
+  border-top: 1.5px dashed rgba(180,155,120,0.35);
+  height: 0;
+}
+
+/* Qualitative presence samples — from live cluster data */
+.teaser-presence-samples {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0 auto 18px;
+  max-width: 480px;
+  text-align: left;
+}
+.teaser-presence-chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 12px;
+  background: rgba(255,255,255,0.025);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 5px;
+  font-size: 12px;
+}
+.teaser-presence-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: rgba(34,197,94,0.65);
+  flex-shrink: 0;
+}
+.teaser-presence-cap {
+  color: rgba(255,255,255,0.62);
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.teaser-presence-city {
+  color: rgba(255,255,255,0.22);
+  flex-shrink: 0;
+  font-size: 11px;
+}
+
 .teaser-subheading {
   font-size: 14px;
   color: rgba(255,255,255,0.38);

@@ -145,10 +145,46 @@ export default function TeaserMap({ onEnter }: Props) {
     <div className="teaser-map-root">
 
       <div className="teaser-map-header">
-        <p className="teaser-eyebrow">Réseau actif</p>
+        <p className="teaser-eyebrow">Territoire vivant · Réseau actif</p>
         <h2 className="teaser-heading">
-          Des personnes compétentes<br className="teaser-heading-br" /> sont déjà autour de vous
+          Des humains réels,<br className="teaser-heading-br" /> dans des lieux réels.
         </h2>
+        <p className="teaser-narrative">
+          Le réseau n'existe pas dans un cloud. Il existe dans les quartiers, dans les communes, là où les situations se vivent réellement. L'orientation part de présences territorialement plausibles — pas d'une base de données nationale.
+        </p>
+
+        {/* Legend — states visible on the map */}
+        <div className="teaser-legend">
+          <div className="teaser-legend-item">
+            <span className="teaser-legend-dot" />
+            <span>Présence active</span>
+          </div>
+          <div className="teaser-legend-item">
+            <span className="teaser-legend-line teaser-legend-line--solid" />
+            <span>Lien consolidé</span>
+          </div>
+          <div className="teaser-legend-item">
+            <span className="teaser-legend-line teaser-legend-line--dashed" />
+            <span>Connexion possible</span>
+          </div>
+        </div>
+
+        {/* Qualitative proof — sample presence chips from live data */}
+        {!loading && clusters.filter(c => c.sample_capability).length > 0 && (
+          <div className="teaser-presence-samples">
+            {clusters
+              .filter(c => c.sample_capability)
+              .slice(0, 3)
+              .map((c, i) => (
+                <div key={i} className="teaser-presence-chip">
+                  <span className="teaser-presence-dot" />
+                  <span className="teaser-presence-cap">{c.sample_capability}</span>
+                  <span className="teaser-presence-city">· {c.city}</span>
+                </div>
+              ))}
+          </div>
+        )}
+
         <p className="teaser-subheading">
           {loading
             ? 'Chargement du réseau…'
