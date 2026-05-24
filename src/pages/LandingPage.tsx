@@ -1018,8 +1018,8 @@ export default function LandingPage({ onEnter, onHowItWorks, onGoToPresence: _on
   }, []);
 
   return (
-    <div className="lp-root" style={{ paddingRight: 'clamp(0px, calc(100vw - 1100px), 300px)' }}>
-      <LiveFeedSidebar onCta={onEnter} ctaLabel="Rejoindre le réseau" isAuthenticated={false} />
+    <div className="lp-root">
+
 
       {/* ── Persistent ambient blobs ─── */}
       <div className="lp-ambient" aria-hidden>
@@ -1104,12 +1104,8 @@ export default function LandingPage({ onEnter, onHowItWorks, onGoToPresence: _on
             </p>
             <div className="lp-hero-ctas">
               <a href="/entrer" onClick={(e) => { e.preventDefault(); openAI(); }} className="lp-btn-primary group">
-                Exprimer une situation
+                Essayer maintenant
                 <ArrowRight size={13} className="group-hover:translate-x-0.5 transition-transform" aria-hidden="true" />
-              </a>
-              <a href="/entrer" onClick={(e) => { e.preventDefault(); openAI(); }} className="lp-btn-ghost group">
-                Partager ma présence
-                <ArrowRight size={11} className="lp-btn-ghost-arrow" aria-hidden="true" />
               </a>
             </div>
           </div>
@@ -1119,6 +1115,25 @@ export default function LandingPage({ onEnter, onHowItWorks, onGoToPresence: _on
           </div>
         </div>
         <div className="lp-hero-fade-bottom" aria-hidden />
+      </section>
+
+      {/* ════════════════ 1b. EXEMPLES CONCRETS ════════════════════════ */}
+      <section className="lp-scenarios" aria-label="Exemples de situations">
+        <div className="lp-scenarios-stream">
+          {SCENARIOS.map((s, i) => (
+            <button key={i} onClick={openAI} className="lp-scenario-card">
+              <div className="lp-scenario-card-inner">
+                <div style={{ display:'flex', alignItems:'flex-start', gap:10 }}>
+                  <span className={`lp-scenario-badge flex-shrink-0 ${s.kind==='cherche' ? 'lp-badge-cherche' : 'lp-badge-offre'}`} style={{ marginTop:1 }}>
+                    {s.kind}
+                  </span>
+                  <p className="lp-scenario-text">{s.text}</p>
+                </div>
+                <p className="lp-scenario-meta">{s.meta}</p>
+              </div>
+            </button>
+          ))}
+        </div>
       </section>
 
       {/* ════════════════ 2. ENTRÉE CONVERSATIONNELLE ═══════════════════ */}
@@ -1204,76 +1219,38 @@ export default function LandingPage({ onEnter, onHowItWorks, onGoToPresence: _on
       <TeaserMap onEnter={onEnter} />
 
       {/* ════════════════ 5. INTELLIGENCE CUMULATIVE ════════════════════ */}
-      {/* Memory → Consolidation → Capital as one logical sequence        */}
+      {/* Mémoire + Reconnaissance + Capital fusionnés en un seul bloc     */}
       <section className="lp-memory-section">
         <div className="lp-memory-label-left">
-          <p className="lp-eyebrow">Mémoire de l'IA</p>
+          <p className="lp-eyebrow">Intelligence cumulative</p>
           <h2 className="lp-section-h2 lp-section-h2--tight">
             Chaque aide reconnue<br />instruit le réseau.
           </h2>
           <p className="lp-body">
-            L'IA mémorise ce qui a fonctionné — pas comme un log, mais comme une connaissance active. Le réseau s'améliore à chaque situation résolue.
+            L'IA mémorise ce qui a fonctionné — pas comme un log, mais comme une connaissance active. Une aide reconnue n'est pas un like : c'est une inscription durable dans la mémoire collective, qui renforce le capital du membre et améliore le réseau.
           </p>
-          <div className="lp-legend-stack">
-            <div className="lp-legend-item"><div className="lp-legend-line lp-legend-line--weak" /><span>Lien potentiel</span></div>
-            <div className="lp-legend-item"><div className="lp-legend-line lp-legend-line--active" /><span>Lien actif</span></div>
-            <div className="lp-legend-item"><div className="lp-legend-line lp-legend-line--consolidated" /><span>Lien consolidé — en mémoire</span></div>
-            <div className="lp-legend-item"><div className="lp-legend-signal" /><span>Signal en circulation</span></div>
-          </div>
-        </div>
-        <div className="lp-memory-canvas-wrap">
-          <HeroConnectome className="w-full h-full" />
-          <div className="lp-memory-overlay-tag lp-memory-tag-tl">réseau local vivant</div>
-          <div className="lp-memory-overlay-tag lp-memory-tag-br">
-            <span className="lp-dot-amber-sm" />liaisons consolidées en mémoire
-          </div>
-        </div>
-      </section>
 
-      <section className="lp-consolidation">
-        <div className="lp-consolidation-header">
-          <p className="lp-eyebrow">Reconnaissance réelle</p>
-          <h2 className="lp-section-h2">
-            Une aide reconnue<br />n'est pas un like.
-          </h2>
-          <p className="lp-body lp-body--center" style={{ marginTop:0 }}>
-            C'est une inscription durable dans la mémoire collective.
-          </p>
-        </div>
-        <div className="lp-consolidation-steps">
-          {[
-            { n:'01', phase:'Situation',     detail:'Un membre exprime un besoin réel.' },
-            { n:'02', phase:'Échange',       detail:'Une présence répond. L\'aide se produit.' },
-            { n:'03', phase:'Reconnaissance',detail:'L\'aide est reconnue librement.' },
-            { n:'04', phase:'Consolidation', detail:'Le lien entre dans la mémoire collective.', highlight:true },
-          ].map((s, i) => (
-            <div key={s.n} className="lp-consol-step">
-              <div className={`lp-consol-num ${s.highlight ? 'lp-consol-num--active' : ''}`}>
-                <span>{s.n}</span>
+          {/* Séquence consolidation */}
+          <div className="lp-consolidation-steps" style={{ marginTop: 28 }}>
+            {[
+              { n:'01', phase:'Situation',     detail:'Un besoin exprimé.' },
+              { n:'02', phase:'Échange',       detail:'Une aide se produit.' },
+              { n:'03', phase:'Reconnaissance',detail:'L\'aide est reconnue.' },
+              { n:'04', phase:'Consolidation', detail:'En mémoire collective.', highlight:true },
+            ].map((s, i) => (
+              <div key={s.n} className="lp-consol-step">
+                <div className={`lp-consol-num ${s.highlight ? 'lp-consol-num--active' : ''}`}>
+                  <span>{s.n}</span>
+                </div>
+                <p className={`lp-consol-phase ${s.highlight ? 'lp-consol-phase--active' : ''}`}>{s.phase}</p>
+                <p className="lp-consol-detail">{s.detail}</p>
+                {i < 3 && <div className="lp-consol-arrow" />}
               </div>
-              <p className={`lp-consol-phase ${s.highlight ? 'lp-consol-phase--active' : ''}`}>{s.phase}</p>
-              <p className="lp-consol-detail">{s.detail}</p>
-              {i < 3 && <div className="lp-consol-arrow" />}
-            </div>
-          ))}
-        </div>
-      </section>
+            ))}
+          </div>
 
-      <section className="lp-capital">
-        <div className="lp-capital-left">
-          <p className="lp-eyebrow">Richesse du réseau</p>
-          <h2 className="lp-section-h2">
-            La vraie richesse<br />n'est pas un score.
-          </h2>
-          <p className="lp-body">
-            La valeur d'un membre est la somme réelle de ce qu'il a apporté — reconnue, inscrite, mémorisée.
-          </p>
-          <p className="lp-body" style={{ marginTop:14 }}>
-            Chaque aide reconnue renforce son capital de confiance. Chaque compétence partagée construit son capital savoir. Le réseau se souvient de ce qui a compté.
-          </p>
-        </div>
-        <div className="lp-capital-right">
-          <div className="lp-profile-card">
+          {/* Profil capital */}
+          <div className="lp-profile-card" style={{ marginTop: 32 }}>
             <div className="lp-profile-header">
               <div className="lp-profile-avatar-photo">
                 <img src={AVATARS.Marie} alt="Marie" className="lp-profile-avatar-img" loading="lazy" />
@@ -1298,6 +1275,14 @@ export default function LandingPage({ onEnter, onHowItWorks, onGoToPresence: _on
               <span className="lp-profile-link-badge">7 liens consolidés</span>
               <span className="lp-profile-link-badge">3 clusters actifs</span>
             </div>
+          </div>
+        </div>
+
+        <div className="lp-memory-canvas-wrap">
+          <HeroConnectome className="w-full h-full" />
+          <div className="lp-memory-overlay-tag lp-memory-tag-tl">réseau local vivant</div>
+          <div className="lp-memory-overlay-tag lp-memory-tag-br">
+            <span className="lp-dot-amber-sm" />liaisons consolidées en mémoire
           </div>
         </div>
       </section>
