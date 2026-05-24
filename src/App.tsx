@@ -19,11 +19,14 @@ import OnboardingModal from './components/OnboardingModal';
 import WelcomeScreen, { shouldShowWelcome } from './components/WelcomeScreen';
 import CommentCaMarchePage from './pages/CommentCaMarchePage';
 import MentionsPage from './pages/MentionsPage';
+import PolitiqueConfidentialitePage from './pages/PolitiqueConfidentialitePage';
+import ConditionsGeneralesPage from './pages/ConditionsGeneralesPage';
 import PublicProfileModal from './components/PublicProfileModal';
 import PublicProfilePage from './pages/PublicProfilePage';
 import EditProfilePage from './pages/EditProfilePage';
 import CartePage from './pages/CartePage';
 import FeedPage from './pages/FeedPage';
+import CookieBanner from './components/CookieBanner';
 
 type Tab = 'demander' | 'capacites' | 'discussions' | 'contributions' | 'espace' | 'notifications' | 'admin' | 'carte' | 'feed';
 type AppView = 'landing' | 'auth' | 'app' | '404';
@@ -43,7 +46,7 @@ type ParsedRoute = {
   overlay: Overlay;
 };
 
-const KNOWN_PATHS = new Set(['/', '', '/carte', '/entrer', '/comment-ca-marche', '/mon-espace/profil/edit']);
+const KNOWN_PATHS = new Set(['/', '', '/carte', '/entrer', '/comment-ca-marche', '/mon-espace/profil/edit', '/mentions-legales', '/politique-de-confidentialite', '/conditions-generales']);
 
 function parseRoute(pathname: string): ParsedRoute {
   const p = pathname.replace(/\/$/, '') || '/';
@@ -74,6 +77,11 @@ function parseRoute(pathname: string): ParsedRoute {
     return { view: 'landing', tab: 'demander', overlay: { kind: 'none' } };
   }
 
+  // Pages légales (legal pages handled as landing overlays)
+  if (p === '/mentions-legales' || p === '/politique-de-confidentialite' || p === '/conditions-generales') {
+    return { view: 'landing', tab: 'demander', overlay: { kind: 'none' } };
+  }
+
   // / → landing
   if (p === '/' || p === '') {
     return { view: 'landing', tab: 'demander', overlay: { kind: 'none' } };
@@ -100,7 +108,15 @@ function AppInner() {
   const [showHowItWorks, setShowHowItWorks] = useState(
     window.location.pathname.replace(/\/$/, '') === '/comment-ca-marche'
   );
-  const [showMentions, setShowMentions] = useState(false);
+  const [showMentions, setShowMentions] = useState(
+    window.location.pathname.replace(/\/$/, '') === '/mentions-legales'
+  );
+  const [showPrivacy, setShowPrivacy] = useState(
+    window.location.pathname.replace(/\/$/, '') === '/politique-de-confidentialite'
+  );
+  const [showCGU, setShowCGU] = useState(
+    window.location.pathname.replace(/\/$/, '') === '/conditions-generales'
+  );
   const [showWelcome, setShowWelcome] = useState(false);
   const [publicProfileId, setPublicProfileId] = useState<string | null>(null);
 
@@ -251,7 +267,7 @@ function AppInner() {
               onEnter={() => setView('auth')}
               onHowItWorks={() => { setShowHowItWorks(true); navigate('/comment-ca-marche'); }}
               onGoToPresence={() => setView('auth')}
-              onMentions={() => setShowMentions(true)}
+              onMentions={() => { setShowMentions(true); navigate('/mentions-legales'); }}
             />
           : <AuthPage onBack={() => setView('landing')} />}
         {showHowItWorks && (
@@ -262,7 +278,9 @@ function AppInner() {
             onGoToPresence={() => { setShowHowItWorks(false); navigate('/entrer'); setView('auth'); }}
           />
         )}
-        {showMentions && <MentionsPage onClose={() => setShowMentions(false)} />}
+        {showMentions && <MentionsPage onClose={() => { setShowMentions(false); navigate('/'); }} />}
+        {showPrivacy && <PolitiqueConfidentialitePage standalone onClose={() => { setShowPrivacy(false); navigate('/'); }} />}
+        {showCGU && <ConditionsGeneralesPage standalone onClose={() => { setShowCGU(false); navigate('/'); }} />}
         {publicProfileId && (
           <PublicProfileModal
             profileId={publicProfileId}
@@ -396,6 +414,7 @@ export default function App() {
   return (
     <AuthProvider>
       <AppInner />
+      <CookieBanner />
     </AuthProvider>
   );
 }

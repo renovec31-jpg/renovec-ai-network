@@ -385,12 +385,16 @@ export default function GuestMatchFlow({ onEnter, isGuest }: Props) {
       <div className="gmf-input-section">
         <div className="gmf-input-inner">
           <div className="gmf-input-header">
-            <Sparkles size={16} className="gmf-input-spark" />
-            <p className="gmf-input-label">Décrivez votre besoin en langage libre</p>
+            <Sparkles size={16} className="gmf-input-spark" aria-hidden="true" />
+            <label htmlFor="recherche-besoin" className="gmf-input-label">
+              Décrivez votre besoin en langage libre
+            </label>
           </div>
           <div className="gmf-input-wrap">
             <textarea
               ref={textareaRef}
+              id="recherche-besoin"
+              name="recherche-besoin"
               className="gmf-textarea"
               placeholder="Ex : Je cherche quelqu'un pour m'aider à rédiger mon CV et me préparer à des entretiens d'embauche..."
               value={needText}
@@ -403,6 +407,7 @@ export default function GuestMatchFlow({ onEnter, isGuest }: Props) {
               }}
               rows={3}
               disabled={step === 'loading'}
+              aria-describedby="recherche-aide recherche-erreur"
             />
             <button
               className={`gmf-search-btn ${step === 'loading' ? 'gmf-search-btn--loading' : ''}`}
@@ -414,22 +419,22 @@ export default function GuestMatchFlow({ onEnter, isGuest }: Props) {
                 : <><ArrowRight size={14} /> Trouver des profils</>}
             </button>
           </div>
-          {error && <p className="gmf-input-error">{error}</p>}
+          {error && <p id="recherche-erreur" className="gmf-input-error" role="alert">{error}</p>}
           {step === 'loading' && (
-            <p className="gmf-thinking">{thinkingPhrases[thinkingIdx]}</p>
+            <p className="gmf-thinking" aria-live="polite" role="status">{thinkingPhrases[thinkingIdx]}</p>
           )}
-          <p className="gmf-input-hint">Appuyez sur Entrée · Résultats instantanés · {isGuest ? 'Aucune inscription requise pour voir les profils' : 'Connecté'}</p>
+          <p id="recherche-aide" className="gmf-input-hint">Appuyez sur Entrée · Résultats instantanés · {isGuest ? 'Aucune inscription requise pour voir les profils' : 'Connecté'}</p>
         </div>
       </div>
 
       {/* ── Results step ────────────────────────────────────────────────── */}
       {step === 'results' && result && (
-        <div className="gmf-results" ref={resultsRef}>
+        <div className="gmf-results" ref={resultsRef} aria-live="polite" role="region" aria-label="Résultats de recherche">
 
           {/* Results header */}
           <div className="gmf-results-header">
             <div className="gmf-results-header-left">
-              <p className="gmf-results-count">
+              <p className="gmf-results-count" role="status">
                 {result.profiles.length} profil{result.profiles.length !== 1 ? 's' : ''} trouvé{result.profiles.length !== 1 ? 's' : ''}
               </p>
               {result.need_category && (

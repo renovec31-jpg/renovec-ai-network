@@ -126,7 +126,7 @@ function FeedPanel({ entries, loading, total, newIds, onCta, onViewAll, onRefres
         <p className="text-[10px] text-white/20">{total > 0 ? total : NETWORK_STATS.feedCount} annonces dans le réseau</p>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-2.5 py-2 space-y-0.5 scrollbar-hide">
+      <div className="flex-1 overflow-y-auto px-2.5 py-2 space-y-0.5 scrollbar-hide" aria-live="polite" aria-atomic="false">
         {loading ? (
           <div className="py-10 flex justify-center">
             <div className="w-5 h-5 border border-white/15 border-t-white/50 rounded-full animate-spin" />
@@ -173,9 +173,10 @@ function FeedPanel({ entries, loading, total, newIds, onCta, onViewAll, onRefres
           <button
             onClick={onRefresh}
             className="p-2 rounded-xl border border-white/8 text-white/25 hover:text-white/55 hover:border-white/20 transition-all group"
+            aria-label="Rafraîchir le fil d'actualité"
             title="Rafraîchir"
           >
-            <RefreshCw size={11} className="group-hover:rotate-180 transition-transform duration-500" />
+            <RefreshCw size={11} aria-hidden="true" className="group-hover:rotate-180 transition-transform duration-500" />
           </button>
         </div>
         {!isAuthenticated && (
@@ -334,6 +335,7 @@ export default function LiveFeedSidebar({ onCta, onViewAll, isAuthenticated = fa
 
   return (
     <aside
+      aria-label="Fil d'actualité — annonces récentes du réseau"
       className="fixed right-0 top-0 bottom-0 z-30 flex flex-col transition-all duration-300"
       style={{
         width: collapsed ? 36 : 300,

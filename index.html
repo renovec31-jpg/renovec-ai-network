@@ -1,22 +1,97 @@
 <!doctype html>
-<html lang="en">
+<html lang="fr">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <title>RENOVEC — Human Capability Network</title><!-- v52 -->
+    <title>RENOVEC — Le réseau qui comprend avant d'orienter</title><!-- v52 -->
     <meta name="description" content="Partagez ce que vous savez faire. Trouvez les bonnes personnes quand vous avez besoin d'aide. L'IA s'occupe du reste." />
+
+    <!-- SEO -->
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://renovec.fr/" />
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="RENOVEC — Le réseau qui comprend avant d'orienter" />
+    <meta property="og:description" content="Partagez ce que vous savez faire. Trouvez les bonnes personnes quand vous avez besoin d'aide. L'IA s'occupe du reste." />
+    <meta property="og:url" content="https://renovec.fr/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="RENOVEC" />
+    <meta property="og:locale" content="fr_FR" />
+    <meta property="og:image" content="https://renovec.fr/og-image.jpg" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="RENOVEC — Le réseau qui comprend avant d'orienter" />
+    <meta name="twitter:description" content="Partagez ce que vous savez faire. Trouvez les bonnes personnes. L'IA s'occupe du reste." />
+    <meta name="twitter:image" content="https://renovec.fr/og-image.jpg" />
+    <meta name="twitter:site" content="@renovec" />
+
+    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+    <!-- Leaflet -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <meta property="og:image" content="https://bolt.new/static/og_default.png" />
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:image" content="https://bolt.new/static/og_default.png" />
+
+    <!-- Données structurées JSON-LD -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "RENOVEC",
+      "url": "https://renovec.fr",
+      "logo": "https://renovec.fr/logo.png",
+      "description": "Réseau humain orchestré par IA. Partagez vos capacités, trouvez les bonnes personnes autour de vous.",
+      "foundingDate": "2026",
+      "areaServed": "FR",
+      "inLanguage": "fr"
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "url": "https://renovec.fr",
+      "name": "RENOVEC",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": {
+          "@type": "EntryPoint",
+          "urlTemplate": "https://renovec.fr/?q={search_term_string}"
+        },
+        "query-input": "required name=search_term_string"
+      }
+    }
+    </script>
   </head>
   <!-- v52 -->
   <body>
+    <!-- Lien d'évitement (skip to content) — WCAG 2.1 AA 2.4.1 -->
+    <a href="#contenu-principal" class="skip-link">Passer au contenu principal</a>
+
+    <style>
+      .skip-link {
+        position: absolute;
+        top: -40px;
+        left: 0;
+        background: #F26522;
+        color: white;
+        padding: 8px 16px;
+        z-index: 9999;
+        font-weight: 600;
+        font-family: Inter, sans-serif;
+        font-size: 14px;
+        text-decoration: none;
+        transition: top 0.2s;
+      }
+      .skip-link:focus {
+        top: 0;
+      }
+    </style>
+
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

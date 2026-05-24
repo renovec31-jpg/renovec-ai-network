@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /mon-espace/
+Disallow: /entrer
+
+Sitemap: https://renovec.fr/sitemap.xml

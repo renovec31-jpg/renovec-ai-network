@@ -73,11 +73,12 @@ export default function Layout({ children, activeTab, onTabChange, notifCount = 
       />
 
       {/* Header */}
-      <header className="sticky top-0 z-40 bg-stone-950 border-b border-white/5">
+      <header role="banner" className="sticky top-0 z-40 bg-stone-950 border-b border-white/5">
         <div className="max-w-2xl mx-auto px-4 flex items-center justify-between" style={{ height: 52 }}>
           <button
             onClick={onGoLanding}
             className="flex items-center gap-2 group"
+            aria-label="RENOVEC — Accueil"
             title="Accueil"
           >
             <div className="w-5 h-5 bg-[#F26522] rounded flex items-center justify-center flex-shrink-0">
@@ -144,12 +145,12 @@ export default function Layout({ children, activeTab, onTabChange, notifCount = 
       </div>
 
       {/* Main content */}
-      <main className={fullHeight ? 'flex-1 overflow-hidden flex flex-col' : 'flex-1 max-w-2xl mx-auto w-full px-4 py-7'}>
+      <main id="contenu-principal" role="main" className={fullHeight ? 'flex-1 overflow-hidden flex flex-col' : 'flex-1 max-w-2xl mx-auto w-full px-4 py-7'}>
         {children}
       </main>
 
       {/* Bottom nav */}
-      <nav className="sticky bottom-0 z-40 bg-stone-950 border-t border-white/5 pb-safe" style={{ height: 56 }}>
+      <nav aria-label="Navigation principale" className="sticky bottom-0 z-40 bg-stone-950 border-t border-white/5 pb-safe" style={{ height: 56 }}>
         <div className="max-w-2xl mx-auto px-1 h-full flex">
           {NAV.map(({ id, label, icon: Icon }) => {
             const active = activeTab === id;
@@ -157,11 +158,14 @@ export default function Layout({ children, activeTab, onTabChange, notifCount = 
               <button
                 key={id}
                 onClick={() => onTabChange(id)}
+                aria-label={label}
+                aria-current={active ? 'page' : undefined}
                 className="flex-1 flex flex-col items-center justify-center gap-1 transition-all"
               >
                 <Icon
                   size={18}
                   strokeWidth={1.5}
+                  aria-hidden="true"
                   className={`transition-colors ${active ? 'text-white' : 'text-white/20 hover:text-white/50'}`}
                 />
                 <span className="text-[10px] tracking-wider uppercase font-normal transition-colors"

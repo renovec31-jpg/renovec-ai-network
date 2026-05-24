@@ -587,12 +587,21 @@ function ProductDemo({ onEnter }: { onEnter: () => void }) {
   return (
     <div className="lp-demo">
       {/* Step nav */}
-      <div className="lp-demo-steps">
+      <div className="lp-demo-steps" role="tablist" aria-label="Étapes du processus IA">
         {DEMO_STEPS.map((ds, i) => (
           <button
             key={ds.phase}
+            role="tab"
+            id={`demo-tab-${i}`}
+            aria-selected={i === step}
+            aria-controls={`demo-panel-${i}`}
+            tabIndex={i === step ? 0 : -1}
             className={`lp-demo-step-btn ${i === step ? 'lp-demo-step-btn--active' : ''}`}
             onClick={() => { setStep(i); setAuto(false); }}
+            onKeyDown={(e) => {
+              if (e.key === 'ArrowRight') { setStep(s => (s + 1) % DEMO_STEPS.length); setAuto(false); }
+              if (e.key === 'ArrowLeft') { setStep(s => (s - 1 + DEMO_STEPS.length) % DEMO_STEPS.length); setAuto(false); }
+            }}
           >
             <span className="lp-demo-step-num">0{i+1}</span>
             <span className="lp-demo-step-label">{ds.phase}</span>
@@ -708,7 +717,13 @@ function ProductDemo({ onEnter }: { onEnter: () => void }) {
       </div>
 
       {/* Text */}
-      <div className="lp-demo-text">
+      <div
+        className="lp-demo-text"
+        role="tabpanel"
+        id={`demo-panel-${step}`}
+        aria-labelledby={`demo-tab-${step}`}
+        aria-live="polite"
+      >
         <p className="lp-demo-phase-label">{s.phase}</p>
         <p className="lp-demo-main-text" key={step}>{s.text}</p>
         <p className="lp-demo-detail">{s.detail}</p>
@@ -1026,22 +1041,24 @@ export default function LandingPage({ onEnter, onHowItWorks, onGoToPresence, onM
       <PageSpine />
 
       {/* ── Nav ───────────────────────── */}
-      <nav className={`lp-nav ${scrolled ? 'lp-nav--scrolled' : ''}`}>
-        <div className="lp-nav-inner">
-          <div className="lp-logo">
-            <div className="lp-logo-mark" />
-            <span>RENOVEC</span>
+      <header role="banner">
+        <nav className={`lp-nav ${scrolled ? 'lp-nav--scrolled' : ''}`} aria-label="Navigation principale">
+          <div className="lp-nav-inner">
+            <a href="/" className="lp-logo" aria-label="RENOVEC — Accueil">
+              <div className="lp-logo-mark" aria-hidden="true" />
+              <span>RENOVEC</span>
+            </a>
+            <div className="lp-nav-actions">
+              <a href="/comment-ca-marche" onClick={(e) => { e.preventDefault(); onHowItWorks(); }} className="lp-nav-link hidden sm:block">
+                Comment ça marche
+              </a>
+              <a href="/entrer" onClick={(e) => { e.preventDefault(); onEnter(); }} className="lp-btn-outline-sm">
+                Entrer <ArrowRight size={9} aria-hidden="true" />
+              </a>
+            </div>
           </div>
-          <div className="lp-nav-actions">
-            <button onClick={onHowItWorks} className="lp-nav-link hidden sm:block">
-              Comment ça marche
-            </button>
-            <button onClick={onEnter} className="lp-btn-outline-sm">
-              Entrer <ArrowRight size={9} />
-            </button>
-          </div>
-        </div>
-      </nav>
+        </nav>
+      </header>
 
       {/* ════════════════ HERO ════════════════════════════════════════════ */}
       <section className="lp-hero">
@@ -1051,7 +1068,7 @@ export default function LandingPage({ onEnter, onHowItWorks, onGoToPresence, onM
         <div className="lp-hero-vignette" aria-hidden />
 
         {/* Human presence nodes — activatable presences in the network */}
-        <div className="lp-hero-humans" aria-hidden>
+        <div className="lp-hero-humans" aria-hidden="true">
           <div className="lp-hero-human lp-hero-human--1">
             <div className="lp-hero-human-halo" />
             <img src={AVATARS.H1} alt="" className="lp-hero-human-img" loading="lazy" />
@@ -1081,10 +1098,10 @@ export default function LandingPage({ onEnter, onHowItWorks, onGoToPresence, onM
           </div>
         </div>
 
-        <div className="lp-hero-content">
+        <div className="lp-hero-content" id="contenu-principal">
           <div className="lp-hero-text">
             <p className="lp-eyebrow">Infrastructure orchestrée par IA</p>
-            <h1 className="lp-hero-h1">
+            <h1 id="hero-title" className="lp-hero-h1">
               Le réseau qui<br />comprend avant<br />d'orienter.
             </h1>
             <p className="lp-hero-sub">
@@ -1093,14 +1110,14 @@ export default function LandingPage({ onEnter, onHowItWorks, onGoToPresence, onM
               Pas de formulaire. Pas de case à cocher.
             </p>
             <div className="lp-hero-ctas">
-              <button onClick={() => openAI()} className="lp-btn-primary group">
+              <a href="/entrer" onClick={(e) => { e.preventDefault(); openAI(); }} className="lp-btn-primary group">
                 Exprimer une situation
-                <ArrowRight size={13} className="group-hover:translate-x-0.5 transition-transform" />
-              </button>
-              <button onClick={() => openAI()} className="lp-btn-ghost group">
+                <ArrowRight size={13} className="group-hover:translate-x-0.5 transition-transform" aria-hidden="true" />
+              </a>
+              <a href="/entrer" onClick={(e) => { e.preventDefault(); openAI(); }} className="lp-btn-ghost group">
                 Partager ma présence
-                <ArrowRight size={11} className="lp-btn-ghost-arrow" />
-              </button>
+                <ArrowRight size={11} className="lp-btn-ghost-arrow" aria-hidden="true" />
+              </a>
             </div>
           </div>
           <div className="lp-hero-indicators">
@@ -1373,9 +1390,9 @@ export default function LandingPage({ onEnter, onHowItWorks, onGoToPresence, onM
               <li>Interprétation IA du contexte réel</li>
               <li>Coordination adaptée à votre situation spécifique</li>
             </ul>
-            <button onClick={() => openAI()} className="lp-dual-cta group">
-              Exprimer une situation <ArrowRight size={11} className="group-hover:translate-x-0.5 transition-transform" />
-            </button>
+            <a href="/entrer" onClick={(e) => { e.preventDefault(); openAI(); }} className="lp-dual-cta group">
+              Exprimer une situation <ArrowRight size={11} className="group-hover:translate-x-0.5 transition-transform" aria-hidden="true" />
+            </a>
           </div>
 
           {/* Bridge */}
@@ -1402,9 +1419,9 @@ export default function LandingPage({ onEnter, onHowItWorks, onGoToPresence, onM
               <li>Activation IA selon la situation réelle</li>
               <li>Chaque aide reconnue renforce votre profil</li>
             </ul>
-            <button onClick={() => openAI()} className="lp-dual-cta group">
-              Partager ma présence <ArrowRight size={11} className="group-hover:translate-x-0.5 transition-transform" />
-            </button>
+            <a href="/entrer" onClick={(e) => { e.preventDefault(); openAI(); }} className="lp-dual-cta group">
+              Partager ma présence <ArrowRight size={11} className="group-hover:translate-x-0.5 transition-transform" aria-hidden="true" />
+            </a>
           </div>
         </div>
       </section>
@@ -1442,23 +1459,27 @@ export default function LandingPage({ onEnter, onHowItWorks, onGoToPresence, onM
             "L'IA n'est pas l'interface.<br />Elle est l'intelligence qui coordonne."
           </blockquote>
           <div className="lp-finale-ctas">
-            <button onClick={() => openAI()} className="lp-btn-primary group">
+            <a href="/entrer" onClick={(e) => { e.preventDefault(); openAI(); }} className="lp-btn-primary group">
               Entrer dans le réseau
-              <ArrowRight size={13} className="group-hover:translate-x-0.5 transition-transform" />
-            </button>
-            <button onClick={() => openAI()} className="lp-btn-ghost group">
+              <ArrowRight size={13} className="group-hover:translate-x-0.5 transition-transform" aria-hidden="true" />
+            </a>
+            <a href="/entrer" onClick={(e) => { e.preventDefault(); openAI(); }} className="lp-btn-ghost group">
               Partager ma présence
-              <ArrowRight size={11} className="lp-btn-ghost-arrow" />
-            </button>
+              <ArrowRight size={11} className="lp-btn-ghost-arrow" aria-hidden="true" />
+            </a>
           </div>
         </div>
       </section>
 
       {/* ── Footer ───── */}
-      <footer className="lp-footer">
+      <footer className="lp-footer" role="contentinfo">
         <div className="lp-footer-inner">
           <p className="lp-footer-copy">RENOVEC · Réseau orchestré par IA · 2026</p>
-          <button onClick={onMentions || onHowItWorks} className="lp-footer-link">Mentions légales</button>
+          <nav aria-label="Liens légaux" className="flex items-center gap-4 flex-wrap">
+            <a href="/mentions-legales" onClick={(e) => { e.preventDefault(); onMentions?.(); }} className="lp-footer-link">Mentions légales</a>
+            <a href="/politique-de-confidentialite" onClick={(e) => { e.preventDefault(); window.history.pushState(null, '', '/politique-de-confidentialite'); window.dispatchEvent(new PopStateEvent('popstate')); }} className="lp-footer-link">Politique de confidentialité</a>
+            <a href="/conditions-generales" onClick={(e) => { e.preventDefault(); window.history.pushState(null, '', '/conditions-generales'); window.dispatchEvent(new PopStateEvent('popstate')); }} className="lp-footer-link">CGU</a>
+          </nav>
         </div>
       </footer>
 
