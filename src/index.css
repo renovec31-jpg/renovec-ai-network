@@ -1348,6 +1348,14 @@ button, a, input, textarea, select {
   gap: 18px;
 }
 
+.lp-profile-bars-note {
+  font-size: 10px;
+  color: rgba(255,255,255,0.22);
+  margin: 4px 0 0;
+  line-height: 1.5;
+  font-style: italic;
+}
+
 .lp-profile-contexts { }
 
 .lp-profile-contexts-label {

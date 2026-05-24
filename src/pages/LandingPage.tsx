@@ -1050,7 +1050,7 @@ export default function LandingPage({ onEnter, onHowItWorks, onGoToPresence: _on
               <input
                 type="text"
                 className="lp-hero-input"
-                placeholder="Décrivez ce que vous vivez ou ce que vous savez faire…"
+                placeholder="Ex : J'ai du mal à comprendre mon contrat de travail…"
                 value={heroInput}
                 onChange={(e) => setHeroInput(e.target.value)}
                 onKeyDown={(e) => {
@@ -1150,7 +1150,7 @@ export default function LandingPage({ onEnter, onHowItWorks, onGoToPresence: _on
               La boucle complète —<br />en 6 étapes réelles.
             </h2>
             <p className="lp-body">
-              Situation exprimée, IA qui comprend, profils sélectionnés, échange, reconnaissance, mémoire. Sans formulaire. Sans workflow figé.
+              Six étapes, un exemple réel — de la situation exprimée à la mémoire collective du réseau.
             </p>
           </div>
           <ProductDemo onEnter={onEnter} />
@@ -1170,16 +1170,16 @@ export default function LandingPage({ onEnter, onHowItWorks, onGoToPresence: _on
             Chaque aide reconnue<br />instruit le réseau.
           </h2>
           <p className="lp-body">
-            L'IA mémorise ce qui a fonctionné — pas comme un log, mais comme une connaissance active. Une aide reconnue n'est pas un like : c'est une inscription durable dans la mémoire collective, qui renforce le capital du membre et améliore le réseau.
+            Quand une aide fonctionne et qu'elle est reconnue, RENOVEC ne l'oublie pas. Le réseau apprend de cette situation réelle. Les prochaines orientations deviennent plus justes — pas grâce à un algorithme figé, mais à une mémoire qui s'enrichit à chaque échange.
           </p>
 
           {/* Séquence consolidation */}
           <div className="lp-consolidation-steps" style={{ marginTop: 28 }}>
             {[
-              { n:'01', phase:'Situation',     detail:'Un besoin exprimé.' },
-              { n:'02', phase:'Échange',       detail:'Une aide se produit.' },
-              { n:'03', phase:'Reconnaissance',detail:'L\'aide est reconnue.' },
-              { n:'04', phase:'Consolidation', detail:'En mémoire collective.', highlight:true },
+              { n:'01', phase:'Situation',     detail:'Un besoin apparaît.' },
+              { n:'02', phase:'Échange',       detail:'Une présence aide.' },
+              { n:'03', phase:'Reconnaissance',detail:'L\'aide est confirmée.' },
+              { n:'04', phase:'Consolidation', detail:'Le réseau garde une mémoire utile.', highlight:true },
             ].map((s, i) => (
               <div key={s.n} className="lp-consol-step">
                 <div className={`lp-consol-num ${s.highlight ? 'lp-consol-num--active' : ''}`}>
@@ -1205,6 +1205,9 @@ export default function LandingPage({ onEnter, onHowItWorks, onGoToPresence: _on
             </div>
             <div className="lp-profile-bars">
               {PROFILE_BARS.map(b => <CapitalBar key={b.label} label={b.label} value={b.value} color={b.color} />)}
+              <p className="lp-profile-bars-note">
+                Ces métriques reflètent des aides réelles reconnues dans le réseau — pas des notes, pas des votes.
+              </p>
             </div>
             <div className="lp-profile-contexts">
               <p className="lp-profile-contexts-label">Contextes reconnus</p>
@@ -1245,12 +1248,12 @@ export default function LandingPage({ onEnter, onHowItWorks, onGoToPresence: _on
             <p className="lp-dual-card-role">Les chercheurs</p>
             <p className="lp-dual-card-headline">Vous traversez quelque chose.</p>
             <p className="lp-dual-card-body">
-              Une situation difficile, floue, urgente. Exprimez-la. L'IA interprète avant d'orienter — elle ne vous force pas dans une case.
+              Décrivez la situation avec vos mots. RENOVEC comprend le contexte et vous montre les présences plausibles.
             </p>
             <ul className="lp-dual-card-list">
-              <li>Expression libre en langage naturel</li>
-              <li>Interprétation IA du contexte réel</li>
-              <li>Coordination adaptée à votre situation spécifique</li>
+              <li>Expression libre, sans case imposée.</li>
+              <li>Compréhension du contexte avant orientation.</li>
+              <li>Premières présences visibles rapidement.</li>
             </ul>
             <a href="/entrer" onClick={(e) => { e.preventDefault(); openAI(); }} className="lp-dual-cta group">
               Exprimer une situation <ArrowRight size={11} className="group-hover:translate-x-0.5 transition-transform" aria-hidden="true" />
@@ -1271,14 +1274,14 @@ export default function LandingPage({ onEnter, onHowItWorks, onGoToPresence: _on
           <div className="lp-dual-card lp-dual-card--presence">
             <div className="lp-dual-card-glyph"><div className="lp-glyph-give" /></div>
             <p className="lp-dual-card-role">Les présences</p>
-            <p className="lp-dual-card-headline">Vous savez aider.</p>
+            <p className="lp-dual-card-headline">Vous pouvez aider dans certains contextes.</p>
             <p className="lp-dual-card-body">
-              Dans certains contextes précis. L'IA sait quand vous êtes pertinent — et vous active au bon moment, sans que vous ayez à surveiller.
+              RENOVEC comprend ce que vous savez réellement faire. Le réseau vous active quand votre présence devient pertinente.
             </p>
             <ul className="lp-dual-card-list">
-              <li>Capacités comprises, pas seulement listées</li>
-              <li>Activation IA selon la situation réelle</li>
-              <li>Chaque aide reconnue renforce votre profil</li>
+              <li>Capacités comprises, pas seulement affichées.</li>
+              <li>Activation selon la situation réelle.</li>
+              <li>Chaque aide reconnue renforce votre place dans le réseau.</li>
             </ul>
             <a href="/entrer" onClick={(e) => { e.preventDefault(); openAI(); }} className="lp-dual-cta group">
               Partager ma présence <ArrowRight size={11} className="group-hover:translate-x-0.5 transition-transform" aria-hidden="true" />
