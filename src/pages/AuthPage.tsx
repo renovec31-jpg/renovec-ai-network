@@ -3,7 +3,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import { ArrowRight, Eye, EyeOff, Sparkles, ArrowLeft, Check } from 'lucide-react';
 
-type Mode = 'signin' | 'signup' | 'reset';
+type Mode = 'signin' | 'signup' | 'reset' | 'new-password';;
 type Props = { onBack?: () => void };
 
 export default function AuthPage({ onBack }: Props) {
@@ -20,12 +20,52 @@ export default function AuthPage({ onBack }: Props) {
   useEffect(() => {
     setError('');
   }, [mode]);
+  const [newPassword, setNewPassword] = useState('');
+  const [newPasswordConfirm, setNewPasswordConfirm] = useState('');
+
+  // Détecter token_hash dans l'URL pour reset password
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const tokenHash = params.get('token_hash');
+    const type = params.get('type');
+    if (tokenHash && type === 'recovery') {
+      supabase.auth.verifyOtp({ token_hash: tokenHash, type: 'recovery' })
+        .then(({ error }) => {
+          if (!error) {
+            setMode('new-password');
+            window.history.replaceState({}, '', window.location.pathname);
+          } else {
+            setError('Lien expiré ou invalide. Recommencez la procédure.');
+          }
+        });
+    } else if (tokenHash && type === 'email') {
+      supabase.auth.verifyOtp({ token_hash: tokenHash, type: 'email' })
+        .then(() => window.history.replaceState({}, '', window.location.pathname));
+    }
+  }, []);
   const [resetSent, setResetSent] = useState(false);
 
   function switchMode(m: Mode) {
     setMode(m);
     setError('');
     setResetSent(false);
+  }
+
+  async function handleNewPassword(e: React.FormEvent) {
+    e.preventDefault();
+    setError('');
+    if (newPassword.length < 8) { setError('Le mot de passe doit contenir au moins 8 caractères.'); return; }
+    if (newPassword !== newPasswordConfirm) { setError('Les mots de passe ne correspondent pas.'); return; }
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.updateUser({ password: newPassword });
+      if (error) throw error;
+      setResetSent(true);
+    } catch {
+      setError('Impossible de mettre à jour le mot de passe. Recommencez depuis le lien reçu.');
+    } finally {
+      setLoading(false);
+    }
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -37,7 +77,7 @@ export default function AuthPage({ onBack }: Props) {
       setLoading(true);
       try {
         const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
-          redirectTo: window.location.origin,
+          redirectTo: window.location.origin + '/entrer',
         });
         if (error) throw error;
         setResetSent(true);
@@ -84,6 +124,76 @@ export default function AuthPage({ onBack }: Props) {
     : mode === 'signup'
     ? 'Partagez ce que vous savez faire. Trouvez ce dont vous avez besoin.'
     : 'Entrez votre email — nous vous enverrons un lien pour créer un nouveau mot de passe.';
+
+  if (mode === 'new-password') {
+    return (
+      <div className="min-h-screen bg-stone-950 flex flex-col items-center justify-center px-4 py-16">
+        <div className="w-full max-w-md animate-fade-up">
+          <div className="text-center mb-12">
+            <div className="inline-flex items-center gap-2.5 mb-8">
+              <div className="w-8 h-8 bg-amber-500 rounded-xl flex items-center justify-center">
+                <Sparkles size={14} className="text-stone-950" />
+              </div>
+              <span className="text-lg font-semibold tracking-tight text-white">RENOVEC</span>
+            </div>
+            <h1 className="text-2xl font-semibold tracking-tight text-white mb-2">
+              {resetSent ? 'Mot de passe mis à jour !' : 'Nouveau mot de passe'}
+            </h1>
+            {!resetSent && <p className="text-stone-500 text-sm">Choisissez un nouveau mot de passe sécurisé.</p>}
+          </div>
+          {resetSent ? (
+            <div className="text-center space-y-4">
+              <div className="w-12 h-12 bg-amber-500/10 rounded-full flex items-center justify-center mx-auto">
+                <Check size={20} className="text-amber-500" />
+              </div>
+              <p className="text-stone-400 text-sm">Votre mot de passe a été mis à jour avec succès.</p>
+              <button onClick={() => switchMode('signin')} className="text-sm text-amber-500 hover:text-amber-400 transition-colors">
+                Se connecter
+              </button>
+            </div>
+          ) : (
+            <form onSubmit={handleNewPassword} className="space-y-4">
+              {error && <p className="text-red-400 text-sm text-center animate-fade-up">{error}</p>}
+              <div>
+                <label className="block text-xs font-medium text-stone-600 mb-1.5 uppercase tracking-widest">Nouveau mot de passe</label>
+                <input
+                  type="password"
+                  value={newPassword}
+                  onChange={e => setNewPassword(e.target.value)}
+                  placeholder="8 caractères minimum"
+                  minLength={8}
+                  required
+                  autoComplete="new-password"
+                  className="w-full px-4 py-3.5 rounded-xl bg-white/5 border border-white/8 text-white placeholder-stone-700 focus:outline-none focus:ring-2 focus:ring-amber-400/50 focus:border-amber-400/30 transition-all text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-stone-600 mb-1.5 uppercase tracking-widest">Confirmer le mot de passe</label>
+                <input
+                  type="password"
+                  value={newPasswordConfirm}
+                  onChange={e => setNewPasswordConfirm(e.target.value)}
+                  placeholder="Répétez votre mot de passe"
+                  minLength={8}
+                  required
+                  autoComplete="new-password"
+                  className="w-full px-4 py-3.5 rounded-xl bg-white/5 border border-white/8 text-white placeholder-stone-700 focus:outline-none focus:ring-2 focus:ring-amber-400/50 focus:border-amber-400/30 transition-all text-sm"
+                />
+              </div>
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full py-3.5 px-6 rounded-xl bg-amber-500 hover:bg-amber-400 text-stone-950 font-semibold text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                {loading ? 'Mise à jour...' : 'Mettre à jour le mot de passe'}
+                {!loading && <ArrowRight size={16} />}
+              </button>
+            </form>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-stone-950 flex flex-col items-center justify-center px-4 py-16">
