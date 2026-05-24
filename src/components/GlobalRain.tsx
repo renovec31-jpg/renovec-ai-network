@@ -1,49 +1,67 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { AVATAR_PHOTOS, PEOPLE } from '../data/people';
 
+// ─── Types ────────────────────────────────────────────────────────────────────
+
 interface RainDrop {
   id: number;
   name: string;
   caption: string;
   lane: number;
-  depth: number;
+  depth: number;      // 0=far/tiny … 3=close/large
   delay: number;
   avatarIdx: number;
   size: number;
+  drift: number;      // horizontal drift px during fall
+  dur: number;        // animation duration ms
 }
 
-const LANES = 7;
-const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
-const MAX_DROPS = isMobile ? 5 : 10;
-const SPAWN_INTERVAL = isMobile ? 2600 : 1600;
+// ─── Config — desktop vs mobile ───────────────────────────────────────────────
+
+const LANES        = 12;
+const isMob        = typeof window !== 'undefined' && window.innerWidth < 768;
+const MAX_DROPS    = isMob ? 6 : 18;
+const SPAWN_MS     = isMob ? 2800 : 1400;
+
+// Duration per depth (ms) — deeper = slower fall
+const DEPTH_DUR  = [13500, 9500, 6800, 4600];
+// Base size px per depth
+const DEPTH_SIZE = [
+  () => 11 + Math.random() * 4,
+  () => 22 + Math.random() * 8,
+  () => 42 + Math.random() * 12,
+  () => 62 + Math.random() * 20,
+];
+
+// ─── Main component ───────────────────────────────────────────────────────────
 
 export default function GlobalRain({ frozen }: { frozen: boolean }) {
   const [drops, setDrops] = useState<RainDrop[]>([]);
-  const counterRef = useRef(0);
-  const poolIdx = useRef(0);
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const counter  = useRef(0);
+  const poolIdx  = useRef(0);
+  const interval = useRef<ReturnType<typeof setInterval> | null>(null);
   const frozenRef = useRef(frozen);
   frozenRef.current = frozen;
 
   const spawnDrop = useCallback(() => {
     if (frozenRef.current) return;
-    const person = PEOPLE[poolIdx.current % PEOPLE.length];
+
+    const person   = PEOPLE[poolIdx.current % PEOPLE.length];
     poolIdx.current++;
-    const id = counterRef.current++;
-    const r = Math.random();
-    const depth = r < 0.25 ? 0 : r < 0.5 ? 1 : r < 0.8 ? 2 : 3;
-    const lane = Math.floor(Math.random() * LANES);
-    const delay = Math.random() * 0.7;
+
+    const id       = counter.current++;
+    const r        = Math.random();
+    const depth    = r < 0.22 ? 0 : r < 0.48 ? 1 : r < 0.78 ? 2 : 3;
+    const lane     = Math.floor(Math.random() * LANES);
+    const delay    = Math.random() * 0.8;
     const avatarIdx = id % AVATAR_PHOTOS.length;
-    const size =
-      depth === 0 ? 12 + Math.random() * 5 :
-      depth === 1 ? 24 + Math.random() * 8 :
-      depth === 2 ? 44 + Math.random() * 12 :
-                    68 + Math.random() * 18;
+    const size     = DEPTH_SIZE[depth]();
+    const drift    = (Math.random() - 0.5) * 40;   // -20 … +20 px horizontal drift
+    const dur      = DEPTH_DUR[depth] * (0.88 + Math.random() * 0.24);
+
     setDrops(prev => {
-      const next = [...prev, { ...person, id, lane, depth, delay, avatarIdx, size }];
-      if (next.length > MAX_DROPS) return next.slice(next.length - MAX_DROPS);
-      return next;
+      const next = [...prev, { ...person, id, lane, depth, delay, avatarIdx, size, drift, dur }];
+      return next.length > MAX_DROPS ? next.slice(next.length - MAX_DROPS) : next;
     });
   }, []);
 
@@ -53,20 +71,25 @@ export default function GlobalRain({ frozen }: { frozen: boolean }) {
 
   useEffect(() => {
     spawnDrop();
-    const t = setTimeout(() => spawnDrop(), 800);
-    intervalRef.current = setInterval(() => {
+    const t0 = setTimeout(() => spawnDrop(), 700);
+    const t1 = setTimeout(() => spawnDrop(), 1400);
+    interval.current = setInterval(() => {
       if (!frozenRef.current) spawnDrop();
-    }, SPAWN_INTERVAL);
+    }, SPAWN_MS);
     return () => {
-      clearTimeout(t);
-      if (intervalRef.current) clearInterval(intervalRef.current);
+      clearTimeout(t0); clearTimeout(t1);
+      if (interval.current) clearInterval(interval.current);
     };
   }, [spawnDrop]);
 
   return (
-    <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
+    <div
+      className="pointer-events-none fixed inset-0 overflow-hidden"
+      style={{ zIndex: 0 }}
+      aria-hidden="true"
+    >
       {drops.map(drop => (
-        <GlobalRainBubble
+        <RainBubble
           key={drop.id}
           drop={drop}
           onDone={() => removeDrop(drop.id)}
@@ -77,7 +100,9 @@ export default function GlobalRain({ frozen }: { frozen: boolean }) {
   );
 }
 
-function GlobalRainBubble({
+// ─── Individual bubble ────────────────────────────────────────────────────────
+
+function RainBubble({
   drop,
   onDone,
   frozen,
@@ -86,53 +111,68 @@ function GlobalRainBubble({
   onDone: () => void;
   frozen: boolean;
 }) {
+  const [phase, setPhase] = useState<'falling' | 'impact' | 'done'>('falling');
+  const doneRef = useRef(onDone);
+  doneRef.current = onDone;
+
   useEffect(() => {
     if (frozen) return;
-    const dur =
-      drop.depth === 0 ? 11000 :
-      drop.depth === 1 ? 8500 :
-      drop.depth === 2 ? 6000 : 4000;
-    const t = setTimeout(onDone, dur + drop.delay * 1000 + 500);
-    return () => clearTimeout(t);
-  }, [drop, onDone, frozen]);
+    const impactAt = drop.dur * 0.86;        // radar fires at 86% of fall
+    const doneAt   = drop.dur + drop.delay * 1000 + 600;
 
-  const laneOffset = 3 + (drop.lane / LANES) * 84;
-  const avatarSrc = AVATAR_PHOTOS[drop.avatarIdx];
+    const tImpact = setTimeout(() => setPhase('impact'), impactAt + drop.delay * 1000);
+    const tDone   = setTimeout(() => { setPhase('done'); doneRef.current(); }, doneAt);
+    return () => { clearTimeout(tImpact); clearTimeout(tDone); };
+  }, [drop, frozen]);
 
-  const style: React.CSSProperties = {
-    '--gr-left': `${laneOffset}%`,
-    '--gr-delay': `${drop.delay}s`,
-    '--gr-dur':
-      drop.depth === 0 ? '11s' :
-      drop.depth === 1 ? '8.5s' :
-      drop.depth === 2 ? '6s' : '4s',
-    '--gr-size': `${drop.size}px`,
-    '--gr-opacity':
-      drop.depth === 0 ? '0.07' :
-      drop.depth === 1 ? '0.16' :
-      drop.depth === 2 ? '0.4' : '0.62',
-    '--gr-blur':
-      drop.depth === 0 ? '3.5px' :
-      drop.depth === 1 ? '1.6px' : '0px',
+  const laneOffset = 2 + (drop.lane / LANES) * 92; // 2% … 94% horizontal spread
+  const avatarSrc  = AVATAR_PHOTOS[drop.avatarIdx];
+  const isVisible  = drop.depth >= 1;
+  const isClose    = drop.depth >= 2;
+
+  const style = {
+    '--gr-left':    `${laneOffset}%`,
+    '--gr-delay':   `${drop.delay}s`,
+    '--gr-dur':     `${drop.dur}ms`,
+    '--gr-size':    `${drop.size}px`,
+    '--gr-opacity': drop.depth === 0 ? '0.06'
+                  : drop.depth === 1 ? '0.15'
+                  : drop.depth === 2 ? '0.38' : '0.60',
+    '--gr-blur':    drop.depth === 0 ? '3px'
+                  : drop.depth === 1 ? '1.5px' : '0px',
+    '--gr-drift':   `${drop.drift}px`,
   } as React.CSSProperties;
 
-  const isClose = drop.depth >= 2;
-  const isMidDepth = drop.depth === 1;
+  if (phase === 'done') return null;
 
   return (
-    <div className={`global-rain-drop global-rain-drop--d${drop.depth}`} style={style}>
-      <img
-        src={avatarSrc}
-        alt={drop.name}
-        className="global-rain-avatar"
-        style={{ width: 'var(--gr-size)', height: 'var(--gr-size)' }}
-        loading="lazy"
-      />
-      {(isClose || isMidDepth) && (
-        <div className="global-rain-label">
+    <div className={`gr-drop gr-drop--d${drop.depth}`} style={style}>
+      {/* Avatar */}
+      <div className={`gr-avatar-wrap ${isClose ? 'gr-avatar-wrap--ring' : ''}`}>
+        <img
+          src={avatarSrc}
+          alt={drop.name}
+          className="gr-avatar"
+          style={{ width: 'var(--gr-size)', height: 'var(--gr-size)' }}
+          loading="lazy"
+        />
+      </div>
+
+      {/* Label — only for depth 1+ */}
+      {isVisible && (
+        <div className="gr-label">
           <strong>{drop.name}</strong>
-          <span>{drop.caption}</span>
+          {isClose && <span>{drop.caption}</span>}
         </div>
+      )}
+
+      {/* T12 — Radar ripple on impact */}
+      {phase === 'impact' && isClose && (
+        <>
+          <div className="gr-ripple gr-ripple--1" />
+          <div className="gr-ripple gr-ripple--2" />
+          <div className="gr-ripple gr-ripple--3" />
+        </>
       )}
     </div>
   );

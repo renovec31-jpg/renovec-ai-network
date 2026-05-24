@@ -6,6 +6,7 @@ import TeaserMap from '../components/TeaserMap';
 import GuestMatchFlow from '../components/GuestMatchFlow';
 import LiveFeedSidebar from '../components/LiveFeedSidebar';
 import GlobalRain from '../components/GlobalRain';
+import NeuralSignals from '../components/NeuralSignals';
 import HorizontalScroll from '../components/HorizontalScroll';
 import ChatRain from '../components/ChatRain';
 import { avatarBg as teaserAvatarBg } from '../lib/ui';
@@ -972,6 +973,9 @@ export default function LandingPage({ onEnter, onHowItWorks, onGoToPresence: _on
 
       {/* ── Global rain of profiles ── */}
       <GlobalRain frozen={aiOpen} />
+
+      {/* ── Neural signals ── */}
+      <NeuralSignals frozen={aiOpen} />
 
       {/* ── Full-page spine connectome ── */}
       <PageSpine />

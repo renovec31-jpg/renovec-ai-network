@@ -6171,6 +6171,174 @@ button, a, input, textarea, select {
   margin: 0;
 }
 
+/* ═══════════════════════════════════════════════════════════════════════════ */
+/* T11 — GlobalRain (gr-*) · T12 — Radar ripples · T13 — Neural signals      */
+/* ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ─── T11 Fall animation ──────────────────────────────────────────────────── */
+
+@keyframes grFall {
+  0%   { transform: translateY(-130px) translateX(0) scale(0.85); opacity: 0; }
+  5%   { opacity: var(--gr-opacity); transform: translateY(-20px) translateX(0) scale(1); }
+  82%  { transform: translateY(calc(100vh - 90px)) translateX(0) scale(1); opacity: var(--gr-opacity); }
+  89%  { transform: translateY(calc(100vh - 20px)) translateX(calc(var(--gr-drift) * 0.3)) scale(1.03); }
+  95%  { transform: translateY(calc(100vh + 10px)) translateX(var(--gr-drift)) scale(0.96); opacity: calc(var(--gr-opacity) * 0.5); }
+  100% { transform: translateY(calc(100vh + 60px)) translateX(calc(var(--gr-drift) * 1.4)) scale(0.9); opacity: 0; }
+}
+
+.gr-drop {
+  position: absolute;
+  top: 0;
+  left: var(--gr-left);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  animation: grFall var(--gr-dur) cubic-bezier(0.25,0.1,0.3,1) var(--gr-delay) both;
+  opacity: 0;
+  filter: blur(var(--gr-blur));
+  will-change: transform, opacity;
+  pointer-events: none;
+}
+
+/* depth-0: faint background layer */
+.gr-drop--d0 { }
+/* depth-1: mid-layer, label without zone */
+.gr-drop--d1 { }
+/* depth-2: close, label + zone */
+.gr-drop--d2 { }
+/* depth-3: very close, full label */
+.gr-drop--d3 { }
+
+/* Avatar ring for depth 2-3 */
+.gr-avatar-wrap {
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.gr-avatar-wrap--ring {
+  box-shadow: 0 0 0 1.5px rgba(242,101,34,0.35), 0 0 12px rgba(242,101,34,0.12);
+}
+
+.gr-avatar {
+  display: block;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+/* Label */
+.gr-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  text-align: center;
+  white-space: nowrap;
+  max-width: 120px;
+}
+
+.gr-label strong {
+  font-size: 10px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.72);
+  line-height: 1.2;
+}
+
+.gr-label span {
+  font-size: 9px;
+  color: rgba(255,255,255,0.32);
+  line-height: 1.2;
+}
+
+/* ─── T12 Radar ripples ───────────────────────────────────────────────────── */
+
+@keyframes grRippleOut {
+  0%   { transform: scale(0.4); opacity: 0.6; }
+  100% { transform: scale(3.5); opacity: 0; }
+}
+
+.gr-ripple {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform-origin: center center;
+  translate: -50% 50%;
+  width: var(--gr-size);
+  height: var(--gr-size);
+  border-radius: 50%;
+  border: 1px solid rgba(242,101,34,0.55);
+  animation: grRippleOut 1.4s ease-out both;
+  pointer-events: none;
+}
+
+.gr-ripple--1 { animation-delay: 0ms;   border-color: rgba(242,101,34,0.55); }
+.gr-ripple--2 { animation-delay: 200ms; border-color: rgba(255,165,60,0.35); }
+.gr-ripple--3 { animation-delay: 420ms; border-color: rgba(255,200,100,0.20); }
+
+/* ─── T13 Neural signals (ns-*) ──────────────────────────────────────────── */
+
+@keyframes nsGrow {
+  0%   { opacity: 0; transform: scale(0.2) translate(-50%, -50%); }
+  20%  { opacity: 0.9; transform: scale(1) translate(-50%, -50%); }
+  70%  { opacity: 0.75; transform: scale(1) translate(-50%, -50%); }
+  100% { opacity: 0; transform: scale(1.15) translate(-50%, -50%); }
+}
+
+@keyframes nsBurst {
+  0%   { opacity: 0; transform: translate(-50%, -50%) rotate(calc(var(--ns-i) * 60deg)) translateX(0) scale(0.5); }
+  40%  { opacity: 0.8; }
+  100% { opacity: 0; transform: translate(-50%, -50%) rotate(calc(var(--ns-i) * 60deg)) translateX(22px) scale(1.2); }
+}
+
+.ns-signal {
+  position: absolute;
+  left: var(--ns-x);
+  top: var(--ns-y);
+  pointer-events: none;
+}
+
+.ns-text {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  white-space: nowrap;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .05em;
+  color: rgba(242,101,34,0.72);
+  background: rgba(242,101,34,0.08);
+  border: 1px solid rgba(242,101,34,0.18);
+  border-radius: 20px;
+  padding: 3px 10px;
+  animation: nsGrow 3.6s cubic-bezier(0.16,1,0.3,1) var(--ns-delay) both;
+}
+
+.ns-burst {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+}
+
+.ns-dot {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: rgba(242,101,34,0.6);
+  animation: nsBurst 1.4s ease-out calc(var(--ns-delay) + 2.0s) both;
+}
+
+/* ─── T14 Mobile perf: reduce visuals below 480px ────────────────────────── */
+
+@media (max-width: 480px) {
+  .gr-drop--d0 { display: none; }  /* no far-background drops on tiny screens */
+  .gr-ripple   { display: none; }  /* no radar ripples on tiny screens */
+  .ns-signal   { display: none; }  /* no neural signals on tiny screens */
+}
+
 /* ── ProfileVitrine (vt-*) ────────────────────────────────────────────────── */
 
 .vt-root {
