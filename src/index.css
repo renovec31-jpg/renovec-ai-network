@@ -708,6 +708,44 @@ button, a, input, textarea, select {
   color: #F26522;
 }
 
+/* ── Mic button — inline, left of submit arrow ───────────────── */
+.lp-hero-input-mic {
+  padding: 11px 13px;
+  background: transparent;
+  border: none;
+  border-left: 1px solid rgba(255,255,255,0.06);
+  color: rgba(255,255,255,0.28);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  transition: background 0.18s ease, color 0.18s ease;
+}
+.lp-hero-input-mic:hover {
+  color: rgba(242,101,34,0.8);
+  background: rgba(242,101,34,0.06);
+}
+
+/* ── Microcopy — privacy reassurance below bubble ────────────── */
+.lp-hero-microcopy {
+  font-size: 10.5px;
+  color: rgba(255,255,255,0.20);
+  line-height: 1.5;
+  max-width: 420px;
+  margin-top: 8px;
+  margin-bottom: 0;
+  letter-spacing: 0.01em;
+}
+
+/* ── Pulse animation for focused input wrap ──────────────────── */
+@keyframes heroBubblePulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(242,101,34,0.0); }
+  50%       { box-shadow: 0 0 0 4px rgba(242,101,34,0.07); }
+}
+.lp-hero-input-wrap:focus-within {
+  animation: heroBubblePulse 2.6s ease infinite;
+}
+
 /* ── Secondary CTA — text-link, clearly subordinate ─────────── */
 .lp-hero-cta-secondary {
   display: inline-flex;

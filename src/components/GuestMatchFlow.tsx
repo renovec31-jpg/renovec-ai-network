@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { ArrowRight, Sparkles, Shield, MapPin, Clock, Star, Lock, CheckCircle2, ChevronRight, X } from 'lucide-react';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -329,11 +329,9 @@ export default function GuestMatchFlow({ onEnter, isGuest }: Props) {
     }
   }, [step]);
 
-  async function handleSearch() {
-    if (needText.trim().length < 10) {
-      setError('Décrivez votre besoin en quelques mots (minimum 10 caractères)');
-      return;
-    }
+  const runSearch = useCallback(async (text: string) => {
+    if (text.trim().length < 10) return;
+    setNeedText(text);
     setError('');
     setStep('loading');
 
@@ -345,7 +343,7 @@ export default function GuestMatchFlow({ onEnter, isGuest }: Props) {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
         },
-        body: JSON.stringify({ need_text: needText.trim() }),
+        body: JSON.stringify({ need_text: text.trim() }),
       });
       if (!res.ok) throw new Error('Matching error');
       const data: MatchResult = await res.json();
@@ -355,7 +353,24 @@ export default function GuestMatchFlow({ onEnter, isGuest }: Props) {
       setError('Une erreur est survenue. Veuillez réessayer.');
       setStep('input');
     }
+  }, []);
+
+  function handleSearch() {
+    if (needText.trim().length < 10) {
+      setError('Décrivez votre besoin en quelques mots (minimum 10 caractères)');
+      return;
+    }
+    runSearch(needText);
   }
+
+  useEffect(() => {
+    function onHeroSearch(e: Event) {
+      const text = (e as CustomEvent<{ text: string }>).detail?.text ?? '';
+      if (text.trim().length >= 10) runSearch(text);
+    }
+    window.addEventListener('renovec-hero-search', onHeroSearch);
+    return () => window.removeEventListener('renovec-hero-search', onHeroSearch);
+  }, [runSearch]);
 
   function handleProfileCTA(profile: MatchedProfile) {
     if (isGuest) {

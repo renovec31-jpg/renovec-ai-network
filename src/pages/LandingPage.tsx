@@ -1,5 +1,5 @@
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react';
-import { ArrowRight, ShoppingBag, Box, Package, Search, Tag, MapPin } from 'lucide-react';
+import { ArrowRight, Mic, ShoppingBag, Box, Package, Search, Tag, MapPin } from 'lucide-react';
 import VoicePresence from '../components/VoicePresence';
 import WorkspaceOverlay from '../components/workspace/WorkspaceOverlay';
 import TeaserMap from '../components/TeaserMap';
@@ -1109,30 +1109,48 @@ export default function LandingPage({ onEnter, onHowItWorks, onGoToPresence: _on
               <input
                 type="text"
                 className="lp-hero-input"
-                placeholder="J'ai besoin d'aide pour… ou Je peux aider en…"
+                placeholder="Décrivez ce que vous vivez ou ce que vous savez faire…"
                 value={heroInput}
                 onChange={(e) => setHeroInput(e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
                     const t = heroInput.trim();
-                    if (t) sessionStorage.setItem('renovec_guest_need', t);
-                    openAI();
+                    if (t) {
+                      sessionStorage.setItem('renovec_guest_need', t);
+                      window.dispatchEvent(new CustomEvent('renovec-hero-search', { detail: { text: t } }));
+                      document.getElementById('lp-search-results')?.scrollIntoView({ behavior: 'smooth' });
+                    } else {
+                      openAI();
+                    }
                   }
                 }}
                 aria-label="Décrivez votre situation"
               />
               <button
+                className="lp-hero-input-mic"
+                onClick={openAI}
+                aria-label="Parler"
+              >
+                <Mic size={14} />
+              </button>
+              <button
                 className="lp-hero-input-btn"
                 onClick={() => {
                   const t = heroInput.trim();
-                  if (t) sessionStorage.setItem('renovec_guest_need', t);
-                  openAI();
+                  if (t) {
+                    sessionStorage.setItem('renovec_guest_need', t);
+                    window.dispatchEvent(new CustomEvent('renovec-hero-search', { detail: { text: t } }));
+                    document.getElementById('lp-search-results')?.scrollIntoView({ behavior: 'smooth' });
+                  } else {
+                    openAI();
+                  }
                 }}
                 aria-label="Exprimer"
               >
                 <ArrowRight size={14} />
               </button>
             </div>
+            <p className="lp-hero-microcopy">Pas d'inscription pour voir les premiers profils · L'IA comprend en langage libre · Position approximative, non stockée</p>
 
             {/* ── CTAs hiérarchisés ── */}
             <div className="lp-hero-ctas">
@@ -1175,16 +1193,7 @@ export default function LandingPage({ onEnter, onHowItWorks, onGoToPresence: _on
       </section>
 
       {/* ════════════════ 2. ENTRÉE CONVERSATIONNELLE ═══════════════════ */}
-      <section className="lp-guest-match">
-        <div className="lp-guest-match-header">
-          <p className="lp-eyebrow lp-eyebrow--center">Résultats instantanés</p>
-          <h2 className="lp-section-h2 lp-section-h2--center">
-            Testez maintenant —<br />sans inscription
-          </h2>
-          <p className="lp-body lp-body--center" style={{ marginBottom: 0 }}>
-            Décrivez votre besoin. L'IA trouve les profils les plus compatibles en quelques secondes.
-          </p>
-        </div>
+      <section className="lp-guest-match" id="lp-search-results">
         <GuestMatchFlow onEnter={(needText) => {
           if (needText) sessionStorage.setItem('renovec_guest_need', needText);
           onEnter();
@@ -1422,7 +1431,7 @@ export default function LandingPage({ onEnter, onHowItWorks, onGoToPresence: _on
         </div>
       </footer>
 
-      {!aiOpen && <VoicePresence onOpenChat={openAI} />}
+      {!aiOpen && scrolled && <VoicePresence onOpenChat={openAI} />}
 
       {aiOpen && (
         <WorkspaceOverlay
