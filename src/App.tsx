@@ -293,14 +293,14 @@ function AppInner() {
     );
   }
 
-  // ── Profile loading ──────────────────────────────────────────────────────────
+
+  // ── Session orpheline (user sans profil) : déconnexion propre ────────────────
   if (!profile) {
-    return (
-      <div className="min-h-screen bg-stone-50 flex items-center justify-center">
-        <div className="w-8 h-8 border border-amber-200 border-t-amber-400 rounded-full animate-spin" />
-      </div>
-    );
+    supabase.auth.signOut();
+    return null;
   }
+
+
 
   // ── Onboarding gates ─────────────────────────────────────────────────────────
   if (!profile.onboarding_seeker_done) {
