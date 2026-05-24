@@ -301,7 +301,7 @@ export default function TeaserMap({ onEnter }: Props) {
         </div>
 
         {/* CTA */}
-        <button className="tv-cta" onClick={onEnter}>
+        <button type="button" className="tv-cta" onClick={onEnter} style={{ display: 'flex', width: '100%', marginTop: '12px' }}>
           Voir les présences autour de moi
           <span className="tv-cta-arrow">→</span>
         </button>

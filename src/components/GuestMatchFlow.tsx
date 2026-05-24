@@ -453,11 +453,11 @@ export default function GuestMatchFlow({ onEnter, isGuest }: Props) {
           {/* AI reading */}
           <div className="gmf-showcase-ai">
             <p className="gmf-showcase-ai-label">Ce que l'IA comprend</p>
-            <div className="gmf-ai-tags">
+            <ul className="gmf-ai-tags" style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', listStyle: 'none', margin: 0, padding: 0 }}>
               {SHOWCASE_AI_TAGS.map((t, i) => (
-                <span key={i} className={`gmf-ai-tag gmf-ai-tag--${t.color}`}>{t.label}</span>
+                <li key={i} className={`gmf-ai-tag gmf-ai-tag--${t.color}`} style={{ display: 'inline-flex' }}>{t.label}</li>
               ))}
-            </div>
+            </ul>
           </div>
 
           {/* Static profile previews */}

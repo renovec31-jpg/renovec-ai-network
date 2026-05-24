@@ -1,0 +1,78 @@
+=== DEPLOY START 2026-05-24T18:12:00+00:00 ===
+PWD: C:\Users\ALIENNAFII\.cursor\projects\empty-window\renovec-ai-network
+
+=== SHELL EXECUTION BLOCKED ===
+All Shell tool invocations failed in this subagent session (Windows).
+
+Foreground commands: empty stdout/stderr, exit 0, ~0 ms (commands did not run).
+Background commands failed immediately with:
+
+Sandbox policy 'workspace_readwrite' is not supported on this system. Ensure the sandbox helper binary is available, or use 'insecure_none'. Reason: Windows sandbox helper only provides network proxy, not filesystem isolation
+
+Because of this, the ordered deploy commands below were NOT executed by the agent.
+State below is from .git metadata + GitHub API (2026-05-24T18:12Z).
+
+=== git fetch origin ===
+NOT EXECUTED (shell blocked)
+
+=== git status ===
+NOT EXECUTED (shell blocked)
+Inferred from .git/refs (stale fetch; local origin/main ref not updated):
+  Branch: main
+  Local HEAD:  5e8fa20f4726e597f1eb507cc26b1549cfb28791
+  Cached origin/main: 268ebabbab33760f80ac660ca227262f5e287438
+  Uncommitted changes: unknown (git status not executed)
+
+=== git log -1 --oneline ===
+5e8fa20 fix: CCM route exclusive, pathname-first routing, layout hardening v6
+
+=== git log origin/main -1 --oneline ===
+(cached local ref — stale)
+268ebabb fix(routing): add GitHub Pages SPA URL decoder for /comment-ca-marche
+
+(live GitHub origin/main via API — current remote)
+49e25fa fix(app): replace infinite spinner with signOut for orphaned sessions
+
+=== git add -A ===
+NOT EXECUTED (shell blocked)
+
+=== git commit ===
+NOT EXECUTED (shell blocked)
+Requested message: fix: CCM exclusive route, layout hardening v6, merge orphan session signOut
+nothing to commit (commit step not reached)
+
+=== git pull --rebase origin main ===
+NOT EXECUTED (shell blocked)
+NOTE: History appears DIVERGED — rebase likely required before push:
+  Common ancestor: 268ebabb
+  Local only:  5e8fa20 (v6 CCM/layout hardening)
+  Remote only: efbe2b6 (preserve query params on /entrer), 49e25fa (orphan session signOut)
+
+=== npm run build ===
+NOT EXECUTED (shell blocked)
+Prior dist/ artifacts present (from earlier build):
+  dist/assets/index-BHOaQ5vS.v6.js
+  dist/assets/index-BVCRQqmR.v6.css
+BUILD EXIT: NOT RUN
+
+=== git push origin main ===
+NOT EXECUTED (shell blocked)
+PUSH EXIT: NOT RUN
+
+=== git log origin/main -1 --oneline ===
+(live GitHub, not from local git fetch)
+49e25fa fix(app): replace infinite spinner with signOut for orphaned sessions
+
+=== DEPLOY END 2026-05-24T18:12:00+00:00 ===
+RESULT: FAILED — shell sandbox unsupported on Windows subagent; no fetch/build/commit/push performed.
+ACTION REQUIRED: Run from parent agent or local terminal with working shell:
+  cd renovec-ai-network
+  git fetch origin
+  git status
+  git pull --rebase origin main
+  npm run build
+  git add -A
+  git commit -m "fix: CCM exclusive route, layout hardening v6, merge orphan session signOut" || echo nothing to commit
+  git push origin main
+
+Or execute: powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\deploy-push.ps1
