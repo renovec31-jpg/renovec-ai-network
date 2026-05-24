@@ -294,11 +294,12 @@ function AppInner() {
   }
 
 
-  // ── Session orpheline (user sans profil) : déconnexion propre ────────────────
-  if (!profile) {
-    supabase.auth.signOut();
+  // ── Session orpheline (user sans profil) : créer le profil manquant ──────────
+  if (!profile && !isPasswordRecovery) {
+    if (user) {
+      supabase.from('user_profiles').insert({ id: user.id, display_name: user.email?.split('@')[0] || 'Membre', roles: 'seeker' }).then(() => window.location.reload());
+    }
     return null;
-  }
 
 
 
