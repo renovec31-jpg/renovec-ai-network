@@ -131,8 +131,7 @@ function AppInner() {
     } else if (view === 'auth') {
       if (window.location.pathname !== '/entrer') navigate('/entrer');
     } else {
-      navigate('/');
-    }
+      // FIX: ne plus ecraser les routes landing (/, /comment-ca-marche, legales)    }
   }, [overlay, activeTab, view]);
 
   // Handle browser back/forward
