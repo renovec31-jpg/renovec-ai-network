@@ -276,12 +276,15 @@ function GuestRequestForm({
           <span className="gmf-request-need-label">{needCategory || 'Votre besoin'}</span>
           <p className="gmf-request-need-text">"{needText}"</p>
         </div>
+        <label htmlFor="guest-email" className="sr-only">Votre adresse email</label>
         <input
+          id="guest-email"
           type="email"
           placeholder="votre@email.com"
           value={email}
           onChange={e => setEmail(e.target.value)}
           className="gmf-request-input"
+          aria-label="Votre adresse email"
           autoFocus
         />
         <button

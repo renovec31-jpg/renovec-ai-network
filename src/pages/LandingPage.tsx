@@ -498,7 +498,7 @@ const DEMO_ZONES = [
   { zone: 'B', short: 'Lecture IA' },
   { zone: 'C', short: 'Profils' },
   { zone: 'D', short: 'Échange' },
-  { zone: 'E', short: 'Reconna.' },
+  { zone: 'E', short: 'Reconnu' },
   { zone: 'F', short: 'Mémoire' },
 ];
 
@@ -581,7 +581,7 @@ function ProductDemo({ onEnter }: { onEnter: () => void }) {
                 <span className="lp-demo2-message-meta">langage libre · aucun formulaire · aucune catégorie imposée</span>
               </div>
             </div>
-            <p className="lp-demo2-detail">L'IA reçoit la situation telle qu'elle est vécue — sans traduction préalable en cases ou en mots-clés.</p>
+            <p className="lp-demo2-detail">Aucune traduction en cases ou mots-clés. La situation arrive telle qu'elle est vécue.</p>
           </div>
         )}
 
@@ -602,7 +602,7 @@ function ProductDemo({ onEnter }: { onEnter: () => void }) {
                 </div>
               ))}
             </div>
-            <p className="lp-demo2-detail">Sans case, sans workflow — l'IA construit un contexte complet avant de chercher des présences dans le réseau.</p>
+            <p className="lp-demo2-detail">L'IA construit un contexte complet avant d'orienter — pas un filtre par mots-clés.</p>
           </div>
         )}
 
@@ -630,7 +630,7 @@ function ProductDemo({ onEnter }: { onEnter: () => void }) {
                 </div>
               ))}
             </div>
-            <p className="lp-demo2-detail">L'IA ne diffuse pas à tout le réseau — elle sélectionne selon le contexte réel, pas selon des tags génériques.</p>
+            <p className="lp-demo2-detail">Sélection par contexte réel, pas par tags génériques.</p>
           </div>
         )}
 
@@ -652,7 +652,7 @@ function ProductDemo({ onEnter }: { onEnter: () => void }) {
                 <p>Merci. Je vous envoie ça maintenant.</p>
               </div>
             </div>
-            <p className="lp-demo2-detail">L'IA transmet le contexte à Marc — pas un copié-collé brut, une mise en relation avec la compréhension de la situation.</p>
+            <p className="lp-demo2-detail">Marc reçoit le contexte — pas un copié-collé brut.</p>
           </div>
         )}
 
@@ -675,7 +675,7 @@ function ProductDemo({ onEnter }: { onEnter: () => void }) {
                 <span className="lp-demo2-recog-badge">contexte enregistré</span>
               </div>
             </div>
-            <p className="lp-demo2-detail">Une aide reconnue n'est pas un "like" — c'est une inscription dans la mémoire collective qui renforce le profil de Marc pour toutes les situations similaires à venir.</p>
+            <p className="lp-demo2-detail">Pas un like — une preuve contextuelle qui renforce Marc pour toutes les situations similaires.</p>
           </div>
         )}
 
@@ -694,7 +694,7 @@ function ProductDemo({ onEnter }: { onEnter: () => void }) {
                 ))}
               </div>
               <p className="lp-demo2-memory-consequence">
-                La prochaine situation similaire sera mieux orientée — pas à cause d'un algorithme figé, mais d'une mémoire active qui s'enrichit à chaque aide reconnue dans le réseau.
+                La prochaine situation similaire sera mieux orientée — mémoire active, pas algorithme figé.
               </p>
             </div>
             <button className="lp-demo2-cta" onClick={onEnter}>
@@ -992,7 +992,7 @@ export default function LandingPage({ onEnter, onHowItWorks, onGoToPresence: _on
               <a href="/comment-ca-marche" onClick={(e) => { e.preventDefault(); onHowItWorks(); }} className="lp-nav-link hidden sm:block">
                 Comment ça marche
               </a>
-              <a href="/entrer" onClick={(e) => { e.preventDefault(); onEnter(); }} className="lp-btn-outline-sm">
+              <a href="/entrer" onClick={(e) => { e.preventDefault(); onEnter(); }} className="lp-btn-nav-cta">
                 Entrer <ArrowRight size={9} aria-hidden="true" />
               </a>
             </div>
@@ -1109,10 +1109,10 @@ export default function LandingPage({ onEnter, onHowItWorks, onGoToPresence: _on
               </a>
             </div>
           </div>
-          <div className="lp-hero-indicators">
-            <div className="lp-indicator"><div className="lp-indicator-dot lp-dot-green" /><span>coordinateur IA actif</span></div>
-            <div className="lp-indicator"><div className="lp-indicator-dot lp-dot-amber" /><span>situations en cours d'analyse</span></div>
-            <div className="lp-indicator"><div className="lp-indicator-dot" style={{ width:5, height:5, borderRadius:'50%', background:'rgba(255,255,255,0.18)' }} /><span>premiers profils visibles sans inscription</span></div>
+          <div className="lp-hero-proofs" aria-label="Garanties">
+            <p className="lp-hero-proof">Pas d'inscription pour voir les premiers profils.</p>
+            <p className="lp-hero-proof">Compréhension en langage libre — pas de case, pas de mot-clé.</p>
+            <p className="lp-hero-proof">Position approximative, jamais stockée.</p>
           </div>
         </div>
         <div className="lp-hero-fade-bottom" aria-hidden />
@@ -1165,39 +1165,19 @@ export default function LandingPage({ onEnter, onHowItWorks, onGoToPresence: _on
       {/* Single unified block — narrative + legend + samples + map      */}
       <TeaserMap onEnter={onEnter} />
 
-      {/* ════════════════ 5. INTELLIGENCE CUMULATIVE ════════════════════ */}
-      {/* Mémoire + Reconnaissance + Capital fusionnés en un seul bloc     */}
+      {/* ════════════════ 5. MÉMOIRE ACTIVE ════════════════════════════════ */}
       <section className="lp-memory-section">
         <div className="lp-memory-label-left">
-          <p className="lp-eyebrow">Intelligence cumulative</p>
+          <p className="lp-eyebrow">Mémoire active</p>
           <h2 className="lp-section-h2 lp-section-h2--tight">
             Chaque aide reconnue<br />instruit le réseau.
           </h2>
           <p className="lp-body">
-            Quand une aide fonctionne et qu'elle est reconnue, RENOVEC ne l'oublie pas. Le réseau apprend de cette situation réelle. Les prochaines orientations deviennent plus justes — pas grâce à un algorithme figé, mais à une mémoire qui s'enrichit à chaque échange.
+            Quand une aide fonctionne et qu'elle est reconnue, RENOVEC ne l'oublie pas. Ce n'est pas un like, pas une note — c'est une preuve contextuelle. Le réseau s'en souvient et oriente mieux les fois suivantes.
           </p>
 
-          {/* Séquence consolidation */}
-          <div className="lp-consolidation-steps" style={{ marginTop: 28 }}>
-            {[
-              { n:'01', phase:'Situation',     detail:'Un besoin apparaît.' },
-              { n:'02', phase:'Échange',       detail:'Une présence aide.' },
-              { n:'03', phase:'Reconnaissance',detail:'L\'aide est confirmée.' },
-              { n:'04', phase:'Consolidation', detail:'Le réseau garde une mémoire utile.', highlight:true },
-            ].map((s, i) => (
-              <div key={s.n} className="lp-consol-step">
-                <div className={`lp-consol-num ${s.highlight ? 'lp-consol-num--active' : ''}`}>
-                  <span>{s.n}</span>
-                </div>
-                <p className={`lp-consol-phase ${s.highlight ? 'lp-consol-phase--active' : ''}`}>{s.phase}</p>
-                <p className="lp-consol-detail">{s.detail}</p>
-                {i < 3 && <div className="lp-consol-arrow" />}
-              </div>
-            ))}
-          </div>
-
           {/* Profil capital */}
-          <div className="lp-profile-card" style={{ marginTop: 32 }}>
+          <div className="lp-profile-card" style={{ marginTop: 28 }}>
             <div className="lp-profile-header">
               <div className="lp-profile-avatar-photo">
                 <img src={AVATARS.Marie} alt="Marie" className="lp-profile-avatar-img" loading="lazy" />
@@ -1306,6 +1286,9 @@ export default function LandingPage({ onEnter, onHowItWorks, onGoToPresence: _on
             <HeroConnectome className="w-full h-full" />
           </div>
           <p className="lp-eyebrow lp-eyebrow--center">Rejoindre le réseau</p>
+          <p className="lp-finale-intro">
+            Des présences actives aujourd'hui — des gens réels, dans des contextes réels, prêts à aider ou à partager ce qu'ils savent faire.
+          </p>
           <blockquote className="lp-finale-quote">
             "L'IA n'est pas l'interface.<br />Elle est l'intelligence qui coordonne."
           </blockquote>

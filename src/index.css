@@ -502,6 +502,52 @@ button, a, input, textarea, select {
   border-color: rgba(255,255,255,0.28);
 }
 
+/* Hero text proofs — replace fake dashboard indicators (T20) */
+.lp-hero-proofs {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-top: 20px;
+}
+.lp-hero-proof {
+  font-size: 11px;
+  color: rgba(255,255,255,0.32);
+  margin: 0;
+  line-height: 1.5;
+  padding-left: 12px;
+  position: relative;
+}
+.lp-hero-proof::before {
+  content: '·';
+  position: absolute;
+  left: 0;
+  color: rgba(242,101,34,0.55);
+  font-weight: 700;
+}
+
+/* Nav primary CTA — filled, high contrast (T19) */
+.lp-btn-nav-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  color: #fff;
+  background: #F26522;
+  border: none;
+  border-radius: 6px;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.1s ease;
+  white-space: nowrap;
+}
+.lp-btn-nav-cta:hover {
+  background: #d95a1a;
+  transform: translateY(-1px);
+}
+
 /* Buttons */
 .lp-btn-primary {
   display: inline-flex;
@@ -1385,6 +1431,7 @@ button, a, input, textarea, select {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
+  margin-top: 12px;
 }
 
 .lp-profile-link-badge {
@@ -1648,6 +1695,15 @@ button, a, input, textarea, select {
   height: 160px;
   margin-bottom: 40px;
   opacity: 0.55;
+}
+
+.lp-finale-intro {
+  font-size: 14px;
+  color: rgba(255,255,255,0.40);
+  line-height: 1.6;
+  margin: 8px 0 24px;
+  max-width: 480px;
+  text-align: center;
 }
 
 .lp-finale-quote {
@@ -2043,7 +2099,7 @@ button, a, input, textarea, select {
 /* Step nav — horizontal pills */
 .lp-demo2-nav {
   display: flex;
-  gap: 4px;
+  gap: 6px;
   margin-bottom: 20px;
   overflow-x: auto;
   scrollbar-width: none;
@@ -4408,7 +4464,7 @@ button, a, input, textarea, select {
 .tv-geo-nudge {
   display: flex;
   align-items: center;
-  gap: 7px;
+  gap: 10px;
   flex-wrap: wrap;
   padding: 8px 12px;
   background: rgba(242,101,34,0.05);
@@ -4423,9 +4479,12 @@ button, a, input, textarea, select {
   border-radius: 4px;
   color: rgba(242,101,34,0.88);
   font-size: 11px;
-  padding: 3px 9px;
+  font-weight: 600;
+  padding: 4px 12px;
   cursor: pointer;
   font-family: inherit;
+  white-space: nowrap;
+  flex-shrink: 0;
   transition: background 0.15s ease;
 }
 .tv-geo-nudge button:hover { background: rgba(242,101,34,0.26); }
@@ -6020,6 +6079,7 @@ button, a, input, textarea, select {
 .gmf-showcase-card--top {
   border-color: rgba(242,101,34,0.30);
   background: rgba(242,101,34,0.05);
+  padding-top: 28px; /* room for the absolute badge */
 }
 
 .gmf-showcase-card-badge {
