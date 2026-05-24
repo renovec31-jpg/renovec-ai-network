@@ -239,7 +239,7 @@ export default function ChatRain() {
         position: 'fixed',
         inset: 0,
         pointerEvents: 'none',
-      zIndex: -1,        overflow: 'hidden',
+      zIndex: 30,        overflow: 'hidden',
       }}
     >
       <canvas
