@@ -298,10 +298,50 @@ function GuestRequestForm({
   );
 }
 
+// ─── Showcase static data ─────────────────────────────────────────────────────
+
+const SHOWCASE_SITUATION = "Mon bailleur refuse de rembourser ma caution depuis 3 mois et ne répond plus à mes mails.";
+
+const SHOWCASE_AI_TAGS = [
+  { label: 'Litige locatif',       color: 'orange' },
+  { label: 'Délai légal dépassé',  color: 'red'    },
+  { label: 'Communication rompue', color: 'amber'  },
+  { label: 'Droit du logement',    color: 'blue'   },
+] as const;
+
+const SHOWCASE_PROFILES = [
+  {
+    initial: 'M',
+    name: 'Marc A.',
+    city: 'Toulouse 3e',
+    capacite: 'Droit du logement · lecture de contrats',
+    raison: 'A résolu 4 situations similaires dans cette zone',
+    score: 91,
+    avail: 'Disponible ce soir',
+    availClass: 'gmf-avail--now',
+  },
+  {
+    initial: 'N',
+    name: 'Nadia B.',
+    city: 'Toulouse 7e',
+    capacite: 'Accompagnement démarches administratives · CAF',
+    raison: 'Connaît les blocages courants de ce type de litige',
+    score: 74,
+    avail: 'Disponible cette semaine',
+    availClass: 'gmf-avail--soon',
+  },
+] as const;
+
+const EXAMPLE_CHIPS = [
+  "Rédiger mon CV et préparer des entretiens d'embauche",
+  "Comprendre mes droits face à mon bailleur",
+  "M'aider dans mes démarches CAF ou RSA",
+] as const;
+
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 export default function GuestMatchFlow({ onEnter, isGuest }: Props) {
-  const [step, setStep] = useState<'input' | 'loading' | 'results'>('input');
+  const [step, setStep] = useState<'showcase' | 'input' | 'loading' | 'results'>('showcase');
   const [needText, setNeedText] = useState('');
   const [result, setResult] = useState<MatchResult | null>(null);
   const [error, setError] = useState('');
@@ -396,8 +436,81 @@ export default function GuestMatchFlow({ onEnter, isGuest }: Props) {
   return (
     <div className="gmf-root">
 
+      {/* ── Showcase (initial state) ──────────────────────────────────────── */}
+      {step === 'showcase' && (
+        <div className="gmf-showcase">
+          <p className="gmf-showcase-eyebrow">Exemple réel · Caution non restituée</p>
+
+          {/* Situation bubble */}
+          <div className="gmf-showcase-bubble">
+            <Sparkles size={12} className="gmf-showcase-spark" aria-hidden />
+            <p className="gmf-showcase-situation">{SHOWCASE_SITUATION}</p>
+          </div>
+
+          {/* AI reading */}
+          <div className="gmf-showcase-ai">
+            <p className="gmf-showcase-ai-label">Ce que l'IA comprend</p>
+            <div className="gmf-ai-tags">
+              {SHOWCASE_AI_TAGS.map((t, i) => (
+                <span key={i} className={`gmf-ai-tag gmf-ai-tag--${t.color}`}>{t.label}</span>
+              ))}
+            </div>
+          </div>
+
+          {/* Static profile previews */}
+          <div className="gmf-showcase-profiles">
+            {SHOWCASE_PROFILES.map((p, i) => (
+              <div key={i} className={`gmf-showcase-card ${i === 0 ? 'gmf-showcase-card--top' : ''}`}>
+                {i === 0 && <div className="gmf-showcase-card-badge">Meilleure correspondance</div>}
+                <div className="gmf-showcase-card-header">
+                  <div className="gmf-showcase-card-avatar">{p.initial}</div>
+                  <div className="gmf-showcase-card-info">
+                    <p className="gmf-showcase-card-name">
+                      <span className="gmf-blurred">{p.name}</span>
+                    </p>
+                    <p className="gmf-showcase-card-cap">{p.capacite}</p>
+                    <p className="gmf-showcase-card-city">
+                      <MapPin size={9} />
+                      <span className="gmf-blurred">{p.city}</span>
+                    </p>
+                  </div>
+                  <div className="gmf-showcase-card-score">{p.score}<span>%</span></div>
+                </div>
+                <p className="gmf-showcase-card-reason">{p.raison}</p>
+                <span className={`gmf-avail ${p.availClass}`}>
+                  <span className="gmf-avail-dot" /> {p.avail}
+                </span>
+              </div>
+            ))}
+          </div>
+
+          {/* CTA */}
+          <div className="gmf-showcase-cta-row">
+            <button className="gmf-showcase-cta" onClick={() => setStep('input')}>
+              Tester avec votre situation
+              <ArrowRight size={14} />
+            </button>
+            <p className="gmf-showcase-hint">Résultats réels · Aucune inscription requise</p>
+          </div>
+        </div>
+      )}
+
       {/* ── Input step ──────────────────────────────────────────────────── */}
+      {step !== 'showcase' && (
       <div className="gmf-input-section">
+        {step === 'input' && (
+          <div className="gmf-example-chips">
+            {EXAMPLE_CHIPS.map((chip, i) => (
+              <button
+                key={i}
+                className="gmf-example-chip"
+                onClick={() => { setNeedText(chip); textareaRef.current?.focus(); }}
+              >
+                {chip}
+              </button>
+            ))}
+          </div>
+        )}
         <div className="gmf-input-inner">
           <div className="gmf-input-header">
             <Sparkles size={16} className="gmf-input-spark" aria-hidden="true" />
@@ -441,6 +554,7 @@ export default function GuestMatchFlow({ onEnter, isGuest }: Props) {
           <p id="recherche-aide" className="gmf-input-hint">Appuyez sur Entrée · Résultats instantanés · {isGuest ? 'Aucune inscription requise pour voir les profils' : 'Connecté'}</p>
         </div>
       </div>
+      )}
 
       {/* ── Results step ────────────────────────────────────────────────── */}
       {step === 'results' && result && (
