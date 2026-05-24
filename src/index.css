@@ -653,8 +653,84 @@ button, a, input, textarea, select {
 .lp-hero-ctas {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: 14px;
   align-items: center;
+}
+
+/* ── Hero inline input ───────────────────────────────────────── */
+.lp-hero-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  max-width: 420px;
+  margin-bottom: 22px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.10);
+  border-radius: 6px;
+  overflow: hidden;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+.lp-hero-input-wrap:focus-within {
+  border-color: rgba(242,101,34,0.35);
+  background: rgba(255,255,255,0.06);
+  box-shadow: 0 0 0 3px rgba(242,101,34,0.06);
+}
+.lp-hero-input {
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  border: none;
+  outline: none;
+  padding: 13px 16px;
+  font-size: 13px;
+  color: rgba(255,255,255,0.82);
+  font-family: inherit;
+  line-height: 1.5;
+}
+.lp-hero-input::placeholder {
+  color: rgba(255,255,255,0.24);
+  font-style: italic;
+}
+.lp-hero-input-btn {
+  padding: 11px 15px;
+  background: rgba(242,101,34,0.12);
+  border: none;
+  border-left: 1px solid rgba(255,255,255,0.07);
+  color: rgba(242,101,34,0.7);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  transition: background 0.18s ease, color 0.18s ease;
+}
+.lp-hero-input-btn:hover {
+  background: rgba(242,101,34,0.26);
+  color: #F26522;
+}
+
+/* ── Secondary CTA — text-link, clearly subordinate ─────────── */
+.lp-hero-cta-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  color: rgba(255,255,255,0.30);
+  font-weight: 400;
+  cursor: pointer;
+  text-decoration: none;
+  padding: 4px 0;
+  transition: color 0.18s ease;
+}
+.lp-hero-cta-secondary:hover {
+  color: rgba(255,255,255,0.58);
+}
+.lp-hero-cta-secondary-arrow {
+  opacity: 0;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+.lp-hero-cta-secondary:hover .lp-hero-cta-secondary-arrow {
+  opacity: 1;
+  transform: translateX(2px);
 }
 
 .lp-hero-indicators {

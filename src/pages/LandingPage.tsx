@@ -4,7 +4,9 @@ import VoicePresence from '../components/VoicePresence';
 import WorkspaceOverlay from '../components/workspace/WorkspaceOverlay';
 import TeaserMap from '../components/TeaserMap';
 import GuestMatchFlow from '../components/GuestMatchFlow';
+import LiveFeedSidebar from '../components/LiveFeedSidebar';
 import GlobalRain from '../components/GlobalRain';
+import HorizontalScroll from '../components/HorizontalScroll';
 import ChatRain from '../components/ChatRain';
 import { avatarBg as teaserAvatarBg } from '../lib/ui';
 import { supabase } from '../lib/supabase';
@@ -19,9 +21,9 @@ type Props = {
   onMentions?: () => void;
 };
 
-// âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
-// FULL-PAGE SPINE â persistent connectome that runs behind all sections
-// âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ─────────────────────────────────────────────────────────────────────────────
+// FULL-PAGE SPINE — persistent connectome that runs behind all sections
+// ─────────────────────────────────────────────────────────────────────────────
 
 interface SpineNode {
   x: number; // 0-1 relative
@@ -45,7 +47,7 @@ interface SpineLink {
 }
 
 function buildSpine(): { nodes: SpineNode[]; links: SpineLink[] } {
-  // Distribute across full page height (y: 0â1 spread wide)
+  // Distribute across full page height (y: 0–1 spread wide)
   const raw: [number, number, number][] = [
     // x, y, cluster
     [0.08, 0.04, 0], [0.22, 0.07, 0], [0.55, 0.03, 1], [0.78, 0.06, 2], [0.92, 0.10, 2],
@@ -250,9 +252,9 @@ function PageSpine() {
   );
 }
 
-// âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
-// HERO CONNECTOME â denser, higher contrast
-// âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ─────────────────────────────────────────────────────────────────────────────
+// HERO CONNECTOME — denser, higher contrast
+// ─────────────────────────────────────────────────────────────────────────────
 
 interface HNode {
   x: number; y: number; vx: number; vy: number;
@@ -467,28 +469,28 @@ function HeroConnectome({ className }: { className?: string }) {
   return <canvas ref={canvasRef} className={className} style={{ display:'block', width:'100%', height:'100%' }} />;
 }
 
-// âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ─────────────────────────────────────────────────────────────────────────────
 // HUMAN AVATARS
-// âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ─────────────────────────────────────────────────────────────────────────────
 
-// Portrait photos from Pexels â natural, non-corporate, diverse
+// Portrait photos from Pexels — natural, non-corporate, diverse
 const AVATARS = {
-  // Lucie â jeune femme, lunettes, regard calme
+  // Lucie — jeune femme, lunettes, regard calme
   Lucie: 'https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=200&h=200&dpr=1',
-  // Marc â homme, lumiÃ¨re naturelle, dÃ©tendu
+  // Marc — homme, lumière naturelle, détendu
   Marc:  'https://images.pexels.com/photos/1040880/pexels-photo-1040880.jpeg?auto=compress&cs=tinysrgb&w=200&h=200&dpr=1',
-  // Anne â femme, fond neutre
+  // Anne — femme, fond neutre
   Anne:  'https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg?auto=compress&cs=tinysrgb&w=200&h=200&dpr=1',
   // Marie (profil capital)
   Marie: 'https://images.pexels.com/photos/1065084/pexels-photo-1065084.jpeg?auto=compress&cs=tinysrgb&w=200&h=200&dpr=1',
-  // NÅuds hero â prÃ©sences supplÃ©mentaires
+  // Nœuds hero — présences supplémentaires
   H1:    'https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg?auto=compress&cs=tinysrgb&w=200&h=200&dpr=1',
   H2:    'https://images.pexels.com/photos/2208740/pexels-photo-2208740.jpeg?auto=compress&cs=tinysrgb&w=200&h=200&dpr=1',
 };
 
-// âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
-// PRODUCT DEMO â animated sequence
-// âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ─────────────────────────────────────────────────────────────────────────────
+// PRODUCT DEMO — animated sequence
+// ─────────────────────────────────────────────────────────────────────────────
 
 const DEMO_STEPS = [
   {
@@ -496,18 +498,18 @@ const DEMO_STEPS = [
     text: '"J\'ai besoin d\'un coup de main pour comprendre ma fiche de paie."',
     nodes: ['L', 'M', 'A'],
     active: ['L'],
-    detail: 'L\'IA reÃ§oit la situation en langage naturel.',
+    detail: 'L\'IA reçoit la situation en langage naturel.',
   },
   {
-    phase: 'InterprÃ©tation IA',
-    text: 'L\'IA lit le contexte, identifie l\'enjeu â sans case, sans formulaire.',
+    phase: 'Interprétation IA',
+    text: 'L\'IA lit le contexte, identifie l\'enjeu — sans case, sans formulaire.',
     nodes: ['L', 'M', 'A'],
     active: ['L', 'M', 'A'],
-    detail: 'Deux prÃ©sences pertinentes activÃ©es. Contexte transmis.',
+    detail: 'Deux présences pertinentes activées. Contexte transmis.',
   },
   {
-    phase: 'Ãchange',
-    text: 'Marc rÃ©pond. 30 minutes d\'accompagnement.',
+    phase: 'Échange',
+    text: 'Marc répond. 30 minutes d\'accompagnement.',
     nodes: ['L', 'M'],
     active: ['L', 'M'],
     detail: 'Le lien entre L et M est actif.',
@@ -515,30 +517,30 @@ const DEMO_STEPS = [
   },
   {
     phase: 'Reconnaissance',
-    text: 'Lucie reconnaÃ®t l\'aide de Marc.',
+    text: 'Lucie reconnaît l\'aide de Marc.',
     nodes: ['L', 'M'],
     active: ['L', 'M'],
-    detail: 'L\'IA enregistre : ce type d\'aide a fonctionnÃ© dans ce contexte.',
+    detail: 'L\'IA enregistre : ce type d\'aide a fonctionné dans ce contexte.',
     link: ['L', 'M'],
     consolidating: true,
   },
   {
-    phase: 'MÃ©moire IA',
-    text: 'Le lien est consolidÃ©. Le rÃ©seau devient plus intelligent.',
+    phase: 'Mémoire IA',
+    text: 'Le lien est consolidé. Le réseau devient plus intelligent.',
     nodes: ['L', 'M'],
     active: ['L', 'M'],
-    detail: 'L\'IA s\'en souvient â pour toutes les situations similaires Ã  venir.',
+    detail: 'L\'IA s\'en souvient — pour toutes les situations similaires à venir.',
     link: ['L', 'M'],
     consolidated: true,
   },
 ];
 
-// Demo persons â seeker vs helper distinction baked in
+// Demo persons — seeker vs helper distinction baked in
 const DEMO_PERSONS = {
   L: {
     name: 'Lucie',
     city: 'Lyon 3e',
-    micro: 'comprend son dossier seule, mais lÃ  c\'est bloquÃ©',
+    micro: 'comprend son dossier seule, mais là c\'est bloqué',
     src: AVATARS.Lucie,
     kind: 'seeker' as const,
   },
@@ -552,7 +554,7 @@ const DEMO_PERSONS = {
   A: {
     name: 'Anne',
     city: 'Lyon 7e',
-    micro: 'peut accompagner sur les dÃ©marches',
+    micro: 'peut accompagner sur les démarches',
     src: AVATARS.Anne,
     kind: 'helper' as const,
   },
@@ -572,20 +574,20 @@ function ProductDemo({ onEnter }: { onEnter: () => void }) {
   const isActive = (id: string) => s.active.includes(id);
   const isLinked = (a: string, b: string) => !!s.link?.includes(a) && !!s.link?.includes(b);
 
-  // Nodes laid out left (seeker) â right (helpers)
+  // Nodes laid out left (seeker) → right (helpers)
   const nodePos: Record<string, { x: string; y: string }> = {
     L: { x: '22%', y: '50%' },
     M: { x: '65%', y: '30%' },
     A: { x: '68%', y: '70%' },
   };
 
-  // SVG coords matching %: Lâ(22,50) Mâ(65,30) Aâ(68,70)
+  // SVG coords matching %: L→(22,50) M→(65,30) A→(68,70)
   const lx=22, ly=50, mx=65, my=30, ax=68, ay=70;
 
   return (
     <div className="lp-demo">
       {/* Step nav */}
-      <div className="lp-demo-steps" role="tablist" aria-label="Ãtapes du processus IA">
+      <div className="lp-demo-steps" role="tablist" aria-label="Étapes du processus IA">
         {DEMO_STEPS.map((ds, i) => (
           <button
             key={ds.phase}
@@ -611,7 +613,7 @@ function ProductDemo({ onEnter }: { onEnter: () => void }) {
       <div className="lp-demo-viz">
         {/* SVG links */}
         <svg className="lp-demo-svg" viewBox="0 0 100 100" preserveAspectRatio="none">
-          {/* Background topology nodes â abstract secondary network */}
+          {/* Background topology nodes — abstract secondary network */}
           <circle cx="42" cy="18" r="1.2" fill="rgba(180,152,115,0.15)" />
           <circle cx="85" cy="48" r="0.9" fill="rgba(180,152,115,0.12)" />
           <circle cx="10" cy="28" r="0.8" fill="rgba(180,152,115,0.1)" />
@@ -620,7 +622,7 @@ function ProductDemo({ onEnter }: { onEnter: () => void }) {
           <line x1="85" y1="48" x2={mx} y2={my} stroke="rgba(180,152,115,0.06)" strokeWidth="0.4" strokeDasharray="2 8" />
           <line x1="48" y1="82" x2={ax} y2={ay} stroke="rgba(180,152,115,0.06)" strokeWidth="0.4" strokeDasharray="2 8" />
 
-          {/* LâM link */}
+          {/* L–M link */}
           <line
             x1={lx} y1={ly} x2={mx} y2={my}
             strokeWidth={s.consolidated && isLinked('L','M') ? 1.8 : 0.9}
@@ -631,7 +633,7 @@ function ProductDemo({ onEnter }: { onEnter: () => void }) {
             }
             strokeDasharray={isLinked('L','M') ? 'none' : '2 6'}
           />
-          {/* Signal on LâM when consolidating */}
+          {/* Signal on L–M when consolidating */}
           {s.consolidating && isLinked('L','M') && (
             <circle r="1.5" fill="rgba(255,200,120,0.9)">
               <animateMotion dur="1.2s" repeatCount="indefinite">
@@ -641,14 +643,14 @@ function ProductDemo({ onEnter }: { onEnter: () => void }) {
           )}
           <path id="lm-path" d={`M ${lx} ${ly} L ${mx} ${my}`} fill="none" />
 
-          {/* LâA link */}
+          {/* L–A link */}
           <line
             x1={lx} y1={ly} x2={ax} y2={ay}
             strokeWidth={0.7}
             stroke={s.active.includes('A') ? 'rgba(200,165,115,0.35)' : 'rgba(170,145,110,0.08)'}
             strokeDasharray="2 7"
           />
-          {/* MâA link (weak topology) */}
+          {/* M–A link (weak topology) */}
           <line x1={mx} y1={my} x2={ax} y2={ay}
             strokeWidth={0.4}
             stroke="rgba(170,145,110,0.07)"
@@ -687,7 +689,7 @@ function ProductDemo({ onEnter }: { onEnter: () => void }) {
               {active && <div className="lp-demo-node-halo" />}
               {isConsolidatedNode && <div className="lp-demo-node-ring" />}
 
-              {/* Role badge â visible when active */}
+              {/* Role badge — visible when active */}
               {active && (
                 <div className={`lp-demo-role-badge lp-demo-role-badge--${person.kind}`}>
                   {isSeeker ? 'cherche' : 'peut aider'}
@@ -710,7 +712,7 @@ function ProductDemo({ onEnter }: { onEnter: () => void }) {
 
         {/* Consolidated badge */}
         {s.consolidated && (
-          <div className="lp-demo-consolidated-badge">lien consolidÃ© Â· en mÃ©moire</div>
+          <div className="lp-demo-consolidated-badge">lien consolidé · en mémoire</div>
         )}
       </div>
 
@@ -728,16 +730,16 @@ function ProductDemo({ onEnter }: { onEnter: () => void }) {
       </div>
 
       <button onClick={onEnter} className="lp-demo-cta group">
-        Voir comment Ã§a marche pour vous
+        Voir comment ça marche pour vous
         <ArrowRight size={12} className="group-hover:translate-x-0.5 transition-transform" />
       </button>
     </div>
   );
 }
 
-// âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ─────────────────────────────────────────────────────────────────────────────
 // CAPITAL BAR
-// âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ─────────────────────────────────────────────────────────────────────────────
 
 function CapitalBar({ label, value, color }: { label: string; value: number; color: string }) {
   const [animated, setAnimated] = useState(false);
@@ -769,29 +771,29 @@ function CapitalBar({ label, value, color }: { label: string; value: number; col
   );
 }
 
-// âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ─────────────────────────────────────────────────────────────────────────────
 // SCENARIO DATA
-// âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ─────────────────────────────────────────────────────────────────────────────
 
 const SCENARIOS = [
-  { kind:'cherche', text:'Je cherche un bureau d\'occasion pour mon fils qui commence Ã  travailler chez lui.', meta:'Objet Â· ProximitÃ©' },
-  { kind:'offre',   text:'Je peux aider en maths le soir â lycÃ©e ou prÃ©pa.', meta:'Savoir-faire Â· DisponibilitÃ©' },
-  { kind:'cherche', text:'J\'ai besoin d\'un coup de main sur un dossier RSA bloquÃ© depuis 3 mois.', meta:'Aide Â· Urgence' },
-  { kind:'offre',   text:'Je prÃªte une remorque samedi matin.', meta:'Objet Â· Ponctuel' },
-  { kind:'cherche', text:'Je cherche quelqu\'un de fiable pour surveiller mon appartement en aoÃ»t.', meta:'PrÃ©sence Â· Confiance' },
-  { kind:'offre',   text:'Je connais le droit du travail. Je peux lire un contrat et expliquer.', meta:'Savoir Â· Accompagnement' },
+  { kind:'cherche', text:'Je cherche un bureau d\'occasion pour mon fils qui commence à travailler chez lui.', meta:'Objet · Proximité' },
+  { kind:'offre',   text:'Je peux aider en maths le soir — lycée ou prépa.', meta:'Savoir-faire · Disponibilité' },
+  { kind:'cherche', text:'J\'ai besoin d\'un coup de main sur un dossier RSA bloqué depuis 3 mois.', meta:'Aide · Urgence' },
+  { kind:'offre',   text:'Je prête une remorque samedi matin.', meta:'Objet · Ponctuel' },
+  { kind:'cherche', text:'Je cherche quelqu\'un de fiable pour surveiller mon appartement en août.', meta:'Présence · Confiance' },
+  { kind:'offre',   text:'Je connais le droit du travail. Je peux lire un contrat et expliquer.', meta:'Savoir · Accompagnement' },
 ];
 
 const PROFILE_BARS = [
   { label:'Capital confiance', value:0.82, color:'#F26522' },
   { label:'Capital savoir',    value:0.68, color:'#d4a96a' },
-  { label:'Liens consolidÃ©s',  value:0.74, color:'#e8b87a' },
+  { label:'Liens consolidés',  value:0.74, color:'#e8b87a' },
   { label:'Contributions',     value:0.59, color:'#c4956a' },
 ];
 
-// âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
-// GEO MAP SECTION â wraps the real MapLibre component
-// âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ─────────────────────────────────────────────────────────────────────────────
+// GEO MAP SECTION — wraps the real MapLibre component
+// ─────────────────────────────────────────────────────────────────────────────
 
 function GeoMapSection() {
   return (
@@ -801,19 +803,19 @@ function GeoMapSection() {
         <div className="lp-geo-text">
           <p className="lp-eyebrow">Territoire vivant</p>
           <h2 className="lp-section-h2">
-            Des humains rÃ©els,<br />dans des lieux rÃ©els.
+            Des humains réels,<br />dans des lieux réels.
           </h2>
           <p className="lp-body">
-            Le rÃ©seau n'existe pas dans un cloud. Il existe dans les quartiers, dans les rues, dans les immeubles. Chaque prÃ©sence est ancrÃ©e dans un territoire.
+            Le réseau n'existe pas dans un cloud. Il existe dans les quartiers, dans les rues, dans les immeubles. Chaque présence est ancrée dans un territoire.
           </p>
           <div className="lp-geo-legend">
             <div className="lp-geo-legend-item">
               <div className="lp-geo-legend-dot lp-geo-dot-active" />
-              <span>PrÃ©sence active</span>
+              <span>Présence active</span>
             </div>
             <div className="lp-geo-legend-item">
               <div className="lp-geo-legend-line lp-geo-line-consolidated" />
-              <span>Lien consolidÃ©</span>
+              <span>Lien consolidé</span>
             </div>
             <div className="lp-geo-legend-item">
               <div className="lp-geo-legend-line lp-geo-line-potential" />
@@ -822,7 +824,7 @@ function GeoMapSection() {
           </div>
         </div>
 
-        {/* Real MapLibre map â lazy loaded */}
+        {/* Real MapLibre map — lazy loaded */}
         <Suspense fallback={<div className="renovec-map-wrap renovec-map-loading" />}>
           <RenovecMap className="lp-geo-map-container" />
         </Suspense>
@@ -831,9 +833,9 @@ function GeoMapSection() {
   );
 }
 
-// âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ─────────────────────────────────────────────────────────────────────────────
 // LANDING FEED TEASER
-// âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ─────────────────────────────────────────────────────────────────────────────
 
 type TeaserListing = {
   id: string;
@@ -945,30 +947,22 @@ function LandingFeedTeaser({ onEnter, onOpenFeed }: { onEnter: () => void; onOpe
     return () => { cancelled = true; };
   }, []);
 
-  const FALLBACK_ITEMS = listings.length > 0 ? listings : [
-    { id:'f1', listing_type:'service' as const, title:'Aide à la rédaction de CV et préparation entretiens', price_hint:'Gratuit', image_urls:[], tags:[], _profile:{ title:'Arnaud C.', city:'Toulouse' } },
-    { id:'f2', listing_type:'object_used' as const, title:'Bureau en chêne massif — très bon état', price_hint:'80 €', image_urls:[], tags:[], _profile:{ title:'Manon D.', city:'Blagnac' } },
-    { id:'f3', listing_type:'service' as const, title:'Soutien scolaire maths lycée et prépa', price_hint:'Libre', image_urls:[], tags:[], _profile:{ title:'Sophie M.', city:'Colomiers' } },
-    { id:'f4', listing_type:'resource' as const, title:'Remorque disponible weekends — conduite facile', price_hint:'Gratuit', image_urls:[], tags:[], _profile:{ title:'Florian V.', city:'Tournefeuille' } },
-    { id:'f5', listing_type:'service' as const, title:'Explication droit du travail, lecture de contrat', price_hint:'Gratuit', image_urls:[], tags:[], _profile:{ title:'Lucas F.', city:'Toulouse' } },
-    { id:'f6', listing_type:'demand' as const, title:"Recherche quelqu'un pour surveiller appartement en août", price_hint:'À convenir', image_urls:[], tags:[], _profile:{ title:'Rania M.', city:'Toulouse' } },
-  ];
-  if (loading && listings.length === 0) return null;
+  if (loading || listings.length === 0) return null;
 
   return (
     <section style={{ padding: '96px 0', background: 'transparent' }}>
       <div style={{ maxWidth: 900, margin: '0 auto', padding: '0 24px' }}>
         <p className="lp-eyebrow lp-eyebrow--center">Ce qui circule en ce moment</p>
         <h2 className="lp-section-h2 lp-section-h2--center" style={{ marginBottom: 12 }}>
-          Le rÃ©seau, en direct.
+          Le réseau, en direct.
         </h2>
         <p className="lp-body lp-body--center" style={{ marginBottom: 40 }}>
-          Services, objets neufs ou d'occasion, ressources partagÃ©es â tout ce que les membres proposent.
+          Services, objets neufs ou d'occasion, ressources partagées — tout ce que les membres proposent.
         </p>
 
         {/* Vertical feed */}
         <div className="flex flex-col gap-2">
-          {FALLBACK_ITEMS.map(l => (
+          {listings.map(l => (
             <TeaserCard key={l.id} listing={l} onEnter={onEnter} />
           ))}
           {/* CTA row at end */}
@@ -977,7 +971,7 @@ function LandingFeedTeaser({ onEnter, onOpenFeed }: { onEnter: () => void; onOpe
             className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl border border-dashed border-white/12 text-[12px] text-white/30 hover:text-white/60 hover:border-white/25 transition-all group mt-1"
           >
             <ArrowRight size={13} className="group-hover:translate-x-0.5 transition-transform" />
-            Voir toutes les annonces du rÃ©seau
+            Voir toutes les annonces du réseau
           </button>
         </div>
 
@@ -997,7 +991,7 @@ function LandingFeedTeaser({ onEnter, onOpenFeed }: { onEnter: () => void; onOpe
 
         <div className="flex justify-center mt-8">
           <button onClick={onOpenFeed} className="lp-btn-secondary group">
-            Explorer le fil d'actualitÃ©
+            Explorer le fil d'actualité
             <ArrowRight size={14} className="group-hover:translate-x-0.5 transition-transform" />
           </button>
         </div>
@@ -1006,13 +1000,14 @@ function LandingFeedTeaser({ onEnter, onOpenFeed }: { onEnter: () => void; onOpe
   );
 }
 
-// âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ─────────────────────────────────────────────────────────────────────────────
 // MAIN
-// âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ─────────────────────────────────────────────────────────────────────────────
 
 export default function LandingPage({ onEnter, onHowItWorks, onGoToPresence: _onGoToPresence, onMentions }: Props) {
   const [scrolled, setScrolled] = useState(false);
   const [aiOpen, setAiOpen] = useState(false);
+  const [heroInput, setHeroInput] = useState('');
 
   const openAI = useCallback(() => setAiOpen(true), []);
   const closeAI = useCallback(() => setAiOpen(false), []);
@@ -1027,30 +1022,30 @@ export default function LandingPage({ onEnter, onHowItWorks, onGoToPresence: _on
     <div className="lp-root">
 
 
-      {/* ââ Persistent ambient blobs âââ */}
+      {/* ── Persistent ambient blobs ─── */}
       <div className="lp-ambient" aria-hidden>
         <div className="lp-blob lp-blob-a" />
         <div className="lp-blob lp-blob-b" />
         <div className="lp-blob lp-blob-c" />
       </div>
 
-      {/* ââ Global rain of profiles ââ */}
+      {/* ── Global rain of profiles ── */}
       <GlobalRain frozen={aiOpen} />
 
-      {/* ââ Full-page spine connectome ââ */}
+      {/* ── Full-page spine connectome ── */}
       <PageSpine />
 
-      {/* ââ Nav âââââââââââââââââââââââââ */}
+      {/* ── Nav ───────────────────────── */}
       <header role="banner">
         <nav className={`lp-nav ${scrolled ? 'lp-nav--scrolled' : ''}`} aria-label="Navigation principale">
           <div className="lp-nav-inner">
-            <a href="/" className="lp-logo" aria-label="RENOVEC â Accueil">
+            <a href="/" className="lp-logo" aria-label="RENOVEC — Accueil">
               <div className="lp-logo-mark" aria-hidden="true" />
               <span>RENOVEC</span>
             </a>
             <div className="lp-nav-actions">
               <a href="/comment-ca-marche" onClick={(e) => { e.preventDefault(); onHowItWorks(); }} className="lp-nav-link hidden sm:block">
-                Comment Ã§a marche
+                Comment ça marche
               </a>
               <a href="/entrer" onClick={(e) => { e.preventDefault(); onEnter(); }} className="lp-btn-outline-sm">
                 Entrer <ArrowRight size={9} aria-hidden="true" />
@@ -1060,7 +1055,7 @@ export default function LandingPage({ onEnter, onHowItWorks, onGoToPresence: _on
         </nav>
       </header>
 
-      {/* ââââââââââââââââ 1. HERO ââââââââââââââââââââââââââââââââââââââââ */}
+      {/* ════════════════ 1. HERO ════════════════════════════════════════ */}
       <section className="lp-hero">
         <div className="lp-hero-canvas">
           <HeroConnectome className="w-full h-full" />
@@ -1074,7 +1069,7 @@ export default function LandingPage({ onEnter, onHowItWorks, onGoToPresence: _on
             <div className="lp-hero-human-info">
               <span className="lp-hero-human-name">Thomas</span>
               <span className="lp-hero-human-cap">comprend le droit locatif</span>
-              <span className="lp-hero-human-loc">Bordeaux Â· Chartrons</span>
+              <span className="lp-hero-human-loc">Bordeaux · Chartrons</span>
             </div>
           </div>
           <div className="lp-hero-human lp-hero-human--2">
@@ -1083,7 +1078,7 @@ export default function LandingPage({ onEnter, onHowItWorks, onGoToPresence: _on
             <div className="lp-hero-human-info">
               <span className="lp-hero-human-name">Fatima</span>
               <span className="lp-hero-human-cap">utile sur les dossiers sociaux</span>
-              <span className="lp-hero-human-loc">Lyon Â· Presqu'Ã®le</span>
+              <span className="lp-hero-human-loc">Lyon · Presqu'île</span>
             </div>
           </div>
           <div className="lp-hero-human lp-hero-human--3">
@@ -1092,38 +1087,75 @@ export default function LandingPage({ onEnter, onHowItWorks, onGoToPresence: _on
             <div className="lp-hero-human-info">
               <span className="lp-hero-human-name">Marc</span>
               <span className="lp-hero-human-cap">accompagne les transitions pro</span>
-              <span className="lp-hero-human-loc">Paris Â· 11e</span>
+              <span className="lp-hero-human-loc">Paris · 11e</span>
             </div>
           </div>
         </div>
 
         <div className="lp-hero-content" id="contenu-principal">
           <div className="lp-hero-text">
-            <p className="lp-eyebrow">Infrastructure orchestrÃ©e par IA</p>
+            <p className="lp-eyebrow">Infrastructure orchestrée par IA</p>
             <h1 id="hero-title" className="lp-hero-h1">
-              Le rÃ©seau qui<br />comprend avant<br />d'orienter.
+              Le réseau qui<br />comprend avant<br />d'orienter.
             </h1>
             <p className="lp-hero-sub">
-              L'IA lit chaque situation en langage libre.<br />
-              Elle relie. Elle coordonne. Elle se souvient.<br />
-              Pas de formulaire. Pas de case Ã  cocher.
+              Décrivez ce que vous vivez ou ce que vous savez faire.<br />
+              L'IA comprend la situation et active les bonnes présences.<br />
+              Pas de case imposée. Pas de parcours figé.
             </p>
+
+            {/* ── Bulle d'expression libre intégrée ── */}
+            <div className="lp-hero-input-wrap">
+              <input
+                type="text"
+                className="lp-hero-input"
+                placeholder="J'ai besoin d'aide pour… ou Je peux aider en…"
+                value={heroInput}
+                onChange={(e) => setHeroInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    const t = heroInput.trim();
+                    if (t) sessionStorage.setItem('renovec_guest_need', t);
+                    openAI();
+                  }
+                }}
+                aria-label="Décrivez votre situation"
+              />
+              <button
+                className="lp-hero-input-btn"
+                onClick={() => {
+                  const t = heroInput.trim();
+                  if (t) sessionStorage.setItem('renovec_guest_need', t);
+                  openAI();
+                }}
+                aria-label="Exprimer"
+              >
+                <ArrowRight size={14} />
+              </button>
+            </div>
+
+            {/* ── CTAs hiérarchisés ── */}
             <div className="lp-hero-ctas">
               <a href="/entrer" onClick={(e) => { e.preventDefault(); openAI(); }} className="lp-btn-primary group">
-                Essayer maintenant
+                Exprimer une situation
                 <ArrowRight size={13} className="group-hover:translate-x-0.5 transition-transform" aria-hidden="true" />
+              </a>
+              <a href="/entrer" onClick={(e) => { e.preventDefault(); openAI(); }} className="lp-hero-cta-secondary group">
+                Partager ma présence
+                <ArrowRight size={10} className="lp-hero-cta-secondary-arrow" aria-hidden="true" />
               </a>
             </div>
           </div>
           <div className="lp-hero-indicators">
             <div className="lp-indicator"><div className="lp-indicator-dot lp-dot-green" /><span>coordinateur IA actif</span></div>
             <div className="lp-indicator"><div className="lp-indicator-dot lp-dot-amber" /><span>situations en cours d'analyse</span></div>
+            <div className="lp-indicator"><div className="lp-indicator-dot" style={{ width:5, height:5, borderRadius:'50%', background:'rgba(255,255,255,0.18)' }} /><span>premiers profils visibles sans inscription</span></div>
           </div>
         </div>
         <div className="lp-hero-fade-bottom" aria-hidden />
       </section>
 
-      {/* ââââââââââââââââ 1b. EXEMPLES CONCRETS ââââââââââââââââââââââââ */}
+      {/* ════════════════ 1b. EXEMPLES CONCRETS ════════════════════════ */}
       <section className="lp-scenarios" aria-label="Exemples de situations">
         <div className="lp-scenarios-stream">
           {SCENARIOS.map((s, i) => (
@@ -1142,15 +1174,15 @@ export default function LandingPage({ onEnter, onHowItWorks, onGoToPresence: _on
         </div>
       </section>
 
-      {/* ââââââââââââââââ 2. ENTRÃE CONVERSATIONNELLE âââââââââââââââââââ */}
+      {/* ════════════════ 2. ENTRÉE CONVERSATIONNELLE ═══════════════════ */}
       <section className="lp-guest-match">
         <div className="lp-guest-match-header">
-          <p className="lp-eyebrow lp-eyebrow--center">RÃ©sultats instantanÃ©s</p>
+          <p className="lp-eyebrow lp-eyebrow--center">Résultats instantanés</p>
           <h2 className="lp-section-h2 lp-section-h2--center">
-            Testez maintenant â<br />sans inscription
+            Testez maintenant —<br />sans inscription
           </h2>
           <p className="lp-body lp-body--center" style={{ marginBottom: 0 }}>
-            DÃ©crivez votre besoin. L'IA trouve les profils les plus compatibles en quelques secondes.
+            Décrivez votre besoin. L'IA trouve les profils les plus compatibles en quelques secondes.
           </p>
         </div>
         <GuestMatchFlow onEnter={(needText) => {
@@ -1159,15 +1191,15 @@ export default function LandingPage({ onEnter, onHowItWorks, onGoToPresence: _on
         }} isGuest={true} />
       </section>
 
-      {/* ââââââââââââââââ 3. DÃMONSTRATION PRODUIT ââââââââââââââââââââââ */}
+      {/* ════════════════ 3. DÉMONSTRATION PRODUIT ══════════════════════ */}
       {/* Pipeline steps fused as lead-in, then animated demo below      */}
       <section className="lp-demo-section">
         <div className="lp-demo-section-inner">
           <div className="lp-pipeline-inner" style={{ marginBottom: 56 }}>
             {[
-              { n:'01', label:'Situation ouverte', body:'Vous exprimez ce que vous vivez en langage libre. L\'IA lit, interprÃ¨te, clarifie â sans formulaire, sans catÃ©gorie imposÃ©e.' },
-              { n:'02', label:'Orchestration IA',  body:'L\'IA identifie les ressources pertinentes, construit le contexte, active les prÃ©sences. Aucun mÃ©canisme figÃ© ne dicte la rÃ©ponse.' },
-              { n:'03', label:'Coordination vivante', body:'Un Ã©change commence. L\'IA retient ce qui a fonctionnÃ©. Le rÃ©seau devient plus intelligent Ã  chaque situation rÃ©solue.' },
+              { n:'01', label:'Situation ouverte', body:'Vous exprimez ce que vous vivez en langage libre. L\'IA lit, interprète, clarifie — sans formulaire, sans catégorie imposée.' },
+              { n:'02', label:'Orchestration IA',  body:'L\'IA identifie les ressources pertinentes, construit le contexte, active les présences. Aucun mécanisme figé ne dicte la réponse.' },
+              { n:'03', label:'Coordination vivante', body:'Un échange commence. L\'IA retient ce qui a fonctionné. Le réseau devient plus intelligent à chaque situation résolue.' },
             ].map((step, i) => (
               <div key={step.n} className="lp-pipeline-step">
                 <div className="lp-pipeline-step-inner">
@@ -1183,25 +1215,25 @@ export default function LandingPage({ onEnter, onHowItWorks, onGoToPresence: _on
           <div className="lp-demo-header">
             <p className="lp-eyebrow">L'IA en action</p>
             <h2 className="lp-section-h2">
-              De la situation Ã  la coordination â<br />sans case, sans workflow.
+              De la situation à la coordination —<br />sans case, sans workflow.
             </h2>
             <p className="lp-body">
-              L'IA comprend la situation, identifie les prÃ©sences, orchestre la mise en relation. Aucun chemin prÃ©visible ne s'impose.
+              L'IA comprend la situation, identifie les présences, orchestre la mise en relation. Aucun chemin prévisible ne s'impose.
             </p>
           </div>
           <ProductDemo onEnter={onEnter} />
         </div>
       </section>
 
-      {/* ââââââââââââââââ 4. RÃSEAU VIVANT LOCAL ââââââââââââââââââââââââ */}
+      {/* ════════════════ 4. RÉSEAU VIVANT LOCAL ════════════════════════ */}
       {/* GeoMapSection + fused stats + TeaserMap                        */}
       <GeoMapSection />
 
       <section className="lp-network-stats">
         <div className="lp-network-stats-inner">
-          <p className="lp-eyebrow lp-eyebrow--center">RÃ©seau actif</p>
+          <p className="lp-eyebrow lp-eyebrow--center">Réseau actif</p>
           <h2 className="lp-section-h2 lp-section-h2--center">
-            Un rÃ©seau vivant,<br />pas un annuaire figÃ©.
+            Un réseau vivant,<br />pas un annuaire figé.
           </h2>
           <div className="lp-stats-row">
             <div className="lp-stat">
@@ -1224,25 +1256,25 @@ export default function LandingPage({ onEnter, onHowItWorks, onGoToPresence: _on
 
       <TeaserMap onEnter={onEnter} />
 
-      {/* ââââââââââââââââ 5. INTELLIGENCE CUMULATIVE ââââââââââââââââââââ */}
-      {/* MÃ©moire + Reconnaissance + Capital fusionnÃ©s en un seul bloc     */}
+      {/* ════════════════ 5. INTELLIGENCE CUMULATIVE ════════════════════ */}
+      {/* Mémoire + Reconnaissance + Capital fusionnés en un seul bloc     */}
       <section className="lp-memory-section">
         <div className="lp-memory-label-left">
           <p className="lp-eyebrow">Intelligence cumulative</p>
           <h2 className="lp-section-h2 lp-section-h2--tight">
-            Chaque aide reconnue<br />instruit le rÃ©seau.
+            Chaque aide reconnue<br />instruit le réseau.
           </h2>
           <p className="lp-body">
-            L'IA mÃ©morise ce qui a fonctionnÃ© â pas comme un log, mais comme une connaissance active. Une aide reconnue n'est pas un like : c'est une inscription durable dans la mÃ©moire collective, qui renforce le capital du membre et amÃ©liore le rÃ©seau.
+            L'IA mémorise ce qui a fonctionné — pas comme un log, mais comme une connaissance active. Une aide reconnue n'est pas un like : c'est une inscription durable dans la mémoire collective, qui renforce le capital du membre et améliore le réseau.
           </p>
 
-          {/* SÃ©quence consolidation */}
+          {/* Séquence consolidation */}
           <div className="lp-consolidation-steps" style={{ marginTop: 28 }}>
             {[
-              { n:'01', phase:'Situation',     detail:'Un besoin exprimÃ©.' },
-              { n:'02', phase:'Ãchange',       detail:'Une aide se produit.' },
+              { n:'01', phase:'Situation',     detail:'Un besoin exprimé.' },
+              { n:'02', phase:'Échange',       detail:'Une aide se produit.' },
               { n:'03', phase:'Reconnaissance',detail:'L\'aide est reconnue.' },
-              { n:'04', phase:'Consolidation', detail:'En mÃ©moire collective.', highlight:true },
+              { n:'04', phase:'Consolidation', detail:'En mémoire collective.', highlight:true },
             ].map((s, i) => (
               <div key={s.n} className="lp-consol-step">
                 <div className={`lp-consol-num ${s.highlight ? 'lp-consol-num--active' : ''}`}>
@@ -1262,7 +1294,7 @@ export default function LandingPage({ onEnter, onHowItWorks, onGoToPresence: _on
                 <img src={AVATARS.Marie} alt="Marie" className="lp-profile-avatar-img" loading="lazy" />
               </div>
               <div>
-                <p className="lp-profile-name">Marie Â· Lyon 7e</p>
+                <p className="lp-profile-name">Marie · Lyon 7e</p>
                 <p className="lp-profile-since">Membre depuis 14 mois</p>
               </div>
             </div>
@@ -1278,7 +1310,7 @@ export default function LandingPage({ onEnter, onHowItWorks, onGoToPresence: _on
               </div>
             </div>
             <div className="lp-profile-links-row">
-              <span className="lp-profile-link-badge">7 liens consolidÃ©s</span>
+              <span className="lp-profile-link-badge">7 liens consolidés</span>
               <span className="lp-profile-link-badge">3 clusters actifs</span>
             </div>
           </div>
@@ -1286,21 +1318,21 @@ export default function LandingPage({ onEnter, onHowItWorks, onGoToPresence: _on
 
         <div className="lp-memory-canvas-wrap">
           <HeroConnectome className="w-full h-full" />
-          <div className="lp-memory-overlay-tag lp-memory-tag-tl">rÃ©seau local vivant</div>
+          <div className="lp-memory-overlay-tag lp-memory-tag-tl">réseau local vivant</div>
           <div className="lp-memory-overlay-tag lp-memory-tag-br">
-            <span className="lp-dot-amber-sm" />liaisons consolidÃ©es en mÃ©moire
+            <span className="lp-dot-amber-sm" />liaisons consolidées en mémoire
           </div>
         </div>
       </section>
 
-      {/* ââââââââââââââââ 6. DEUX PORTES D'ENTRÃE âââââââââââââââââââââââ */}
+      {/* ════════════════ 6. DEUX PORTES D'ENTRÉE ═══════════════════════ */}
       <section className="lp-dual">
         <div className="lp-dual-header">
-          <p className="lp-eyebrow">Deux faÃ§ons d'Ãªtre dans le rÃ©seau</p>
+          <p className="lp-eyebrow">Deux façons d'être dans le réseau</p>
           <h2 className="lp-section-h2">
             Ceux qui traversent.<br />Ceux qui peuvent aider.
           </h2>
-          <p className="lp-body lp-body--center">Le rÃ©seau entre les deux.</p>
+          <p className="lp-body lp-body--center">Le réseau entre les deux.</p>
         </div>
         <div className="lp-dual-cards">
           <div className="lp-dual-card lp-dual-card--seeker">
@@ -1308,12 +1340,12 @@ export default function LandingPage({ onEnter, onHowItWorks, onGoToPresence: _on
             <p className="lp-dual-card-role">Les chercheurs</p>
             <p className="lp-dual-card-headline">Vous traversez quelque chose.</p>
             <p className="lp-dual-card-body">
-              Une situation difficile, floue, urgente. Exprimez-la. L'IA interprÃ¨te avant d'orienter â elle ne vous force pas dans une case.
+              Une situation difficile, floue, urgente. Exprimez-la. L'IA interprète avant d'orienter — elle ne vous force pas dans une case.
             </p>
             <ul className="lp-dual-card-list">
               <li>Expression libre en langage naturel</li>
-              <li>InterprÃ©tation IA du contexte rÃ©el</li>
-              <li>Coordination adaptÃ©e Ã  votre situation spÃ©cifique</li>
+              <li>Interprétation IA du contexte réel</li>
+              <li>Coordination adaptée à votre situation spécifique</li>
             </ul>
             <a href="/entrer" onClick={(e) => { e.preventDefault(); openAI(); }} className="lp-dual-cta group">
               Exprimer une situation <ArrowRight size={11} className="group-hover:translate-x-0.5 transition-transform" aria-hidden="true" />
@@ -1328,32 +1360,32 @@ export default function LandingPage({ onEnter, onHowItWorks, onGoToPresence: _on
               <div className="lp-bridge-link" />
               <div className="lp-bridge-node lp-bridge-node--presence" />
             </div>
-            <span className="lp-bridge-label">rÃ©seau</span>
+            <span className="lp-bridge-label">réseau</span>
           </div>
 
           <div className="lp-dual-card lp-dual-card--presence">
             <div className="lp-dual-card-glyph"><div className="lp-glyph-give" /></div>
-            <p className="lp-dual-card-role">Les prÃ©sences</p>
+            <p className="lp-dual-card-role">Les présences</p>
             <p className="lp-dual-card-headline">Vous savez aider.</p>
             <p className="lp-dual-card-body">
-              Dans certains contextes prÃ©cis. L'IA sait quand vous Ãªtes pertinent â et vous active au bon moment, sans que vous ayez Ã  surveiller.
+              Dans certains contextes précis. L'IA sait quand vous êtes pertinent — et vous active au bon moment, sans que vous ayez à surveiller.
             </p>
             <ul className="lp-dual-card-list">
-              <li>CapacitÃ©s comprises, pas seulement listÃ©es</li>
-              <li>Activation IA selon la situation rÃ©elle</li>
+              <li>Capacités comprises, pas seulement listées</li>
+              <li>Activation IA selon la situation réelle</li>
               <li>Chaque aide reconnue renforce votre profil</li>
             </ul>
             <a href="/entrer" onClick={(e) => { e.preventDefault(); openAI(); }} className="lp-dual-cta group">
-              Partager ma prÃ©sence <ArrowRight size={11} className="group-hover:translate-x-0.5 transition-transform" aria-hidden="true" />
+              Partager ma présence <ArrowRight size={11} className="group-hover:translate-x-0.5 transition-transform" aria-hidden="true" />
             </a>
           </div>
         </div>
       </section>
 
-      {/* ââââââââââââââââ 7. FIL D'ACTUALITÃ ââââââââââââââââââââââââââââ */}
+      {/* ════════════════ 7. FIL D'ACTUALITÉ ════════════════════════════ */}
       <LandingFeedTeaser onEnter={onEnter} onOpenFeed={() => openAI()} />
 
-      {/* ââââââââââââââââ 8. FINALE ââââââââââââââââââââââââââââââââââââââ */}
+      {/* ════════════════ 8. FINALE ══════════════════════════════════════ */}
       <section className="lp-finale">
         <div className="lp-finale-glow" aria-hidden />
         <div className="lp-finale-rain" aria-hidden><ChatRain /></div>
@@ -1361,30 +1393,30 @@ export default function LandingPage({ onEnter, onHowItWorks, onGoToPresence: _on
           <div className="lp-finale-connectome">
             <HeroConnectome className="w-full h-full" />
           </div>
-          <p className="lp-eyebrow lp-eyebrow--center">Rejoindre le rÃ©seau</p>
+          <p className="lp-eyebrow lp-eyebrow--center">Rejoindre le réseau</p>
           <blockquote className="lp-finale-quote">
             "L'IA n'est pas l'interface.<br />Elle est l'intelligence qui coordonne."
           </blockquote>
           <div className="lp-finale-ctas">
             <a href="/entrer" onClick={(e) => { e.preventDefault(); openAI(); }} className="lp-btn-primary group">
-              Entrer dans le rÃ©seau
+              Entrer dans le réseau
               <ArrowRight size={13} className="group-hover:translate-x-0.5 transition-transform" aria-hidden="true" />
             </a>
             <a href="/entrer" onClick={(e) => { e.preventDefault(); openAI(); }} className="lp-btn-ghost group">
-              Partager ma prÃ©sence
+              Partager ma présence
               <ArrowRight size={11} className="lp-btn-ghost-arrow" aria-hidden="true" />
             </a>
           </div>
         </div>
       </section>
 
-      {/* ââ Footer âââââ */}
+      {/* ── Footer ───── */}
       <footer className="lp-footer" role="contentinfo">
         <div className="lp-footer-inner">
-          <p className="lp-footer-copy">RENOVEC Â· RÃ©seau orchestrÃ© par IA Â· 2026</p>
-          <nav aria-label="Liens lÃ©gaux" className="flex items-center gap-4 flex-wrap">
-            <a href="/mentions-legales" onClick={(e) => { e.preventDefault(); onMentions?.(); }} className="lp-footer-link">Mentions lÃ©gales</a>
-            <a href="/politique-de-confidentialite" onClick={(e) => { e.preventDefault(); window.history.pushState(null, '', '/politique-de-confidentialite'); window.dispatchEvent(new PopStateEvent('popstate')); }} className="lp-footer-link">Politique de confidentialitÃ©</a>
+          <p className="lp-footer-copy">RENOVEC · Réseau orchestré par IA · 2026</p>
+          <nav aria-label="Liens légaux" className="flex items-center gap-4 flex-wrap">
+            <a href="/mentions-legales" onClick={(e) => { e.preventDefault(); onMentions?.(); }} className="lp-footer-link">Mentions légales</a>
+            <a href="/politique-de-confidentialite" onClick={(e) => { e.preventDefault(); window.history.pushState(null, '', '/politique-de-confidentialite'); window.dispatchEvent(new PopStateEvent('popstate')); }} className="lp-footer-link">Politique de confidentialité</a>
             <a href="/conditions-generales" onClick={(e) => { e.preventDefault(); window.history.pushState(null, '', '/conditions-generales'); window.dispatchEvent(new PopStateEvent('popstate')); }} className="lp-footer-link">CGU</a>
           </nav>
         </div>
