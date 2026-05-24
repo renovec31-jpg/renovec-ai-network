@@ -129,9 +129,10 @@ function AppInner() {
     } else if (view === 'app') {
       navigate(activeTab === 'carte' ? '/carte' : '/');
     } else if (view === 'auth') {
-      if (window.location.pathname !== '/entrer') navigate('/entrer');
+      // auth: do not force navigate, stay on current page
     } else {
-      // FIX: ne plus ecraser les routes landing (/, /comment-ca-marche, legales)    }
+      // FIX: ne plus ecraser les routes landing (/, /comment-ca-marche, legales)
+    }
   }, [overlay, activeTab, view]);
 
   // Handle browser back/forward
