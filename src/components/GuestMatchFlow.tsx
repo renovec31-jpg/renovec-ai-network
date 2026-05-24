@@ -465,6 +465,7 @@ export default function GuestMatchFlow({ onEnter, isGuest }: Props) {
             {SHOWCASE_PROFILES.map((p, i) => (
               <div key={i} className={`gmf-showcase-card ${i === 0 ? 'gmf-showcase-card--top' : ''}`}>
                 {i === 0 && <div className="gmf-showcase-card-badge">Meilleure correspondance</div>}
+                {/* Rangée principale : avatar · identité · score */}
                 <div className="gmf-showcase-card-header">
                   <div className="gmf-showcase-card-avatar">{p.initial}</div>
                   <div className="gmf-showcase-card-info">
@@ -472,17 +473,20 @@ export default function GuestMatchFlow({ onEnter, isGuest }: Props) {
                       <span className="gmf-blurred">{p.name}</span>
                     </p>
                     <p className="gmf-showcase-card-cap">{p.capacite}</p>
-                    <p className="gmf-showcase-card-city">
-                      <MapPin size={9} />
-                      <span className="gmf-blurred">{p.city}</span>
-                    </p>
                   </div>
                   <div className="gmf-showcase-card-score">{p.score}<span>%</span></div>
                 </div>
+                {/* Rangée meta : ville + disponibilité — séparée du score */}
+                <div className="gmf-showcase-card-meta">
+                  <span className="gmf-showcase-card-city">
+                    <MapPin size={9} />
+                    <span className="gmf-blurred">{p.city}</span>
+                  </span>
+                  <span className={`gmf-avail ${p.availClass}`}>
+                    <span className="gmf-avail-dot" /> {p.avail}
+                  </span>
+                </div>
                 <p className="gmf-showcase-card-reason">{p.raison}</p>
-                <span className={`gmf-avail ${p.availClass}`}>
-                  <span className="gmf-avail-dot" /> {p.avail}
-                </span>
               </div>
             ))}
           </div>
