@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { AVATAR_PHOTOS, PEOPLE } from '../data/people';
+import { AVATAR_PHOTOS, PEOPLE, avatarFallback } from '../data/people';
 
 type Bubble = {
   id: number;
@@ -278,6 +278,7 @@ export default function ChatRain() {
               alt={b.name}
               style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
               loading="lazy"
+              onError={(e) => { (e.currentTarget as HTMLImageElement).src = avatarFallback(b.name); }}
             />
           </div>
           {b.size > 60 && (

@@ -105,7 +105,7 @@ export default function RenovecMap({ className }: Props) {
             <div class="renovec-marker-inner">
               ${p.active ? '<div class="renovec-marker-pulse"></div>' : ''}
               <div class="renovec-marker-photo">
-                <img src="${p.img}" alt="${p.name}" loading="lazy" />
+                <img src="${p.img}" alt="${p.name}" loading="lazy" onerror="this.onerror=null;this.style.background='rgba(242,101,34,0.18)';this.removeAttribute('src')" />
               </div>
             </div>
             <div class="renovec-marker-tooltip">

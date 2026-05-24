@@ -10,6 +10,7 @@ import NeuralSignals from '../components/NeuralSignals';
 import HorizontalScroll from '../components/HorizontalScroll';
 import ChatRain from '../components/ChatRain';
 import { avatarBg as teaserAvatarBg } from '../lib/ui';
+import { avatarFallback } from '../data/people';
 import { supabase } from '../lib/supabase';
 import { NETWORK_STATS } from '../data/mockOccitanie';
 
@@ -571,7 +572,7 @@ function ProductDemo({ onEnter }: { onEnter: () => void }) {
             <p className="lp-demo2-zone-label">A — Situation exprimée en langage libre</p>
             <div className="lp-demo2-message-wrap">
               <div className="lp-demo2-user-avatar">
-                <img src={AVATARS.Lucie} alt="Lucie" className="lp-demo2-avatar-img" loading="lazy" />
+                <img src={AVATARS.Lucie} alt="Lucie" className="lp-demo2-avatar-img" loading="lazy" onError={(e) => { (e.currentTarget as HTMLImageElement).src = avatarFallback('L'); }} />
               </div>
               <div className="lp-demo2-message-bubble">
                 <span className="lp-demo2-message-name">Lucie · Lyon 3e</span>
@@ -615,7 +616,7 @@ function ProductDemo({ onEnter }: { onEnter: () => void }) {
                 <div className={`lp-demo2-profile-card ${i === 0 ? 'lp-demo2-profile-card--top' : ''}`} key={p.id}>
                   {i === 0 && <span className="lp-demo2-profile-top-badge">Meilleure correspondance</span>}
                   <div className="lp-demo2-profile-header">
-                    <img src={p.src} alt={p.name} className="lp-demo2-profile-avatar" loading="lazy" />
+                    <img src={p.src} alt={p.name} className="lp-demo2-profile-avatar" loading="lazy" onError={(e) => { (e.currentTarget as HTMLImageElement).src = avatarFallback(p.name); }} />
                     <div className="lp-demo2-profile-identity">
                       <p className="lp-demo2-profile-name">{p.name} <span className="lp-demo2-profile-city">· {p.city}</span></p>
                       <p className="lp-demo2-profile-cap">{p.capacite}</p>
@@ -663,9 +664,9 @@ function ProductDemo({ onEnter }: { onEnter: () => void }) {
             <div className="lp-demo2-recog">
               <div className="lp-demo2-recog-event">
                 <div className="lp-demo2-recog-avatars">
-                  <img src={AVATARS.Lucie} alt="Lucie" className="lp-demo2-recog-avatar" loading="lazy" />
+                  <img src={AVATARS.Lucie} alt="Lucie" className="lp-demo2-recog-avatar" loading="lazy" onError={(e) => { (e.currentTarget as HTMLImageElement).src = avatarFallback('L'); }} />
                   <span className="lp-demo2-recog-arrow">→</span>
-                  <img src={AVATARS.Marc} alt="Marc" className="lp-demo2-recog-avatar lp-demo2-recog-avatar--helper" loading="lazy" />
+                  <img src={AVATARS.Marc} alt="Marc" className="lp-demo2-recog-avatar lp-demo2-recog-avatar--helper" loading="lazy" onError={(e) => { (e.currentTarget as HTMLImageElement).src = avatarFallback('M'); }} />
                 </div>
                 <p className="lp-demo2-recog-label">Lucie reconnaît l'aide de Marc</p>
               </div>
@@ -1010,7 +1011,7 @@ export default function LandingPage({ onEnter, onHowItWorks, onGoToPresence: _on
         <div className="lp-hero-humans" aria-hidden="true">
           <div className="lp-hero-human lp-hero-human--1">
             <div className="lp-hero-human-halo" />
-            <img src={AVATARS.H1} alt="" className="lp-hero-human-img" loading="lazy" />
+            <img src={AVATARS.H1} alt="" className="lp-hero-human-img" loading="lazy" onError={(e) => { (e.currentTarget as HTMLImageElement).src = avatarFallback('T'); }} />
             <div className="lp-hero-human-info">
               <span className="lp-hero-human-name">Thomas</span>
               <span className="lp-hero-human-cap">comprend le droit locatif</span>
@@ -1019,7 +1020,7 @@ export default function LandingPage({ onEnter, onHowItWorks, onGoToPresence: _on
           </div>
           <div className="lp-hero-human lp-hero-human--2">
             <div className="lp-hero-human-halo" />
-            <img src={AVATARS.H2} alt="" className="lp-hero-human-img" loading="lazy" />
+            <img src={AVATARS.H2} alt="" className="lp-hero-human-img" loading="lazy" onError={(e) => { (e.currentTarget as HTMLImageElement).src = avatarFallback('F'); }} />
             <div className="lp-hero-human-info">
               <span className="lp-hero-human-name">Fatima</span>
               <span className="lp-hero-human-cap">utile sur les dossiers sociaux</span>
@@ -1028,7 +1029,7 @@ export default function LandingPage({ onEnter, onHowItWorks, onGoToPresence: _on
           </div>
           <div className="lp-hero-human lp-hero-human--3">
             <div className="lp-hero-human-halo" />
-            <img src={AVATARS.Marc} alt="" className="lp-hero-human-img" loading="lazy" />
+            <img src={AVATARS.Marc} alt="" className="lp-hero-human-img" loading="lazy" onError={(e) => { (e.currentTarget as HTMLImageElement).src = avatarFallback('M'); }} />
             <div className="lp-hero-human-info">
               <span className="lp-hero-human-name">Marc</span>
               <span className="lp-hero-human-cap">accompagne les transitions pro</span>
@@ -1180,7 +1181,7 @@ export default function LandingPage({ onEnter, onHowItWorks, onGoToPresence: _on
           <div className="lp-profile-card" style={{ marginTop: 28 }}>
             <div className="lp-profile-header">
               <div className="lp-profile-avatar-photo">
-                <img src={AVATARS.Marie} alt="Marie" className="lp-profile-avatar-img" loading="lazy" />
+                <img src={AVATARS.Marie} alt="Marie" className="lp-profile-avatar-img" loading="lazy" onError={(e) => { (e.currentTarget as HTMLImageElement).src = avatarFallback('M'); }} />
               </div>
               <div>
                 <p className="lp-profile-name">Marie · Lyon 7e</p>

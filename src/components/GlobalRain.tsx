@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { AVATAR_PHOTOS, PEOPLE } from '../data/people';
+import { AVATAR_PHOTOS, PEOPLE, avatarFallback } from '../data/people';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -155,6 +155,7 @@ function RainBubble({
           className="gr-avatar"
           style={{ width: 'var(--gr-size)', height: 'var(--gr-size)' }}
           loading="lazy"
+          onError={(e) => { (e.currentTarget as HTMLImageElement).src = avatarFallback(drop.name); }}
         />
       </div>
 

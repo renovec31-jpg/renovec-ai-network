@@ -1,6 +1,22 @@
 // src/data/people.ts
 // Source unique pour les donnees de personnes utilisees dans ChatRain et GlobalRain
 
+/**
+ * Génère un avatar SVG de secours (data: URI) affichant l'initiale donnée.
+ * À utiliser comme valeur `src` dans le handler onError des <img> Pexels.
+ */
+export function avatarFallback(initial: string): string {
+  const letter = encodeURIComponent((initial || '?').charAt(0).toUpperCase());
+  return (
+    `data:image/svg+xml,` +
+    `<svg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'>` +
+    `<rect width='80' height='80' rx='40' fill='%23F26522' opacity='.18'/>` +
+    `<text x='40' y='52' text-anchor='middle' font-size='30' font-weight='600' ` +
+    `font-family='Inter%2Csystem-ui%2Csans-serif' fill='%23F26522'>${letter}</text>` +
+    `</svg>`
+  );
+}
+
 export const AVATAR_PHOTOS = [
   'https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg?auto=compress&cs=tinysrgb&w=80&h=80&fit=crop&crop=face',
   'https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=80&h=80&fit=crop&crop=face',
