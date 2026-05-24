@@ -2134,7 +2134,7 @@ button, a, input, textarea, select {
   padding: 11px 12px;
   background: transparent;
   border: none;
-  border-right: 1px solid rgba(255,255,255,0.10);
+  border-right: 1px solid rgba(255,255,255,0.18);
   border-radius: 0;
   cursor: pointer;
   transition: background 0.2s ease;
