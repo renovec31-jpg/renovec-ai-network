@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { SituationProvider } from './contexts/SituationContext';
 import { supabase, isAdmin } from './lib/supabase';
@@ -27,140 +27,136 @@ import EditProfilePage from './pages/EditProfilePage';
 import CartePage from './pages/CartePage';
 import FeedPage from './pages/FeedPage';
 import CookieBanner from './components/CookieBanner';
-import {
-  normalizePath,
-  publicExclusiveFromPath,
-  type PublicExclusiveView,
-} from './lib/publicRoutes';
 
 type Tab = 'demander' | 'capacites' | 'discussions' | 'contributions' | 'espace' | 'notifications' | 'admin' | 'carte' | 'feed';
-type AppView = 'landing' | 'auth' | 'app' | '404' | PublicExclusiveView;
+type AppView = 'landing' | 'auth' | 'app' | '404';
 
+// Full-screen overlays rendered instead of Layout
 type Overlay =
   | { kind: 'none' }
   | { kind: 'public-profile'; userId: string }
   | { kind: 'edit-profile' };
 
+// ── URL routing ────────────────────────────────────────────────────────────────
+// Parse window.location.pathname to determine initial app state.
+// Pattern → { view, tab, overlay }
 type ParsedRoute = {
   view: AppView;
   tab: Tab;
   overlay: Overlay;
 };
 
-function parseRoute(pathname: string): ParsedRoute {
-  const p = normalizePath(pathname);
-  const exclusive = publicExclusiveFromPath(p);
-  if (exclusive) {
-    return { view: exclusive, tab: 'demander', overlay: { kind: 'none' } };
-  }
+const KNOWN_PATHS = new Set(['/', '', '/carte', '/entrer', '/comment-ca-marche', '/mon-espace/profil/edit', '/mentions-legales', '/politique-de-confidentialite', '/conditions-generales']);
 
+function parseRoute(pathname: string): ParsedRoute {
+  const p = pathname.replace(/\/$/, '') || '/';
+
+  // /carte
   if (p === '/carte') {
     return { view: 'app', tab: 'carte', overlay: { kind: 'none' } };
   }
 
+  // /profil/:id
   const profilMatch = p.match(/^\/profil\/([^/]+)$/);
   if (profilMatch) {
     return { view: 'app', tab: 'espace', overlay: { kind: 'public-profile', userId: profilMatch[1] } };
   }
 
+  // /mon-espace/profil/edit  (protected)
   if (p === '/mon-espace/profil/edit') {
     return { view: 'app', tab: 'espace', overlay: { kind: 'edit-profile' } };
   }
 
+  // /entrer
   if (p === '/entrer') {
     return { view: 'auth', tab: 'demander', overlay: { kind: 'none' } };
   }
 
+  // /comment-ca-marche
+  if (p === '/comment-ca-marche') {
+    return { view: 'landing', tab: 'demander', overlay: { kind: 'none' } };
+  }
+
+  // Pages légales (legal pages handled as landing overlays)
+  if (p === '/mentions-legales' || p === '/politique-de-confidentialite' || p === '/conditions-generales') {
+    return { view: 'landing', tab: 'demander', overlay: { kind: 'none' } };
+  }
+
+  // / → landing
   if (p === '/' || p === '') {
     return { view: 'landing', tab: 'demander', overlay: { kind: 'none' } };
   }
 
+  // Unknown → 404
   return { view: '404', tab: 'demander', overlay: { kind: 'none' } };
 }
 
-function desiredPath(view: AppView, activeTab: Tab, overlay: Overlay): string {
-  if (overlay.kind === 'public-profile') return `/profil/${overlay.userId}`;
-  if (overlay.kind === 'edit-profile') return '/mon-espace/profil/edit';
-  if (view === 'app') return activeTab === 'carte' ? '/carte' : '/';
-  if (view === 'auth') return '/entrer';
-  if (view === 'ccm') return '/comment-ca-marche';
-  if (view === 'mentions') return '/mentions-legales';
-  if (view === 'privacy') return '/politique-de-confidentialite';
-  if (view === 'cgu') return '/conditions-generales';
-  if (view === '404') return normalizePath(window.location.pathname);
-  return '/';
+function navigate(path: string) {
+  window.history.pushState(null, '', path);
 }
 
-function usePathname(): [string, (path: string) => void] {
-  const [pathname, setPathname] = useState(() => normalizePath(window.location.pathname));
+function AppInner() {
+  const { user, profile, loading , isPasswordRecovery } = useAuth();
 
-  const pushPath = useCallback((path: string) => {
-    const next = normalizePath(path);
-    if (normalizePath(window.location.pathname) === next) {
-      setPathname(next);
-      return;
+  const initial = parseRoute(window.location.pathname);
+  const [view, setView] = useState<AppView>(initial.view);
+  const [activeTab, setActiveTab] = useState<Tab>(initial.tab);
+  const [overlay, setOverlay] = useState<Overlay>(initial.overlay);
+
+  const [showProviderOnboarding, setShowProviderOnboarding] = useState(false);
+  const [notifCount, setNotifCount] = useState(0);
+  const [showHowItWorks, setShowHowItWorks] = useState(
+    window.location.pathname.replace(/\/$/, '') === '/comment-ca-marche'
+  );
+  const [showMentions, setShowMentions] = useState(
+    window.location.pathname.replace(/\/$/, '') === '/mentions-legales'
+  );
+  const [showPrivacy, setShowPrivacy] = useState(
+    window.location.pathname.replace(/\/$/, '') === '/politique-de-confidentialite'
+  );
+  const [showCGU, setShowCGU] = useState(
+    window.location.pathname.replace(/\/$/, '') === '/conditions-generales'
+  );
+  const [showWelcome, setShowWelcome] = useState(false);
+  const [publicProfileId, setPublicProfileId] = useState<string | null>(null);
+
+  // Sync URL on overlay/tab changes
+  useEffect(() => {
+    if (overlay.kind === 'public-profile') {
+      navigate(`/profil/${overlay.userId}`);
+    } else if (overlay.kind === 'edit-profile') {
+      navigate('/mon-espace/profil/edit');
+    } else if (view === 'app') {
+      navigate(activeTab === 'carte' ? '/carte' : '/');
+    } else if (view === 'auth') {
+      if (window.location.pathname !== '/entrer') navigate('/entrer');
+    } else {
+      navigate('/');
     }
-    window.history.pushState(null, '', next);
-    setPathname(next);
-  }, []);
+  }, [overlay, activeTab, view]);
 
+  // Handle browser back/forward
   useEffect(() => {
     function onPopState() {
-      setPathname(normalizePath(window.location.pathname));
+      const parsed = parseRoute(window.location.pathname);
+      setView(parsed.view);
+      setActiveTab(parsed.tab);
+      setOverlay(parsed.overlay);
     }
     window.addEventListener('popstate', onPopState);
     return () => window.removeEventListener('popstate', onPopState);
   }, []);
 
-  return [pathname, pushPath];
-}
-
-function AppInner() {
-  const { user, profile, loading } = useAuth();
-  const [pathname, pushPath] = usePathname();
-
-  const routeFromUrl = parseRoute(pathname);
-  const urlExclusive = publicExclusiveFromPath(pathname);
-
-  const [view, setView] = useState<AppView>(routeFromUrl.view);
-  const [activeTab, setActiveTab] = useState<Tab>(routeFromUrl.tab);
-  const [overlay, setOverlay] = useState<Overlay>(routeFromUrl.overlay);
-
-  const [showProviderOnboarding, setShowProviderOnboarding] = useState(false);
-  const [notifCount, setNotifCount] = useState(0);
-  const [showMentions, setShowMentions] = useState(false);
-  const [showWelcome, setShowWelcome] = useState(false);
-  const [publicProfileId, setPublicProfileId] = useState<string | null>(null);
-
-  const goTo = useCallback((next: AppView, tab: Tab = 'demander', nextOverlay: Overlay = { kind: 'none' }) => {
-    setView(next);
-    setActiveTab(tab);
-    setOverlay(nextOverlay);
-    pushPath(desiredPath(next, tab, nextOverlay));
-  }, [pushPath]);
-
-  // URL = source de vérité pour les pages exclusives (jamais la landing en doublon)
-  useEffect(() => {
-    const parsed = parseRoute(pathname);
-    if (urlExclusive) {
-      if (view !== parsed.view) setView(parsed.view);
-      if (activeTab !== parsed.tab) setActiveTab(parsed.tab);
-      if (overlay.kind !== 'none') setOverlay({ kind: 'none' });
-      return;
-    }
-    if (view !== parsed.view) setView(parsed.view);
-    if (activeTab !== parsed.tab) setActiveTab(parsed.tab);
-    setOverlay(parsed.overlay);
-  }, [pathname]); // eslint-disable-line react-hooks/exhaustive-deps
-
+  // Custom events from other components
   useEffect(() => {
     const handler = (e: Event) => {
       const { tab } = (e as CustomEvent<{ tab: Tab }>).detail;
-      goTo('app', tab);
+      setOverlay({ kind: 'none' });
+      setActiveTab(tab);
     };
     window.addEventListener('navigate-to-tab', handler);
     return () => window.removeEventListener('navigate-to-tab', handler);
-  }, [goTo]);
+  }, []);
 
   useEffect(() => {
     const handler = (e: Event) => {
@@ -174,11 +170,11 @@ function AppInner() {
   useEffect(() => {
     const handler = (e: Event) => {
       const { userId } = (e as CustomEvent<{ userId: string }>).detail;
-      if (userId) goTo('app', 'espace', { kind: 'public-profile', userId });
+      if (userId) setOverlay({ kind: 'public-profile', userId });
     };
     window.addEventListener('open-profile-page', handler);
     return () => window.removeEventListener('open-profile-page', handler);
-  }, [goTo]);
+  }, []);
 
   useEffect(() => {
     if (!user) return;
@@ -206,48 +202,29 @@ function AppInner() {
 
   function handleTabChange(tab: Tab) {
     if (tab === 'notifications') setNotifCount(0);
-    goTo('app', tab);
+    setOverlay({ kind: 'none' });
+    setActiveTab(tab);
+    setView('app');
   }
 
   function openProfile(userId: string) {
-    goTo('app', 'espace', { kind: 'public-profile', userId });
+    setOverlay({ kind: 'public-profile', userId });
   }
 
   function openEditProfile() {
-    goTo('app', 'espace', { kind: 'edit-profile' });
+    setOverlay({ kind: 'edit-profile' });
   }
 
   function closeOverlay() {
     setOverlay({ kind: 'none' });
-    pushPath(desiredPath(view, activeTab, { kind: 'none' }));
   }
 
-  // ── Pages exclusives : pathname prime, rendu AVANT auth/landing ─────────────
-  if (urlExclusive === 'ccm') {
-    return (
-      <CommentCaMarchePage
-        standalone
-        onClose={() => goTo(user ? 'app' : 'landing')}
-        onEnter={() => goTo('auth')}
-        onGoToPresence={() => goTo('auth')}
-      />
-    );
-  }
-
-  if (!user && urlExclusive === 'mentions') {
-    return <MentionsPage onClose={() => goTo('landing')} />;
-  }
-  if (!user && urlExclusive === 'privacy') {
-    return <PolitiqueConfidentialitePage standalone onClose={() => goTo('landing')} />;
-  }
-  if (!user && urlExclusive === 'cgu') {
-    return <ConditionsGeneralesPage standalone onClose={() => goTo('landing')} />;
-  }
-
+  // ── 404 ─────────────────────────────────────────────────────────────────────
   if (view === '404') {
-    return <NotFoundPage onGoHome={() => goTo('landing')} />;
+    return <NotFoundPage onGoHome={() => { setView('landing'); navigate('/'); }} />;
   }
 
+  // ── Loading spinner ──────────────────────────────────────────────────────────
   if (loading) {
     return (
       <div className="min-h-screen bg-stone-50 flex items-center justify-center">
@@ -259,50 +236,73 @@ function AppInner() {
     );
   }
 
+  // ── Public routes (accessible without auth) ──────────────────────────────────
+  // /carte is public
   if (!user && activeTab === 'carte' && overlay.kind === 'none') {
-    return <CartePage onOpenProfile={userId => openProfile(userId)} />;
-  }
-
-  if (!user && overlay.kind === 'public-profile') {
     return (
-      <PublicProfilePage
-        profileUserId={overlay.userId}
-        onBack={() => goTo('landing')}
-        onEdit={() => {}}
-        onContact={() => goTo('auth')}
+      <CartePage
+        onOpenProfile={userId => openProfile(userId)}
       />
     );
   }
 
-  if (!user) {
+  // /profil/:id is public
+  if (!user && overlay.kind === 'public-profile') {
+    return (
+      <PublicProfilePage
+        profileUserId={overlay.userId}
+        onBack={() => { closeOverlay(); setView('landing'); }}
+        onEdit={() => {}}
+        onContact={() => setView('auth')}
+      />
+    );
+  }
+
+  // ── Unauthenticated views ────────────────────────────────────────────────────
+  if (!user || isPasswordRecovery) {
     return (
       <>
         {view === 'landing'
           ? <LandingPage
-              onEnter={() => goTo('auth')}
-              onHowItWorks={() => goTo('ccm')}
-              onGoToPresence={() => goTo('auth')}
-              onMentions={() => goTo('mentions')}
+              onEnter={() => setView('auth')}
+              onHowItWorks={() => { setShowHowItWorks(true); navigate('/comment-ca-marche'); }}
+              onGoToPresence={() => setView('auth')}
+              onMentions={() => { setShowMentions(true); navigate('/mentions-legales'); }}
             />
-          : <AuthPage onBack={() => goTo('landing')} />}
+          : <AuthPage onBack={() => setView('landing')} />}
+        {showHowItWorks && (
+          <CommentCaMarchePage
+            standalone
+            onClose={() => { setShowHowItWorks(false); navigate('/'); }}
+            onEnter={() => { setShowHowItWorks(false); navigate('/entrer'); setView('auth'); }}
+            onGoToPresence={() => { setShowHowItWorks(false); navigate('/entrer'); setView('auth'); }}
+          />
+        )}
+        {showMentions && <MentionsPage onClose={() => { setShowMentions(false); navigate('/'); }} />}
+        {showPrivacy && <PolitiqueConfidentialitePage standalone onClose={() => { setShowPrivacy(false); navigate('/'); }} />}
+        {showCGU && <ConditionsGeneralesPage standalone onClose={() => { setShowCGU(false); navigate('/'); }} />}
         {publicProfileId && (
           <PublicProfileModal
             profileId={publicProfileId}
             isGuest
             onClose={() => setPublicProfileId(null)}
-            onEnter={() => { setPublicProfileId(null); goTo('auth'); }}
+            onEnter={() => { setPublicProfileId(null); setView('auth'); }}
           />
         )}
       </>
     );
   }
 
-  // Session orpheline (user sans profil) : déconnexion propre
+
+  // ── Session orpheline (user sans profil) : déconnexion propre ────────────────
   if (!profile) {
     supabase.auth.signOut();
     return null;
   }
 
+
+
+  // ── Onboarding gates ─────────────────────────────────────────────────────────
   if (!profile.onboarding_seeker_done) {
     return <OnboardingSeeker onComplete={() => {}} />;
   }
@@ -310,8 +310,8 @@ function AppInner() {
   if (showWelcome) {
     return (
       <WelcomeScreen
-        onSeeker={() => { setShowWelcome(false); goTo('app', 'demander'); }}
-        onPresence={() => { setShowWelcome(false); goTo('app', 'capacites'); }}
+        onSeeker={() => { setShowWelcome(false); setView('app'); setActiveTab('demander'); }}
+        onPresence={() => { setShowWelcome(false); setView('app'); setActiveTab('capacites'); }}
       />
     );
   }
@@ -325,6 +325,7 @@ function AppInner() {
     );
   }
 
+  // ── Authenticated full-screen overlays ───────────────────────────────────────
   if (overlay.kind === 'public-profile') {
     return (
       <PublicProfilePage
@@ -345,6 +346,7 @@ function AppInner() {
     );
   }
 
+  // ── Main app with Layout ─────────────────────────────────────────────────────
   const isFullHeight = activeTab === 'carte';
 
   const renderTab = () => {
@@ -353,9 +355,13 @@ function AppInner() {
       case 'feed':          return (
         <FeedPage
           onViewProfile={profileId => {
+            // Find profile's user_id then open profile — pass capability profile id as custom event
             window.dispatchEvent(new CustomEvent('open-capability-profile', { detail: { profileId } }));
           }}
-          onContact={() => handleTabChange('discussions')}
+          onContact={(profileId, profileTitle) => {
+            // Open discussions tab — the profile will be discovered there
+            handleTabChange('discussions');
+          }}
         />
       );
       case 'capacites':     return <CapacitesPage />;
@@ -376,14 +382,21 @@ function AppInner() {
         onTabChange={handleTabChange}
         notifCount={notifCount}
         isAdmin={isAdmin(profile)}
-        onShowHowItWorks={() => goTo('ccm')}
-        onGoLanding={() => goTo('landing')}
+        onShowHowItWorks={() => setShowHowItWorks(true)}
+        onGoLanding={() => { setView('landing'); setActiveTab('demander'); setOverlay({ kind: 'none' }); }}
         onOpenMyProfile={() => openProfile(user.id)}
         fullHeight={isFullHeight}
       >
         {renderTab()}
       </Layout>
       <OnboardingModal />
+      {showHowItWorks && (
+        <CommentCaMarchePage
+          onClose={() => setShowHowItWorks(false)}
+          onEnter={() => { setShowHowItWorks(false); setActiveTab('demander'); }}
+          onGoToPresence={() => { setShowHowItWorks(false); handleTabChange('capacites'); }}
+        />
+      )}
       {showMentions && <MentionsPage onClose={() => setShowMentions(false)} />}
       {publicProfileId && (
         <PublicProfileModal
