@@ -19,10 +19,10 @@ export default defineConfig({
           'supabase': ['@supabase/supabase-js'],
           'icons': ['lucide-react'],
         },
-        // v4 — force new filenames to bust stale browser caches
-        entryFileNames: 'assets/[name]-[hash].v4.js',
-        chunkFileNames: 'assets/[name]-[hash].v4.js',
-        assetFileNames: 'assets/[name]-[hash].v4[extname]',
+        // v6 — force new filenames to bust stale browser caches
+        entryFileNames: 'assets/[name]-[hash].v6.js',
+        chunkFileNames: 'assets/[name]-[hash].v6.js',
+        assetFileNames: 'assets/[name]-[hash].v6[extname]',
       },
     },
     chunkSizeWarningLimit: 1000,

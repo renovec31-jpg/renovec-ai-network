@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <title>RENOVEC — Le réseau qui comprend avant d'orienter</title><!-- v52 -->
+    <title>RENOVEC — Le réseau qui comprend avant d'orienter</title><!-- v54 -->
     <meta name="description" content="Partagez ce que vous savez faire. Trouvez les bonnes personnes quand vous avez besoin d'aide. L'IA s'occupe du reste." />
 
     <!-- SEO -->
@@ -67,7 +67,27 @@
     }
     </script>
   </head>
-  <!-- v52 -->
+  <!-- v54 — layout critique (survit au cache CSS obsolète) -->
+  <style id="renovec-critical-layout">
+    .lp-demo2-nav{display:grid!important;grid-template-columns:repeat(6,minmax(0,1fr))!important}
+    .lp-demo2-step{display:grid!important;grid-template-columns:auto minmax(0,1fr)!important;min-width:0!important;width:100%!important}
+    .lp-demo2-step-label{display:block!important}
+    .lp-hero-ctas,.lp-finale-ctas{display:flex!important;flex-wrap:wrap!important;gap:16px!important;align-items:center!important}
+    .lp-hero-ctas>a,.lp-finale-ctas>a,.lp-btn-primary,.lp-btn-ghost{display:inline-flex!important;align-items:center!important;gap:8px!important}
+    .tv-geo-nudge{display:flex!important;flex-direction:column!important;gap:10px!important}
+    .tv-geo-nudge-question,.tv-geo-nudge-privacy{display:block!important;margin:0!important}
+    .tv-geo-nudge-btn{display:block!important;width:fit-content!important}
+    .tv-map-block{display:block!important;margin-bottom:16px!important}
+    .tv-cta{display:flex!important;width:100%!important;margin-top:12px!important}
+    .gmf-showcase-card{display:flex!important;flex-direction:column!important;gap:12px!important}
+    .gmf-showcase-card-badge{display:block!important;margin-bottom:10px!important}
+    .gmf-showcase-card-body,.gmf-showcase-card-header{display:flex!important}
+    .gmf-showcase-card-header{align-items:flex-start!important;gap:12px!important}
+    .gmf-showcase-card-meta{display:flex!important;flex-wrap:wrap!important;gap:10px!important}
+    .lp-profile-tags{display:flex!important;flex-wrap:wrap!important;gap:6px!important;list-style:none!important;margin:0!important;padding:0!important}
+    .lp-profile-stats{display:flex!important;flex-wrap:wrap!important;gap:8px!important;margin-top:24px!important;padding-top:18px!important;clear:both!important}
+    .ccm-standalone{position:fixed!important;inset:0!important;z-index:9999!important;background:#0c0a09!important;display:flex!important;flex-direction:column!important;overflow:hidden!important}
+  </style>
   <body>
     <!-- Lien d'évitement (skip to content) — WCAG 2.1 AA 2.4.1 -->
     <a href="#contenu-principal" class="skip-link">Passer au contenu principal</a>

@@ -259,15 +259,15 @@ export default function TeaserMap({ onEnter }: Props) {
 
         {/* Géolocalisation */}
         {geoState === 'idle' && !loading && (
-          <div className="tv-geo-nudge">
-            <div className="tv-geo-nudge-question">
+          <div className="tv-geo-nudge" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            <p className="tv-geo-nudge-question" style={{ display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
               <MapPin size={11} className="tv-geo-nudge-icon" aria-hidden />
               <span>Présences autour de vous&nbsp;?</span>
-            </div>
-            <button onClick={requestGeo} className="tv-geo-nudge-btn">
+            </p>
+            <button type="button" onClick={requestGeo} className="tv-geo-nudge-btn" style={{ display: 'block', width: 'fit-content' }}>
               Voir ma zone (~10&nbsp;km)
             </button>
-            <p className="tv-geo-nudge-privacy">Position agrégée · approximative · jamais stockée</p>
+            <p className="tv-geo-nudge-privacy" style={{ display: 'block', margin: 0 }}>Position agrégée · approximative · jamais stockée</p>
           </div>
         )}
         {geoState === 'requesting' && (
@@ -284,17 +284,19 @@ export default function TeaserMap({ onEnter }: Props) {
         )}
 
         {/* Carte — preuve d'ancrage spatial, pas interface principale */}
-        <div className="tv-map-wrap">
-          {loading && (
-            <div className="tv-map-loading">
-              <span /><span /><span />
-            </div>
-          )}
-          <div ref={containerRef} className="tv-map-canvas" />
-          <div className="tv-map-vignette" aria-hidden />
-          <div className="tv-map-privacy">
-            <Lock size={9} />
-            <span>Agrégé · Approx. · Jamais stocké</span>
+        <div className="tv-map-block">
+          <div className="tv-map-wrap">
+            {loading && (
+              <div className="tv-map-loading">
+                <span /><span /><span />
+              </div>
+            )}
+            <div ref={containerRef} className="tv-map-canvas" />
+            <div className="tv-map-vignette" aria-hidden />
+            <p className="tv-map-privacy" aria-hidden="true">
+              <Lock size={9} aria-hidden />
+              <span>Carte · position agrégée</span>
+            </p>
           </div>
         </div>
 

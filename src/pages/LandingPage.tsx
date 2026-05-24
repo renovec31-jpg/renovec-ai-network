@@ -545,13 +545,19 @@ function ProductDemo({ onEnter }: { onEnter: () => void }) {
     <div className="lp-demo2">
 
       {/* ── Step nav ─────────────────────────────────────────────── */}
-      <nav className="lp-demo2-nav" aria-label="Étapes de la démo produit">
+      <nav
+        className="lp-demo2-nav"
+        aria-label="Étapes de la démo produit"
+        style={{ display: 'grid', gridTemplateColumns: 'repeat(6, minmax(0, 1fr))' }}
+      >
         {DEMO_ZONES.map((dz, i) => (
           <button
             key={dz.zone}
+            type="button"
             className={`lp-demo2-step ${i === step ? 'lp-demo2-step--active' : ''} ${i < step ? 'lp-demo2-step--done' : ''}`}
             onClick={() => go(i)}
             aria-current={i === step ? 'step' : undefined}
+            style={{ display: 'grid', gridTemplateColumns: 'auto minmax(0, 1fr)', gap: '6px', minWidth: 0, width: '100%' }}
           >
             <span className="lp-demo2-step-dot">
               {i < step
@@ -967,7 +973,7 @@ function LandingFeedTeaser({ onEnter, onOpenFeed }: { onEnter: () => void; onOpe
 // MAIN
 // ─────────────────────────────────────────────────────────────────────────────
 
-export default function LandingPage({ onEnter, onHowItWorks, onGoToPresence: _onGoToPresence, onMentions }: Props) {
+export default function LandingPage({ onEnter, onHowItWorks: _onHowItWorks, onGoToPresence: _onGoToPresence, onMentions }: Props) {
   const [scrolled, setScrolled] = useState(false);
   const [aiOpen, setAiOpen] = useState(false);
   const [heroInput, setHeroInput] = useState('');
@@ -1010,7 +1016,7 @@ export default function LandingPage({ onEnter, onHowItWorks, onGoToPresence: _on
               <span>RENOVEC</span>
             </a>
             <div className="lp-nav-actions">
-              <a href="/comment-ca-marche" onClick={(e) => { e.preventDefault(); onHowItWorks(); }} className="lp-nav-link hidden sm:block">
+              <a href="/comment-ca-marche" className="lp-nav-link hidden sm:block">
                 Comment ça marche
               </a>
               <a href="/entrer" onClick={(e) => { e.preventDefault(); onEnter(); }} className="lp-btn-nav-cta">
@@ -1117,12 +1123,15 @@ export default function LandingPage({ onEnter, onHowItWorks, onGoToPresence: _on
               </button>
             </div>
             {/* ── CTAs hiérarchisés ── */}
-            <div className="lp-hero-ctas">
-              <a href="/entrer" onClick={(e) => { e.preventDefault(); openAI(); }} className="lp-btn-primary group">
+            <div
+              className="lp-hero-ctas"
+              style={{ display: 'flex', flexWrap: 'wrap', gap: '14px', alignItems: 'center' }}
+            >
+              <a href="/entrer" onClick={(e) => { e.preventDefault(); openAI(); }} className="lp-btn-primary group" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
                 Exprimer une situation
                 <ArrowRight size={13} className="group-hover:translate-x-0.5 transition-transform" aria-hidden="true" />
               </a>
-              <a href="/entrer" onClick={(e) => { e.preventDefault(); openAI(); }} className="lp-hero-cta-secondary group">
+              <a href="/entrer" onClick={(e) => { e.preventDefault(); openAI(); }} className="lp-hero-cta-secondary group" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
                 Partager ma présence
                 <ArrowRight size={10} className="lp-hero-cta-secondary-arrow" aria-hidden="true" />
               </a>
@@ -1209,16 +1218,21 @@ export default function LandingPage({ onEnter, onHowItWorks, onGoToPresence: _on
             </div>
             <div className="lp-profile-contexts">
               <p className="lp-profile-contexts-label">Contextes reconnus</p>
-              <div className="lp-profile-tags">
+              <ul className="lp-profile-tags">
                 {['Orientation professionnelle', 'Droit du travail', 'Soutien administratif'].map(t => (
-                  <span key={t} className="lp-profile-tag">{t}</span>
+                  <li key={t} className="lp-profile-tag">{t}</li>
                 ))}
-              </div>
+              </ul>
             </div>
 
-            <div className="lp-profile-links-row">
-              <span className="lp-profile-link-badge">7 liens consolidés</span>
-              <span className="lp-profile-link-badge">3 clusters actifs</span>
+            <div
+              className="lp-profile-stats"
+              role="group"
+              aria-label="Réseau de Marie"
+              style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '24px', paddingTop: '18px', clear: 'both' }}
+            >
+              <span className="lp-profile-link-badge" style={{ display: 'inline-block' }}>7 liens consolidés</span>
+              <span className="lp-profile-link-badge" style={{ display: 'inline-block' }}>3 clusters actifs</span>
             </div>
           </div>
         </div>
@@ -1310,12 +1324,15 @@ export default function LandingPage({ onEnter, onHowItWorks, onGoToPresence: _on
             <span className="lp-finale-proof-sep">·</span>
             <span className="lp-finale-proof-item">Position jamais stockée</span>
           </div>
-          <div className="lp-finale-ctas">
-            <a href="/entrer" onClick={(e) => { e.preventDefault(); openAI(); }} className="lp-btn-primary group">
+          <div
+            className="lp-finale-ctas"
+            style={{ display: 'flex', flexWrap: 'wrap', gap: '20px', justifyContent: 'center', alignItems: 'center' }}
+          >
+            <a href="/entrer" onClick={(e) => { e.preventDefault(); openAI(); }} className="lp-btn-primary group" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
               Exprimer une situation
               <ArrowRight size={13} className="group-hover:translate-x-0.5 transition-transform" aria-hidden="true" />
             </a>
-            <a href="/entrer" onClick={(e) => { e.preventDefault(); openAI(); }} className="lp-btn-ghost group">
+            <a href="/entrer" onClick={(e) => { e.preventDefault(); openAI(); }} className="lp-btn-ghost group" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
               Partager ma présence
               <ArrowRight size={11} className="lp-btn-ghost-arrow" aria-hidden="true" />
             </a>

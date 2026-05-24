@@ -463,8 +463,21 @@ export default function GuestMatchFlow({ onEnter, isGuest }: Props) {
           {/* Static profile previews */}
           <div className="gmf-showcase-profiles">
             {SHOWCASE_PROFILES.map((p, i) => (
-              <div key={i} className={`gmf-showcase-card ${i === 0 ? 'gmf-showcase-card--top' : ''}`}>
-                {i === 0 && <div className="gmf-showcase-card-badge">Meilleure correspondance</div>}
+              <article
+                key={i}
+                className={`gmf-showcase-card ${i === 0 ? 'gmf-showcase-card--top' : ''}`}
+                style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}
+              >
+                {i === 0 && (
+                  <p
+                    className="gmf-showcase-card-badge"
+                    aria-label="Meilleure correspondance"
+                    style={{ display: 'block', marginBottom: '10px' }}
+                  >
+                    Meilleure correspondance
+                  </p>
+                )}
+                <div className="gmf-showcase-card-body" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 {/* Rangée principale : avatar · identité · score */}
                 <div className="gmf-showcase-card-header">
                   <div className="gmf-showcase-card-avatar">{p.initial}</div>
@@ -487,7 +500,8 @@ export default function GuestMatchFlow({ onEnter, isGuest }: Props) {
                   </span>
                 </div>
                 <p className="gmf-showcase-card-reason">{p.raison}</p>
-              </div>
+                </div>
+              </article>
             ))}
           </div>
 

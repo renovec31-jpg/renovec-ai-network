@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react';
 import { X, ArrowRight } from 'lucide-react';
 
 type Props = {
@@ -127,14 +128,26 @@ function PageContent({ onEnter, onGoToPresence, onClose }: Props) {
   );
 }
 
+// Inline shell — survives stale cached CSS on renovec.fr
+const CCM_STANDALONE_SHELL: CSSProperties = {
+  position: 'fixed',
+  inset: 0,
+  zIndex: 9999,
+  background: '#0c0a09',
+  color: '#fff',
+  display: 'flex',
+  flexDirection: 'column',
+  overflow: 'hidden',
+};
+
 // ─── Export ───────────────────────────────────────────────────────────────────
 
 export default function CommentCaMarchePage({ onClose, onEnter, onGoToPresence, standalone }: Props) {
 
-  // Standalone — full-screen fixed overlay covering the landing page
+  // Standalone — plein écran exclusif (aucune LandingPage montée en dessous)
   if (standalone) {
     return (
-      <div className="ccm-standalone" role="main">
+      <div className="ccm-standalone" role="main" style={CCM_STANDALONE_SHELL}>
         {/* Nav */}
         <nav className="ccm-nav" aria-label="Navigation Comment ça marche">
           <div className="ccm-nav-logo">
