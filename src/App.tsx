@@ -129,7 +129,7 @@ function AppInner() {
     } else if (view === 'app') {
       navigate(activeTab === 'carte' ? '/carte' : '/');
     } else if (view === 'auth') {
-      navigate('/entrer');
+      if (window.location.pathname !== '/entrer') navigate('/entrer');
     } else {
       navigate('/');
     }
