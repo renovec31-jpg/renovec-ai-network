@@ -1108,11 +1108,9 @@ export default function LandingPage({ onEnter, onHowItWorks, onGoToPresence: _on
               </a>
             </div>
           </div>
-          <div className="lp-hero-proofs" aria-label="Garanties">
-            <p className="lp-hero-proof">Pas d'inscription pour voir les premiers profils.</p>
-            <p className="lp-hero-proof">Compréhension en langage libre — pas de case, pas de mot-clé.</p>
-            <p className="lp-hero-proof">Position approximative, jamais stockée.</p>
-          </div>
+          <p className="lp-hero-guarantee" role="note">
+            Pas d'inscription · Langage libre · Position jamais stockée
+          </p>
         </div>
         <div className="lp-hero-fade-bottom" aria-hidden />
       </section>
