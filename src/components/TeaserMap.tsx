@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import { NETWORK_STATS } from '../data/mockOccitanie';
-import { MapPin, Lock, Users } from 'lucide-react';
+import { MapPin, Lock } from 'lucide-react';
 
 interface Cluster {
   grid_lat: number;
@@ -145,7 +145,7 @@ export default function TeaserMap({ onEnter }: Props) {
     <div className="teaser-map-root">
 
       <div className="teaser-map-header">
-        <p className="teaser-eyebrow">Territoire vivant · Réseau actif</p>
+        <p className="teaser-eyebrow">Preuve territoriale</p>
         <h2 className="teaser-heading">
           Des humains réels,<br className="teaser-heading-br" /> dans des lieux réels.
         </h2>
@@ -185,12 +185,25 @@ export default function TeaserMap({ onEnter }: Props) {
           </div>
         )}
 
-        <p className="teaser-subheading">
-          {loading
-            ? 'Chargement du réseau…'
-            : `${totalProfiles.toLocaleString('fr-FR')} profils actifs dans ${clusters.length || NETWORK_STATS.zones} zones — dont ${displayNearby} autour de ${displayCity}.`
-          }
-        </p>
+        {/* 3-level proof stats: macro → meso → local */}
+        {!loading && (
+          <div className="teaser-proof-stats">
+            <div className="teaser-proof-stat">
+              <span className="teaser-proof-stat-num">{totalProfiles.toLocaleString('fr-FR')}</span>
+              <span className="teaser-proof-stat-label">profils actifs</span>
+            </div>
+            <div className="teaser-proof-stat-sep" />
+            <div className="teaser-proof-stat">
+              <span className="teaser-proof-stat-num">{clusters.length || NETWORK_STATS.zones}</span>
+              <span className="teaser-proof-stat-label">zones couvertes</span>
+            </div>
+            <div className="teaser-proof-stat-sep" />
+            <div className="teaser-proof-stat">
+              <span className="teaser-proof-stat-num">{displayNearby}</span>
+              <span className="teaser-proof-stat-label">autour de {displayCity}</span>
+            </div>
+          </div>
+        )}
       </div>
 
       {geoState === 'idle' && !loading && (
@@ -230,32 +243,16 @@ export default function TeaserMap({ onEnter }: Props) {
         <div className="teaser-map-vignette" aria-hidden />
         <div className="teaser-map-privacy-badge" aria-label="Données anonymisées">
           <Lock size={9} />
-          <span>Données agrégées · Positions approximatives</span>
+          <span>Données agrégées · Positions approximatives · Jamais stockées</span>
         </div>
       </div>
 
-      {!loading && (
-        <div className="teaser-stats-strip">
-          {[
-            { icon: Users, value: totalProfiles.toLocaleString('fr-FR'), label: 'profils actifs' },
-            { icon: MapPin, value: (clusters.length || NETWORK_STATS.zones).toString(), label: 'zones couvertes' },
-            { icon: Lock, value: '100 %', label: 'positions approximatives' },
-          ].map(({ icon: Icon, value, label }) => (
-            <div key={label} className="teaser-stat">
-              <Icon size={12} className="teaser-stat-icon" />
-              <span className="teaser-stat-value">{value}</span>
-              <span className="teaser-stat-label">{label}</span>
-            </div>
-          ))}
-        </div>
-      )}
-
       <div className="teaser-cta-row">
         <button className="teaser-cta-primary" onClick={onEnter}>
-          Créer mon profil — voir les personnes autour de moi
+          Voir les présences autour de moi — créer mon profil
         </button>
         <p className="teaser-cta-sub">
-          Gratuit · Aucune carte bancaire · Positions toujours approximatives
+          Gratuit · Aucune carte bancaire · Position arrondie à ~10 km, jamais stockée
         </p>
       </div>
 
