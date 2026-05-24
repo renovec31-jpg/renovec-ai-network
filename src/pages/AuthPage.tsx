@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import { ArrowRight, Eye, EyeOff, Sparkles, ArrowLeft, Check } from 'lucide-react';
@@ -15,6 +15,11 @@ export default function AuthPage({ onBack }: Props) {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  // Effacer l'erreur quand l'utilisateur change de mode (connexion ↔ inscription)
+  useEffect(() => {
+    setError('');
+  }, [mode]);
   const [resetSent, setResetSent] = useState(false);
 
   function switchMode(m: Mode) {
@@ -49,7 +54,9 @@ export default function AuthPage({ onBack }: Props) {
       if (mode === 'signin') {
         const { error } = await signIn(email.trim(), password);
         if (error) {
-          setError('Email ou mot de passe incorrect. Vérifiez vos identifiants.');
+          error.message && error.message.includes('not confirmed')
+            ? setError('Vérifiez votre boîte mail — un lien de confirmation vous a été envoyé.')
+            : setError('Email ou mot de passe incorrect. Vérifiez vos identifiants.');
         }
       } else {
         if (!displayName.trim()) { setError('Comment vous appelez-vous ?'); return; }
@@ -58,7 +65,9 @@ export default function AuthPage({ onBack }: Props) {
         if (error) {
           if (error.message.includes('already')) setError('Cet email est déjà dans le réseau. Connectez-vous.');
           else if (error.message.includes('password')) setError('Mot de passe trop court — 8 caractères minimum.');
-          else setError('Une erreur est survenue. Réessayez dans un instant.');
+          else if (error.message && (error.message.includes('sending') || error.message.includes('confirmation'))) {
+            // Compte créé, email SMTP non configuré — on ne bloque pas l'utilisateur
+          } else setError('Une erreur est survenue. Réessayez dans un instant.');
         }
       }
     } finally {
