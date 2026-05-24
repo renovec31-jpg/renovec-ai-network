@@ -46,8 +46,8 @@ const BOUNCE_DAMPING = 0.45;
 const FLOOR_PADDING = 28;
 const MAX_BUBBLES = typeof window !== 'undefined' && window.innerWidth < 768 ? 12 : 24;
 const SPAWN_MS = 900;
-const RADAR_INTERVAL = 380;
-const RADAR_SPEED = 1.6;
+const RADAR_INTERVAL = 80;
+const RADAR_SPEED = 0.6;
 const RADAR_MAX_RINGS = 6;
 const RADAR_COLOR = '#F26522';
 
@@ -254,7 +254,7 @@ export default function ChatRain() {
             left: 0,
             top: 0,
             transform: 'translate3d(' + b.x + 'px,' + b.y + 'px,0)',
-            opacity: 0.3,
+            opacity: 0.15,
             willChange: 'transform',
             display: 'flex',
             flexDirection: 'column',
