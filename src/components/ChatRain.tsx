@@ -268,7 +268,7 @@ export default function ChatRain() {
               height: b.size,
               borderRadius: '50%',
               overflow: 'hidden',
-              boxShadow: '0 8px 24px rgba(0,0,0,0.3), 0 0 0 2.5px #F26522',
+              boxShadow: '0 4px 14px rgba(0,0,0,0.10), 0 0 0 1px rgba(242,101,34,0.18)',
               background: '#0b1220',
             }}
           >
